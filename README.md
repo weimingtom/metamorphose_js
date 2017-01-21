@@ -1,2 +1,2 @@
 # metamorphose_js
-Metamorphose (jill) Javascrpt port
+Metamorphose (jill) Javascript port
