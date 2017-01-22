@@ -43,6 +43,8 @@
  * member); hence they share updates to the variable.
  */
 
+var Slot = require("./Slot.js");
+
 //http://www.cnblogs.com/dolphinX/p/3485260.html
 //http://www.ruanyifeng.com/blog/2010/05/object-oriented_javascript_encapsulation.html
 var UpVal = function(offset, s) {
