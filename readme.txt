@@ -11,7 +11,7 @@ Proto.as
 StringLib.as
 FormatItem.as
 PackageLib.as
-OSLib.as
+() OSLib.as
 () TableLib.as
 () MathLib.as
 
