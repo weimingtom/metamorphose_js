@@ -1,3 +1,5 @@
+------------------------
+
 Lua.as
 Syntax.as
 FuncState.as
@@ -10,7 +12,7 @@ StringLib.as
 FormatItem.as
 PackageLib.as
 OSLib.as
-TableLib.as
+() TableLib.as
 () MathLib.as
 
 ========================

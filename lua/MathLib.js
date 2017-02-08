@@ -49,58 +49,57 @@ MathLib = function(which) {
  * @return number of returned parameters, as per convention.
  */
 MathLib.prototype.luaFunction = function(L) {
-    switch (this._which)
-    {
-        case ABS:
-            return abs(L);
+    switch (this._which) {
+    case ABS:
+        return abs(L);
 
-        case CEIL:
-            return ceil(L);
+    case CEIL:
+        return ceil(L);
 
-        case COS:
-            return cos(L);
+    case COS:
+        return cos(L);
 
-        case DEG:
-            return deg(L);
+    case DEG:
+        return deg(L);
 
-        case EXP:
-            return exp(L);
+    case EXP:
+        return exp(L);
 
-        case FLOOR:
-            return floor(L);
+    case FLOOR:
+        return floor(L);
 
-        case FMOD:
-            return fmod(L);
+    case FMOD:
+        return fmod(L);
 
-        case MAX:
-            return max(L);
+    case MAX:
+        return max(L);
 
-        case MIN:
-            return min(L);
+    case MIN:
+        return min(L);
 
-        case MODF:
-            return modf(L);
+    case MODF:
+        return modf(L);
 
-        case POW:
-            return pow(L);
+    case POW:
+        return pow(L);
 
-        case RAD:
-            return rad(L);
+    case RAD:
+        return rad(L);
 
-        case RANDOM:
-            return random(L);
+    case RANDOM:
+        return random(L);
 
-        case RANDOMSEED:
-            return randomseed(L);
+    case RANDOMSEED:
+        return randomseed(L);
 
-        case SIN:
-            return sin(L);
+    case SIN:
+        return sin(L);
 
-        case SQRT:
-            return sqrt(L);
+    case SQRT:
+        return sqrt(L);
 
-        case TAN:
-            return tan(L);
+    case TAN:
+        return tan(L);
     }
     return 0;
 }
