@@ -41,7 +41,31 @@ Hook.as
 
 -------------------------
 
-Stack.as
+DataOutputStream.as
+Calendar.as
 StringBuffer.as
-SystemUtil.as
+InputStreamReader.as
+Stack.as
+InputStream.as
+Reader.as
+OutputStream.as
+Hashtable.as
+ByteArrayOutputStream.as
 TimeZone.as
+SystemUtil.as
+HashtableEnum.as
+Character.as
+Runtime.as
+PrintStream.as
+MathUtil.as
+Random.as
+IllegalArgumentException.as
+NullPointerException.as
+NumberFormatException.as
+OutOfMemoryError.as
+RuntimeException.as
+IOException.as
+Enumeration.as
+
+-----------------------
+
