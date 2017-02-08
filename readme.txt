@@ -38,3 +38,10 @@ BlockCnt.as
 ConsControl.as
 LuaError.as
 Hook.as
+
+-------------------------
+
+Stack.as
+StringBuffer.as
+SystemUtil.as
+TimeZone.as

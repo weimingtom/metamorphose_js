@@ -8,6 +8,7 @@ Metamorphose (original name jill, jillcode) Javascript port
 * https://github.com/CreateJS/EaselJS  
 * http://www.jb51.net/article/44875.htm  
 * https://github.com/flashlizi/casualjs  
+* https://github.com/jsdoc3/jsdoc  
 
 ## Status  
 WIP  
