@@ -8,7 +8,7 @@ MatchState.as
 LuaTable.as
 Loader.as
 Proto.as
-StringLib.as
+() StringLib.as
 () FormatItem.as
 () PackageLib.as
 () OSLib.as
