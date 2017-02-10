@@ -9,7 +9,7 @@ LuaTable.as
 Loader.as
 Proto.as
 StringLib.as
-FormatItem.as
+() FormatItem.as
 () PackageLib.as
 () OSLib.as
 () TableLib.as
