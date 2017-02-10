@@ -28,9 +28,9 @@
 //	http://code.google.com/p/jillcode/	
 var Enum = function(t, e) {
     this._t = t;
-    this._i = 0        // = 0
+    this._i = 0;        // = 0
     this._e = null;
-	inci();
+	this.inci();
 };
 
 Enum.prototype.inci = function() {
@@ -39,23 +39,23 @@ Enum.prototype.inci = function() {
     }
 };
 
-Enum.prototype.hasMoreElements() = function() {
+Enum.prototype.hasMoreElements = function() {
     if (this._i < this._t.sizeArray) {
         return true;
     }
     return this._e.hasMoreElements();
-}
+};
 
 Enum.prototype.nextElement = function() {
-    var r:Object;
+    var r;
     if (this._i < this._t.sizeArray) {
         ++this._i;      // array index i corresponds to key i+1
         r = new Number(this._i);
-        inci();
+        this.inci();
     } else {
         r = this._e.nextElement();
     }
     return r;
 };
-    
+
 module.exports = Enum;

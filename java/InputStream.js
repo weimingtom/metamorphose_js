@@ -10,51 +10,51 @@ var InputStream = function() {
 };
 
 InputStream.prototype.readBytes = function(bytes) {
-    throwError("InputStream.readBytes() not implement");	
+    this.throwError("InputStream.readBytes() not implement");	
     return 0;
 };
 
 //从输入流读取下一个数据字节。
 InputStream.prototype.read = function() {
-    throwError("InputStream.readChar() not implement");	
+    this.throwError("InputStream.readChar() not implement");	
     return 0;
 };
 
 InputStream.prototype.reset = function() {
-    throwError("InputStream.reset() not implement");				
+    this.throwError("InputStream.reset() not implement");				
 };
 
 InputStream.prototype.mark = function(i) {
-    throwError("InputStream.mark() not implement");			
+    this.throwError("InputStream.mark() not implement");			
 };
 
 InputStream.prototype.markSupported = function() {
-    throwError("InputStream.markSupported() not implement");	
+    this.throwError("InputStream.markSupported() not implement");	
     return false;
 };
 
 InputStream.prototype.close = function() {
-    throwError("InputStream.close() not implement");			
+    this.throwError("InputStream.close() not implement");			
 };
 
 InputStream.prototype.available = function() {
-    throwError("InputStream.available() not implement");
+    this.throwError("InputStream.available() not implement");
     return 0;
 };
 
 InputStream.prototype.skip = function(n) {
-    throwError("InputStream.skip() not implement");
+    this.throwError("InputStream.skip() not implement");
     return 0;
 };
 
 InputStream.prototype.readMultiBytes = function(bytes,  off, len) {
-    throwError("InputStream.readBytes() not implement");	
+    this.throwError("InputStream.readBytes() not implement");	
     return 0;
 };
 
-InputStream.prototype.throwError (str) {
-    trace(str);
+InputStream.prototype.throwError = function(str) {
+    console.log(str);
     throw new Error(str);
-}
+};
 
 module.exports = InputStream;

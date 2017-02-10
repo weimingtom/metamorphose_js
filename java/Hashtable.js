@@ -1,5 +1,5 @@
 var Hashtable = function(initialCapacity) {
-    if (initialCapacity == undefined) {
+    if (initialCapacity === undefined) {
         initialCapacity = 11;
     }
     //Dictionary支持用Object作为键，而Array会对键进行toString的转换
@@ -10,22 +10,22 @@ Hashtable.prototype.rehash = function() {
 
 };
 
-Hashtable.prototype.keys() {
-    var enum = new HashtableEnum();
+Hashtable.prototype.keys = function() {
+    var enum_ = new HashtableEnum();
     var arr = new Array();
     for (var key in this._dic) {
         arr.push(key);
     }
-    enum.arr = arr;
-    return enum;
+    enum_.arr = arr;
+    return enum_;
 };
 
-Hashtable.prototype._get(key) {
+Hashtable.prototype._get = function(key) {
     return this._dic[key];
 };
 
 Hashtable.prototype.put = function(key, value) {
-    var pre:Object = this._dic[key];
+    var pre = this._dic[key];
     this._dic[key] = value;
     return pre;
 };

@@ -58,20 +58,20 @@ TableLib.SORT = 5;
  */
 TableLib.prototype.luaFunction = function(L) {
     switch (this._which) {
-    case CONCAT:
-        return concat(L);
+    case TableLib.CONCAT:
+        return TableLib.concat(L);
 
-    case INSERT:
-        return insert(L);
+    case TableLib.INSERT:
+        return TableLib.insert(L);
 
-    case MAXN:
-        return maxn(L);
+    case TableLib.MAXN:
+        return TableLib.maxn(L);
 
-    case REMOVE:
-        return remove(L);
+    case TableLib.REMOVE:
+        return TableLib.remove(L);
 
-    case SORT:
-        return sort(L);
+    case TableLib.SORT:
+        return TableLib.sort(L);
     }
     return 0;
 };
@@ -85,11 +85,11 @@ TableLib.prototype.luaFunction = function(L) {
 TableLib.open = function(L) {
     L.__register("table");
 
-    r(L, "concat", CONCAT);
-    r(L, "insert", INSERT);
-    r(L, "maxn", MAXN);
-    r(L, "remove", REMOVE);
-    r(L, "sort", SORT);
+    TableLib.r(L, "concat", TableLib.CONCAT);
+    TableLib.r(L, "insert", TableLib.INSERT);
+    TableLib.r(L, "maxn", TableLib.MAXN);
+    TableLib.r(L, "remove", TableLib.REMOVE);
+    TableLib.r(L, "sort", TableLib.SORT);
 };
 
 /** Register a function. */
@@ -120,7 +120,7 @@ TableLib.concat = function(L) {
 
 /** Implements table.insert. */
 TableLib.insert = function(L) {
-    var e = aux_getn(L, 1) + 1; // first empty element
+    var e = TableLib.aux_getn(L, 1) + 1; // first empty element
     var pos;    // where to insert new element
     var t = L.value(1);
 
@@ -156,9 +156,9 @@ TableLib.maxn = function(L) {
     var t = L.value(1) as LuaTable;
     var e = t.keys();
     while (e.hasMoreElements()) {
-        var o:Object = e.nextElement();
+        var o = e.nextElement();
         if (Lua.____type(o) == Lua.TNUMBER) {
-            var v:Number = L.toNumber(o);
+            var v = L.toNumber(o);
             if (v > max)
             max = v;
         }
@@ -169,7 +169,7 @@ TableLib.maxn = function(L) {
 
 /** Implements table.remove. */
 TableLib.remove = function(L) {
-    var e = aux_getn(L, 1);
+    var e = TableLib.aux_getn(L, 1);
     var pos = L.optInt(2, e);
     if (e == 0)
         return 0;         // table is 'empty'
@@ -185,11 +185,11 @@ TableLib.remove = function(L) {
 
 /** Implements table.sort. */
 TableLib.sort = function(L) {
-    var n = aux_getn(L, 1);
+    var n = TableLib.aux_getn(L, 1);
     if (!L.isNoneOrNil(2))      // is there a 2nd argument?
         L.checkType(2, Lua.TFUNCTION);
     L.setTop(2);        // make sure there is two arguments
-    auxsort(L, 1, n);
+    TableLib.auxsort(L, 1, n);
     return 0;
 };
 
@@ -201,7 +201,7 @@ TableLib.auxsort = function(L, l, u) {
         // sort elements a[l], a[l+u/2], and a[u]
         var o1 = Lua.rawGetI(t, l);
         var o2 = Lua.rawGetI(t, u);
-        if (sort_comp(L, o2, o1))  { // a[u] < a[l]?	
+        if (TableLib.sort_comp(L, o2, o1))  { // a[u] < a[l]?	
             L.rawSetI(t, l, o2);
             L.rawSetI(t, u, o1);
         }
@@ -210,12 +210,12 @@ TableLib.auxsort = function(L, l, u) {
         i = (l+u)/2;
         o1 = Lua.rawGetI(t, i);
         o2 = Lua.rawGetI(t, l);
-        if (sort_comp(L, o1, o2)) { // a[i]<a[l]?
+        if (TableLib.sort_comp(L, o1, o2)) { // a[i]<a[l]?
             L.rawSetI(t, i, o2);
             L.rawSetI(t, l, o1);
         } else {
             o2 = Lua.rawGetI(t, u);
-            if (sort_comp(L, o2, o1)) {      // a[u]<a[i]?
+            if (TableLib.sort_comp(L, o2, o1)) {      // a[u]<a[i]?
                 L.rawSetI(t, i, o2);
                 L.rawSetI(t, u, o1);
             }
@@ -234,7 +234,7 @@ TableLib.auxsort = function(L, l, u) {
             // repeat ++i until a[i] >= P
             while (true) {
                 o1 = Lua.rawGetI(t, ++i);
-                if (!sort_comp(L, o1, p))
+                if (!TableLib.sort_comp(L, o1, p))
                     break;
                 if (i>u)
                     L.error("invalid order function for sorting");
@@ -243,7 +243,7 @@ TableLib.auxsort = function(L, l, u) {
             while (true)
             {
                 o2 = Lua.rawGetI(t, --j);
-                if (!sort_comp(L, p, o2))
+                if (!TableLib.sort_comp(L, p, o2))
                     break;
                 if (j<l)
                     L.error("invalid order function for sorting");
@@ -268,7 +268,7 @@ TableLib.auxsort = function(L, l, u) {
             i = u;
             u = j - 2;
         }
-        auxsort(L, j, i); // call recursively the smaller one
+        TableLib.auxsort(L, j, i); // call recursively the smaller one
     } // repeat the routine for the larger one
 };
 
@@ -290,6 +290,6 @@ TableLib.aux_getn = function(L, n) {
     L.checkType(n, Lua.TTABLE);
     var t = L.value(n);
     return t.getn();
-}
+};
 
 module.exports = TableLib;

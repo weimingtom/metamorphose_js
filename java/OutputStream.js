@@ -12,23 +12,23 @@ var OutputStream = function() {
 };
 		
 OutputStream.prototype.close = function() {
-    throwError("OutputStream.close() not implement");
+    this.throwError("OutputStream.close() not implement");
 };
 
 OutputStream.prototype.flush = function() {
-    throwError("OutputStream.flush() not implement");			
+    this.throwError("OutputStream.flush() not implement");			
 };
 
 OutputStream.prototype.write = function(b) {
-    throwError("OutputStream.write() not implement");
+    this.throwError("OutputStream.write() not implement");
 };
 
 OutputStream.prototype.writeBytes = function(b, off, len) {
-    throwError("OutputStream.writeBytes() not implement");
+    this.throwError("OutputStream.writeBytes() not implement");
 };
 
 OutputStream.prototype.writeChar = function(b) {
-    throwError("OutputStream.writeChar() not implement");				
+    this.throwError("OutputStream.writeChar() not implement");				
 };
 
 OutputStream.prototype.throwError = function(str) {

@@ -32,7 +32,7 @@ var LuaError = function(errorStatus) {
 	this._errorStatus = errorStatus;
 };
 
-LuaError.prototype.getErrorStatus() {
+LuaError.prototype.getErrorStatus = function() {
     return this._errorStatus;
 };
 

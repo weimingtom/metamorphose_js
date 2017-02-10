@@ -68,20 +68,20 @@ OSLib.TIME = 10;
  */
 OSLib.prototype.luaFunction = function(L) {
     switch (this._which) {
-    case CLOCK:
-        return clock(L);
+    case OSLib.CLOCK:
+        return OSLib.clock(L);
 
-    case DATE:
-        return date(L);
+    case OSLib.DATE:
+        return OSLib.date(L);
 
-    case DIFFTIME:
-        return difftime(L);
+    case OSLib.DIFFTIME:
+        return OSLib.difftime(L);
 
-    case SETLOCALE:
-        return setlocale(L);
+    case OSLib.SETLOCALE:
+        return OSLib.setlocale(L);
 
-    case TIME:
-        return time(L);
+    case OSLib.TIME:
+        return OSLib.time(L);
     }
     return 0;
 };
@@ -94,11 +94,11 @@ OSLib.prototype.luaFunction = function(L) {
 OSLib.open = function(L) {
     L.__register("os");
 
-    r(L, "clock", CLOCK);
-    r(L, "date", DATE);
-    r(L, "difftime", DIFFTIME);
-    r(L, "setlocale", SETLOCALE);
-    r(L, "time", TIME);
+    OSLib.r(L, "clock", OSLib.CLOCK);
+    OSLib.r(L, "date", OSLib.DATE);
+    OSLib.r(L, "difftime", OSLib.DIFFTIME);
+    OSLib.r(L, "setlocale", OSLib.SETLOCALE);
+    OSLib.r(L, "time", OSLib.TIME);
 };
 
 /** Register a function. */
@@ -115,7 +115,7 @@ OSLib.T0 = SystemUtil.currentTimeMillis();
  */
 OSLib.clock = function(L) {
     var d = SystemUtil.currentTimeMillis();
-    d = d - T0;
+    d = d - OSLib.T0;
     d /= 1000;
 
     L.pushNumber(d);
@@ -143,24 +143,24 @@ OSLib.date = function(L) {
 
     if (s == "*t") {
         L.pushObject(L.createTable(0, 8));      // 8 = number of fields
-        setfield(L, "sec", c._get(Calendar.SECOND));
-        setfield(L, "min", c._get(Calendar.MINUTE));
-        setfield(L, "hour", c._get(Calendar.HOUR));
-        setfield(L, "day", c._get(Calendar.DAY_OF_MONTH));
-        setfield(L, "month", canonicalmonth(c._get(Calendar.MONTH)));
-        setfield(L, "year", c._get(Calendar.YEAR));
-        setfield(L, "wday", canonicalweekday(c._get(Calendar.DAY_OF_WEEK)));
+        OSLib.setfield(L, "sec", c._get(Calendar.SECOND));
+        OSLib.setfield(L, "min", c._get(Calendar.MINUTE));
+        OSLib.setfield(L, "hour", c._get(Calendar.HOUR));
+        OSLib.setfield(L, "day", c._get(Calendar.DAY_OF_MONTH));
+        OSLib.setfield(L, "month", OSLib.canonicalmonth(c._get(Calendar.MONTH)));
+        OSLib.setfield(L, "year", c._get(Calendar.YEAR));
+        OSLib.setfield(L, "wday", OSLib.canonicalweekday(c._get(Calendar.DAY_OF_WEEK)));
         // yday is not supported because CLDC 1.1 does not provide it.
         // setfield(L, "yday", c.get("???"));
         if (tz.useDaylightTime()) {
             // CLDC 1.1 does not provide any way to determine isdst, so we set
             // it to -1 (which in C means that the information is not
             // available).
-            setfield(L, "isdst", -1);
+            OSLib.setfield(L, "isdst", -1);
         } else {
             // On the other hand if the timezone does not do DST then it
             // can't be in effect.
-            setfield(L, "isdst", 0);
+            OSLib.setfield(L, "isdst", 0);
         }
     } else {
         var b = new StringBuffer();
@@ -183,11 +183,11 @@ OSLib.date = function(L) {
             // The specifiers are from [C1990].
             switch (String.fromCharCode(ch)) {
                 case 'a': case 'A':
-                    b.appendString(weekdayname(c));
+                    b.appendString(OSLib.weekdayname(c));
                     break;
 
                 case 'b': case 'B':
-                    b.appendString(monthname(c));
+                    b.appendString(OSLib.monthname(c));
                     break;
 
                 case 'c':
@@ -195,18 +195,18 @@ OSLib.date = function(L) {
                     break;
 
                 case 'd':
-                    b.appendString(format(c._get(Calendar.DAY_OF_MONTH), 2));
+                    b.appendString(OSLib.format(c._get(Calendar.DAY_OF_MONTH), 2));
                     break;
 
                 case 'H':
-                    b.appendString(format(c._get(Calendar.HOUR), 2));
+                    b.appendString(OSLib.format(c._get(Calendar.HOUR), 2));
                     break;
 
                 case 'I':
                     {
-                        var h:int = c._get(Calendar.HOUR);
+                        var h = c._get(Calendar.HOUR);
                         h = (h + 11) % 12 + 1;  // force into range 1-12
-                        b.appendString(format(h, 2));
+                        b.appendString(OSLib.format(h, 2));
                     }
                     break;
 
@@ -219,28 +219,28 @@ OSLib.date = function(L) {
 
                 case 'm':
                     {
-                        var m:int = canonicalmonth(c._get(Calendar.MONTH));
-                        b.appendString(format(m, 2));
+                        var m = OSLib.canonicalmonth(c._get(Calendar.MONTH));
+                        b.appendString(OSLib.format(m, 2));
                     }
                     break;
 
                 case 'M':
-                    b.appendString(format(c._get(Calendar.MINUTE), 2));
+                    b.appendString(OSLib.format(c._get(Calendar.MINUTE), 2));
                     break;
 
                 case 'p':
                     {
-                        var h2:int = c._get(Calendar.HOUR);
-                        b.appendString(h<12 ? "am" : "pm");
+                        var h2 = c._get(Calendar.HOUR);
+                        b.appendString(h2 < 12 ? "am" : "pm");
                     }
                     break;
 
                 case 'S':
-                    b.appendString(format(c._get(Calendar.SECOND), 2));
+                    b.appendString(OSLib.format(c._get(Calendar.SECOND), 2));
                     break;
 
                 case 'w':
-                    b.append(canonicalweekday(c._get(Calendar.DAY_OF_WEEK)));
+                    b.append(OSLib.canonicalweekday(c._get(Calendar.DAY_OF_WEEK)));
                     break;
 
                 case 'x':
@@ -258,7 +258,7 @@ OSLib.date = function(L) {
                 case 'X':
                     {
                         var u2 = c.getTime().toString();
-                        b.appendString(u.substring(11, u.length - 5));
+                        b.appendString(u2.substring(11, u2.length - 5));
                     }
                     break;
 
@@ -282,13 +282,13 @@ OSLib.date = function(L) {
         L.pushString(b.toString());
     }
     return 1;
-}
+};
 
 /** Implements difftime. */
 OSLib.difftime = function(L) {
     L.pushNumber((L.checkNumber(1) - L.optNumber(2, 0))/1000);
     return 1;
-}
+};
 
 // Incredibly, the spec doesn't give a numeric value and range for
 // Calendar.JANUARY through to Calendar.DECEMBER.
@@ -348,7 +348,7 @@ OSLib.getfield = function(L, key, d) {
     if (d < 0)
         return L.error("field '" + key + "' missing in date table");
     return d;
-}
+};
 
 OSLib.setfield = function(L, key, value) {
     L.setField(L.value(-1), key, Lua.valueOfNumber(value));
@@ -383,7 +383,7 @@ OSLib.monthname = function(c) {
  * @return a month in the range 1-12, or the original value.
  */
 OSLib.canonicalmonth = function(m) {
-    for (var i:int=0; i<MONTH.length; ++i) {
+    for (var i = 0; i < MONTH.length; ++i) {
         if (m == MONTH[i]) {
             return i+1;
         }
@@ -409,8 +409,8 @@ OSLib.WEEKDAY = [
  * @return a weekday in the range 0-6, or the original value.
  */
 OSLib.canonicalweekday = function(w) {
-    for (var i:int = 0; i < WEEKDAY.length; ++i) {
-        if (w == WEEKDAY[i]) {
+    for (var i = 0; i < WEEKDAY.length; ++i) {
+        if (w == OSLib.WEEKDAY[i]) {
             return i;
         }
     }

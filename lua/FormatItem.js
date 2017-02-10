@@ -91,7 +91,7 @@ flag:
         try {
             this._width = int(s.substring(widths, i)); //TODO:
         } catch (e_) {
-            trace(e_.getStackTrace());
+            console.log(e_.getStackTrace());
         }
     }
     // parse precision
@@ -110,7 +110,7 @@ flag:
             try {
                 this._precision = int(s.substring(precisions, i)); //TODO:
             } catch (e_) {
-                trace(e_.getStackTrace());
+                console.log(e_.getStackTrace());
             }
         }
     }
@@ -138,19 +138,19 @@ FormatItem.E_LOWER = 'E'.charCodeAt();
 FormatItem.E_UPPER = 'E'.charCodeAt();
 
 FormatItem.prototype.getLength = function() {
-    return _length;
+    return this._length;
 };
 
 FormatItem.prototype.setLength = function(length) {
-    _length = length;
+    this._length = length;
 };
 
 FormatItem.prototype.getType = function() {
-    return _type;
+    return this._type;
 };
 
 FormatItem.prototype.setType = function(type) {
-    _type = type;
+    this._type = type;
 };
 
 /**
@@ -187,7 +187,7 @@ FormatItem.prototype.format = function(b, s) {
 
 FormatItem.prototype.formatChar = function(b, c) {
     var s = String.fromCharCode(c); //TODO:
-    format(b, s);
+    this.format(b, s);
 };
 
 FormatItem.prototype.formatInteger = function(b, i) {
@@ -258,28 +258,28 @@ FormatItem.prototype.formatInteger = function(b, i) {
         s = p.toString();
     }
     s = prefix + s;
-    format(b, s);
+    this.format(b, s);
 };
 
 FormatItem.prototype.formatFloat = function(b, d) {
     switch (String.fromCharCode(this._type)) {
     case 'g': case 'G':
-        formatFloatG(b, d);
+        this.formatFloatG(b, d);
         return;
 
     case 'f':
-        formatFloatF(b, d);
+        this.formatFloatF(b, d);
         return;
 
     case 'e': case 'E':
-        formatFloatE(b, d);
+        this.formatFloatE(b, d);
         return;
     }
 };
 
-FormatItem.prototype.formatFloatE(b, d) {
-    var s = formatFloatRawE(d);
-    format(b, s);
+FormatItem.prototype.formatFloatE = function(b, d) {
+    var s = this.formatFloatRawE(d);
+    this.format(b, s);
 };
 
 /**
@@ -304,26 +304,26 @@ FormatItem.prototype.formatFloatRawE = function(d) {
         t._delete(ei, int.MAX_VALUE); //TODO:
     }
 
-    precisionTrim(t);
+    this.precisionTrim(t);
 
     e -= offset;
     if (Character.isLowerCase(type)) {
-        t.append(E_LOWER);
+        t.append(FormatItem.E_LOWER);
     } else {
-        t.append(E_UPPER);
+        t.append(FormatItem.E_UPPER);
     }
     if (e >= 0) {
         t.append('+'.charCodeAt());
     }
     t.appendString(String(e)); //TODO:
 
-    zeroPad(t);
+    this.zeroPad(t);
     return t.toString();
-}
+};
 
 FormatItem.prototype.formatFloatF = function(b, d) {
-    var s:String = formatFloatRawF(d);
-    format(b, s);
+    var s = this.formatFloatRawF(d);
+    this.format(b, s);
 };
 
 /**
@@ -355,14 +355,14 @@ FormatItem.prototype.formatFloatRawF = function(d) {
             t.insert(di+e, '.'.charCodeAt());
         } else {
             t.deleteCharAt(di);
-            var at:int = t.charAt(0) == '-'.charCodeAt() ? 1 : 0;
+            var at = t.charAt(0) == '-'.charCodeAt() ? 1 : 0;
             t.insertStringBuffer(at, z);
             t.insert(di, '.'.charCodeAt());
         }
     }
 
-    precisionTrim(t);
-    zeroPad(t);
+    this.precisionTrim(t);
+    this.zeroPad(t);
 
     return t.toString();
 };
@@ -383,11 +383,11 @@ FormatItem.prototype.formatFloatG = function(b, d) {
     } else if (m < 1e-4 || m >= Lua.iNumpow(10, this._precision)) {
         // %e style
         --this._precision;
-        s = formatFloatRawE(d);
+        s = this.formatFloatRawE(d);
         var di = s.indexOf('.');
         if (di >= 0) {
             // Trim trailing zeroes from fractional part
-            var ei:int = s.indexOf('E');
+            var ei = s.indexOf('E');
             if (ei < 0) {
                 ei = s.indexOf('e');
             }
@@ -398,7 +398,7 @@ FormatItem.prototype.formatFloatG = function(b, d) {
             if (s.charAt(i) != '.') {
                 ++i;
             }
-            var a:StringBuffer = new StringBuffer(s);
+            var a = new StringBuffer(s);
             a._delete(i, ei); //TODO:
             s = a.toString();
         }
@@ -418,7 +418,7 @@ FormatItem.prototype.formatFloatG = function(b, d) {
         // Save the required number of significant digits
         var required = this._precision;
         this._precision += 3;
-        s = formatFloatRawF(d);
+        s = this.formatFloatRawF(d);
         var fsd = 0;      // First Significant Digit
         while (s.charAt(fsd) == '0' || s.charAt(fsd) == '.') {
             ++fsd;
@@ -445,16 +445,16 @@ FormatItem.prototype.formatFloatG = function(b, d) {
         }
         s = a2.toString();
     }
-    format(b, s);
+    this.format(b, s);
 };
 
-FormatItem.prototype.formatString(b, s) {
+FormatItem.prototype.formatString = function(b, s) {
     var p = s;
 
     if (this._precision >= 0 && this._precision < s.length) {
         p = s.substring(0, this._precision);
     }
-    format(b, p);
+    this.format(b, p);
 };
 
 FormatItem.prototype.precisionTrim = function(t) {
@@ -462,9 +462,9 @@ FormatItem.prototype.precisionTrim = function(t) {
         this._precision = 6;
     }
 
-    var s:String = t.toString();
-    var di:int = s.indexOf('.');
-    var l:int = t.length();
+    var s = t.toString();
+    var di = s.indexOf('.');
+    var l = t.length();
     if (0 == this._precision) {
         t._delete(di, int.MAX_VALUE); //TODO:
     } else if (l > di + this._precision) {

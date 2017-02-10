@@ -38,6 +38,6 @@ var Hook = function() {
 
 Hook.prototype.luaHook = function(L, ar) {
     return 0;
-}
+};
 
 module.exports = Hook;

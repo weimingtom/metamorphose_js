@@ -10,7 +10,7 @@
  */
 var DataOutputStream = function(writer) {
     this.written = 0;
-    this._writer - writer;
+    this._writer = writer;
 };
 
 DataOutputStream.prototype.flush = function() {
@@ -22,10 +22,10 @@ DataOutputStream.prototype.size = function() {
 };
 
 DataOutputStream.prototype.write = function(b, off, len) {
-    if (off == undefined) {
+    if (off === undefined) {
         off = 0;
     }
-    if (len == undefined) {
+    if (len === undefined) {
         len = 0;
     }
     var bytes = new ByteArray();
@@ -79,7 +79,7 @@ DataOutputStream.prototype.writeChars = function(s) {
 };
 
 DataOutputStream.prototype.writeDouble = function(v) {
-    var bytes:ByteArray = new ByteArray();
+    var bytes = new ByteArray();
     bytes.writeDouble(v);
     this._writer.write(bytes);
     this.written += bytes.length;
@@ -108,7 +108,7 @@ DataOutputStream.prototype.writeLong = function(v) {
 };
 
 DataOutputStream.prototype.writeShort = function(v) {
-    var bytes:ByteArray = new ByteArray();
+    var bytes = new ByteArray();
     bytes.writeShort(v);
     this._writer.write(bytes);
     this.written += bytes.length;

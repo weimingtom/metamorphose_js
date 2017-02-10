@@ -54,12 +54,10 @@
  * @throws IllegalArgumentsException if upval.length is wrong.
  */
 var LuaFunction = function(proto, upval, env) {
-    if (null == proto || null == upval || null == env)
-    {
+    if (null == proto || null == upval || null == env) {
         throw new NullPointerException();
     }
-    if (upval.length != proto.nups)
-    {
+    if (upval.length != proto.nups) {
         throw new IllegalArgumentException();
     }
     this._p = proto;
@@ -70,16 +68,16 @@ var LuaFunction = function(proto, upval, env) {
 /** Get nth UpVal. */
 LuaFunction.prototype.upVal = function(n) {
     return this._upval[n];
-}
+};
 
 /** Get the Proto object. */
 LuaFunction.prototype.getProto = function() {
     return this._p;
-}
+};
 
 /** Getter for environment. */
 LuaFunction.prototype.getEnv = function() {
-    return _env;
+    return this._env;
 };
 
 /** Setter for environment. */

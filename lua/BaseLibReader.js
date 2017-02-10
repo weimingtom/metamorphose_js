@@ -82,7 +82,7 @@ BaseLibReader.prototype.read = function() {
 BaseLibReader.prototype.readMultiBytes = function(cbuf, off, len) {
     var j = 0;  // loop index required after loop
     for (j = 0; j < len; ++j) {
-        var c = read();
+        var c = this.read();
         if (c == -1) {
             if (j == 0) {
                 return -1;
@@ -95,7 +95,7 @@ BaseLibReader.prototype.readMultiBytes = function(cbuf, off, len) {
     return j;
 };
 
-BaseLibReader.prototype.reset() {
+BaseLibReader.prototype.reset = function() {
     if (this._mark < 0) {
         throw new IOException("reset() not supported now");
     }

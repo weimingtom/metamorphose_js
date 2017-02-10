@@ -50,21 +50,21 @@ CallInfo.prototype.init = function(func, base, top, nresults) {
 };
 
 /** Setter for savedpc. */
-CallInfo.prototype.setSavedpc(pc) {
-    _savedpc = pc;
+CallInfo.prototype.setSavedpc = function(pc) {
+    this._savedpc = pc;
 };
 
 /** Getter for savedpc. */
-CallInfo.prototype.getSavedpc() {
-    return _savedpc;
-}
+CallInfo.prototype.getSavedpc = function() {
+    return this._savedpc;
+};
 
 /**
  * Get the stack index for the function object for this record.
  */
-CallInfo.prototype.getFunc() {
+CallInfo.prototype.getFunc = function() {
     return this._func;
-}
+};
 
 /**
  * Get stack index where results should end up.  This is an absolute
@@ -79,7 +79,7 @@ CallInfo.prototype.res = function() {
  * Get stack base for this record.
  */
 CallInfo.prototype.getBase = function() {
-    return _base;
+    return this._base;
 };
 
 /**
@@ -87,7 +87,7 @@ CallInfo.prototype.getBase = function() {
  * in the stack (or will be when the function is resumed).
  */
 CallInfo.prototype.getTop = function() {
-    return _top;
+    return this._top;
 };
 
 /**
@@ -102,14 +102,14 @@ CallInfo.prototype.setTop = function(top) {
  * Used to adjust the returned results to the correct number.
  */
 CallInfo.prototype.getNresults = function() {
-    return _nresults;
+    return this._nresults;
 };
 
 /**
  * Get number of tailcalls
  */
 CallInfo.prototype.getTailcalls = function() {
-    return _tailcalls;
+    return this._tailcalls;
 };
 
 /**
@@ -118,7 +118,7 @@ CallInfo.prototype.getTailcalls = function() {
 CallInfo.prototype.tailcall = function(baseArg, topArg) {
     this._base = baseArg;
     this._top = topArg;
-    ++_tailcalls;
+    ++this._tailcalls;
 };
 
 module.exports = CallInfo;

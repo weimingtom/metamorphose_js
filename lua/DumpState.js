@@ -62,35 +62,35 @@ DumpState.prototype.DumpNumber = function(d) {
 
 // throws IOException
 DumpState.prototype.DumpFunction = function(f, p) {
-    DumpString((f.source == p || this._strip) ? null : f.source);
-    DumpInt(f.linedefined);
-    DumpInt(f.lastlinedefined);
+    this.DumpString((f.source == p || this._strip) ? null : f.source);
+    this.DumpInt(f.linedefined);
+    this.DumpInt(f.lastlinedefined);
     this._writer.writeByte(f.nups);
     this._writer.writeByte(f.numparams);
     this._writer.writeBoolean(f.isVararg);
     this._writer.writeByte(f.maxstacksize);
-    DumpCode(f);
-    DumpConstants(f);
-    DumpDebug(f);
+    this.DumpCode(f);
+    this.DumpConstants(f);
+    this.DumpDebug(f);
 };
 
 // throws IOException
 DumpState.prototype.DumpCode = function(f) {
     var n = f.sizecode;
     var code = f.code; //int [] 
-    DumpInt(n);
+    this.DumpInt(n);
     for (var i = 0; i < n; i++) {
-        DumpInt(code[i]);
+        this.DumpInt(code[i]);
     }
 };
 
 // throws IOException
 DumpState.prototype.DumpConstants = function(f) {
-    var n:int = f.sizek;
-    var k:Array = f.k; //Slot[]
-    DumpInt(n);
-    for (var i:int = 0 ; i < n ; i++) {
-        var o:Object = k[i].r;
+    var n = f.sizek;
+    var k = f.k; //Slot[]
+    this.DumpInt(n);
+    for (var i = 0 ; i < n ; i++) {
+        var o = k[i].r;
         if (o == Lua.NIL) {
             this._writer.writeByte(Lua.TNIL);
         } else if (o is Boolean) {
@@ -98,26 +98,26 @@ DumpState.prototype.DumpConstants = function(f) {
             this._writer.writeBoolean(o as Boolean);
         } else if (o == Lua.NUMBER) {
             this._writer.writeByte(Lua.TNUMBER);
-            DumpNumber(k[i].d);
+            this.DumpNumber(k[i].d);
         } else if (o is String) {
             this._writer.writeByte(Lua.TSTRING);
-            DumpString(o as String);
+            this.DumpString(o as String);
         } else {
             //# assert false
         }
     }
     n = f.sizep;
-    DumpInt(n);
+    this.DumpInt(n);
     for (i = 0 ; i < n ; i++) {
         var subfunc = f.p[i];
-        DumpFunction(subfunc, f.source);
+        this.DumpFunction(subfunc, f.source);
     }
-}
+};
 
 // throws IOException
 DumpState.prototype.DumpString = function(s) {
     if (s == null) {
-        DumpInt(0);
+        this.DumpInt(0);
     } else {
         /*
          * Strings are dumped by converting to UTF-8 encoding.  The MIDP
@@ -130,7 +130,7 @@ DumpState.prototype.DumpString = function(s) {
         var contents = new ByteArray();// s.getBytes("UTF-8"); //byte []
         contents.writeUTFBytes(s);
         var size = contents.length;
-        DumpInt(size+1);
+        this.DumpInt(size+1);
         this._writer.write(contents, 0, size);
         this._writer.writeByte(0);
     }
@@ -139,28 +139,28 @@ DumpState.prototype.DumpString = function(s) {
 // throws IOException
 DumpState.prototype.DumpDebug = function(f) {
     if (this._strip) {
-        DumpInt(0);
-        DumpInt(0);
-        DumpInt(0);
+        this.DumpInt(0);
+        this.DumpInt(0);
+        this.DumpInt(0);
         return;
     }
     var n = f.sizelineinfo;
-    DumpInt(n);
-    for (var i:int = 0; i < n; i++) {
-        DumpInt(f.lineinfo[i]);
+    this.DumpInt(n);
+    for (var i = 0; i < n; i++) {
+        this.DumpInt(f.lineinfo[i]);
     }
     n = f.sizelocvars;
-    DumpInt(n);
+    this.DumpInt(n);
     for (i = 0; i < n; i++) {
         var locvar = f.locvars[i];
-        DumpString(locvar.varname);
-        DumpInt(locvar.startpc);
-        DumpInt(locvar.endpc);
+        this.DumpString(locvar.varname);
+        this.DumpInt(locvar.startpc);
+        this.DumpInt(locvar.endpc);
     }
     n = f.sizeupvalues;
-    DumpInt(n);
+    this.DumpInt(n);
     for (i = 0; i < n; i++) {
-        DumpString(f.upvalues[i]);
+        this.DumpString(f.upvalues[i]);
     }
 };
 

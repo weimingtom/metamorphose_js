@@ -34,7 +34,7 @@ var LHSAssign = function() {
 	this._v = new Expdesc();
 };
 		
-LHSAssign.prototype.init = function() {
+LHSAssign.prototype.init = function(prev) {
     this._prev = prev ;
 };
 
@@ -44,12 +44,12 @@ LHSAssign.prototype.getPrev = function() {
 };
 
 //新增
-LHSAssign.prototype.setPrev(prev) {
+LHSAssign.prototype.setPrev = function(prev) {
     this._prev = prev;
 };
 
 //新增
-LHSAssign.prototype.getV() {
+LHSAssign.prototype.getV = function() {
     return this._v;
 };
 

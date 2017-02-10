@@ -9,12 +9,12 @@ HashtableEnum.prototype.hasMoreElements = function() {
     return this._idx < this._len;
 };
 
-HashtableEnum.prototype.nextElement() {
+HashtableEnum.prototype.nextElement = function() {
     return this._arr[this._idx++];
 };
 
 //注意：仅暴露给Hashtable使用的方法
-HashtableEnum.prototype.setArr(arr) {
+HashtableEnum.prototype.setArr = function(arr) {
     if (arr != null) {
         this._arr = arr;
         this._idx = 0;

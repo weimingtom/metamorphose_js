@@ -35,7 +35,7 @@
 /**
  * @param ici  index of CallInfo record in L.civ
  */
-var Debug = function(ici) 	
+var Debug = function(ici) {
     // private, no public accessors defined.
     this._ici = ici;
 
@@ -57,7 +57,7 @@ Debug.prototype.setIci = function(ici) {
  * Get ici, index of the {@link CallInfo} record.
  */
 Debug.prototype.getIci = function() {
-    return _ici;
+    return this._ici;
 };
 
 /**
@@ -86,7 +86,7 @@ Debug.prototype.setSource = function(source) {
  * Gets the current line.  May become public.
  */
 Debug.prototype.getCurrentline = function() {
-    return _currentline;
+    return this._currentline;
 };
 
 /**
@@ -122,5 +122,7 @@ Debug.prototype.setLastlinedefined = function(lastlinedefined) {
  * May become public.
  */
 Debug.prototype.getShortsrc = function() {
-    return _shortsrc;
+    return this._shortsrc;
 };
+
+module.exports = Debug;

@@ -84,7 +84,7 @@ UpVal.prototype.getOffset = function() {
 UpVal.prototype.close = function() {
     this._s = new Slot();
     this._s.init1(this._s); //TODO:
-    _offset = -1;
+    this._offset = -1;
 };
 
 module.exports = UpVal;

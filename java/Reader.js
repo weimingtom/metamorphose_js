@@ -9,50 +9,50 @@ var Reader = function() {
 };
 
 Reader.prototype.close = function() {
-    throwError("Reader.close() not implement");				
-}
+    this.throwError("Reader.close() not implement");				
+};
 
 Reader.prototype.mark = function(readAheadLimit) {
-    throwError("Reader.mark() not implement");			
+    this.throwError("Reader.mark() not implement");			
 };
 
 Reader.prototype.markSupported = function() {
-    throwError("Reader.markSupported() not implement");
+    this.throwError("Reader.markSupported() not implement");
     return false;
 };
 
 Reader.prototype.read = function() {
-    throwError("Reader.read() not implement");
+    this.throwError("Reader.read() not implement");
     return 0;
 };
 
 Reader.prototype.readBytes = function(cbuf/*char[]*/) {
-    throwError("Reader.readBytes() not implement");
+    this.throwError("Reader.readBytes() not implement");
     return 0;
 };
 
 Reader.prototype.readMultiBytes = function(cbuf/*char[] */, off, len) {
-    throwError("Reader.readMultiBytes() not implement");
+    this.throwError("Reader.readMultiBytes() not implement");
     return 0;
 };
 
 Reader.prototype.ready = function() {
-    throwError("Reader.ready() not implement");
+    this.throwError("Reader.ready() not implement");
     return false;
 };
 
 Reader.prototype.reset = function() {
-    throwError("Reader.reset() not implement");			
+    this.throwError("Reader.reset() not implement");			
 };
 
 Reader.prototype.skip = function(n){
-    throwError("Reader.skip() not implement");
+    this.throwError("Reader.skip() not implement");
     return 0;
 };
 
 //新增
 Reader.prototype.throwError = function(str) {
-    trace(str);
+    console.log(str);
     throw new Error(str);
 };
 

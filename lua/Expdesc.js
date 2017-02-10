@@ -28,32 +28,32 @@
 //	http://code.google.com/p/jillcode/	
 
 /** Equivalent to struct expdesc. */
-var Expdesc = function {
+var Expdesc = function() {
     this._k = 0; // one of V* enums above
     this._info = 0;
-    this._aux: = 0;
+    this._aux = 0;
     this._nval = 0.0;
     this._t = 0;
     this._f = 0;
 };
 
-Expdesc.prototype.VVOID = 0;           // no value
-Expdesc.prototype.VNIL = 1;
-Expdesc.prototype.VTRUE = 2;
-Expdesc.prototype.VFALSE = 3;
-Expdesc.prototype.VK = 4;              // info = index into 'k'
-Expdesc.prototype.VKNUM = 5;           // nval = numerical value
-Expdesc.prototype.VLOCAL = 6;          // info = local register
-Expdesc.prototype.VUPVAL = 7;          // info = index into 'upvalues'
-Expdesc.prototype.VGLOBAL = 8;         // info = index of table;
+Expdesc.VVOID = 0;           // no value
+Expdesc.VNIL = 1;
+Expdesc.VTRUE = 2;
+Expdesc.VFALSE = 3;
+Expdesc.VK = 4;              // info = index into 'k'
+Expdesc.VKNUM = 5;           // nval = numerical value
+Expdesc.VLOCAL = 6;          // info = local register
+Expdesc.VUPVAL = 7;          // info = index into 'upvalues'
+Expdesc.VGLOBAL = 8;         // info = index of table;
                                          // aux = index of global name in 'k'
-Expdesc.prototype.VINDEXED = 9;        // info = table register
+Expdesc.VINDEXED = 9;        // info = table register
                                          // aux = index register (or 'k')
-Expdesc.prototype.VJMP = 10;           // info = instruction pc
-Expdesc.prototype.VRELOCABLE = 11;     // info = instruction pc
-Expdesc.prototype.VNONRELOC = 12;      // info = result register
-Expdesc.prototype.VCALL = 13;          // info = instruction pc
-Expdesc.prototype.VVARARG = 14;        // info = instruction pc
+Expdesc.VJMP = 10;           // info = instruction pc
+Expdesc.VRELOCABLE = 11;     // info = instruction pc
+Expdesc.VNONRELOC = 12;      // info = result register
+Expdesc.VCALL = 13;          // info = instruction pc
+Expdesc.VVARARG = 14;        // info = instruction pc
 
 //public function Expdesc(k:int, i:int):void
 //{
@@ -76,7 +76,7 @@ Expdesc.prototype.copy = function(e) {
     this._nval = e._nval;
     this._t = e._t;
     this._f = e._f;
-}
+};
 
 Expdesc.prototype.getKind = function(){
     return this._k;
@@ -88,7 +88,7 @@ Expdesc.prototype.setKind = function(kind) {
 
 Expdesc.prototype.getK = function() {
     return this._k;
-}
+};
 
 Expdesc.prototype.setK = function(kind) {
     this._k = kind;
@@ -96,7 +96,7 @@ Expdesc.prototype.setK = function(kind) {
 
 Expdesc.prototype.getInfo = function() {
     return this._info;
-}
+};
 
 Expdesc.prototype.setInfo = function(i) {
     this._info = i;
@@ -106,21 +106,21 @@ Expdesc.prototype.getAux = function() {
     return this._aux;
 };
 
-public function setAux = function(aux) {
+Expdesc.prototype.setAux = function(aux) {
     this._aux = aux;
 };
 
-public function getNval = function() {
+Expdesc.prototype.getNval = function() {
     return this._nval;
 };
 
-public function setNval = function(d) {
+Expdesc.prototype.setNval = function(d) {
     this._nval = d;
 };
 
 /** Equivalent to hasmultret from lparser.c */
 Expdesc.prototype.hasmultret = function() {
-    return this._k == VCALL || this._k == VVARARG;
+    return this._k == Expdesc.VCALL || this._k == Expdesc.VVARARG;
 };
 
 /** Equivalent to hasjumps from lcode.c. */

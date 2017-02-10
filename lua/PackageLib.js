@@ -33,7 +33,7 @@
  * can be opened using the {@link #open} method.
  */
 var PackageLib = function(which, me) {
-    if (me == undefined) {
+    if (me === undefined) {
         me = null;
     }
     /**
@@ -77,20 +77,20 @@ PackageLib.LOADER_LUA = 5;
 */
 PackageLib.prototype.luaFunction = function(L) {
     switch (this._which) {
-    case MODULE:
-        return module(L);
+    case PackageLib.MODULE:
+        return PackageLib.module(L);
 
-    case REQUIRE:
-        return require(L);
+    case PackageLib.REQUIRE:
+        return PackageLib.require(L);
 
-    case SEEALL:
-        return seeall(L);
+    case PackageLib.SEEALL:
+        return PackageLib.seeall(L);
 
-    case LOADER_LUA:
-        return loaderLua(L);
+    case PackageLib.LOADER_LUA:
+        return PackageLib.loaderLua(L);
 
-    case LOADER_PRELOAD:
-        return loaderPreload(L);
+    case PackageLib.LOADER_PRELOAD:
+        return PackageLib.loaderPreload(L);
     }
     return 0;
 };
@@ -103,15 +103,15 @@ PackageLib.prototype.luaFunction = function(L) {
 PackageLib.open = function(L) {
     var t = L.__register("package");
 
-    g(L, t, "module", MODULE);
-    g(L, t, "require", REQUIRE);
+    PackageLib.g(L, t, "module", PackageLib.MODULE);
+    PackageLib.g(L, t, "require", PackageLib.REQUIRE);
 
-    r(L, "seeall", SEEALL);
+    PackageLib.r(L, "seeall", PackageLib.SEEALL);
 
     L.setField(t, "loaders", L.newTable());
-    p(L, t, LOADER_PRELOAD);
-    p(L, t, LOADER_LUA);
-    setpath(L, t, "path", PATH_DEFAULT);        // set field 'path'
+    PackageLib.p(L, t, PackageLib.LOADER_PRELOAD);
+    PackageLib.p(L, t, PackageLib.LOADER_LUA);
+    PackageLib.setpath(L, t, "path", PackageLib.PATH_DEFAULT);        // set field 'path'
 
     // set field 'loaded'
     L.findTable(L.getRegistry(), Lua.LOADED, 1);
@@ -121,10 +121,10 @@ PackageLib.open = function(L) {
 };
 
 /** Register a function. */
-PackageLib.r(L, name, which) {
+PackageLib.r = function(L, name, which) {
     var f = new PackageLib(which);
     L.setField(L.getGlobal("package"), name, f);
-}
+};
 
 /** Register a function in the global table. */
 PackageLib.g = function(L, t, name, which) {
@@ -133,7 +133,7 @@ PackageLib.g = function(L, t, name, which) {
 };
 
 /** Register a loader in package.loaders. */
-PackageLib.p(L, t, which) {
+PackageLib.p = function(L, t, which) {
     var f = new PackageLib(which, t);
     var loaders = L.getField(t, "loaders");
     L.rawSetI(loaders, Lua.objLen(loaders)+1, f);
@@ -166,13 +166,13 @@ PackageLib.prototype.loaderPreload = function(L) {
  * Implements the lua loader.  This is conventionally stored second in
  * the package.loaders table.
  */
-PackageLib.prototype.loaderLua(L) {
+PackageLib.prototype.loaderLua = function(L) {
     var name = L.checkString(1);
-    var filename = findfile(L, name, "path");
+    var filename = this.findfile(L, name, "path");
     if (filename == null)
         return 1; // library not found in this path
     if (L.loadFile(filename) != 0)
-        loaderror(L, filename);
+        PackageLib.loaderror(L, filename);
     return 1;   // library loaded successfully
 };
 
@@ -192,10 +192,10 @@ PackageLib.prototype.module = function(L) {
     }
     // check whether table already has a _NAME field
     if (Lua.isNil(L.getField(module, "_NAME"))) {
-        modinit(L, module, modname);
+        PackageLib.modinit(L, module, modname);
     }
-    setfenv(L, module);
-    dooptions(L, module, L.getTop());
+    PackageLib.setfenv(L, module);
+    PackageLib.dooptions(L, module, L.getTop());
     return 0;
 };
 
@@ -209,7 +209,7 @@ PackageLib.prototype.require = function(L) {
     var loaded = L.getField(this._me, "loaded");
     var module = L.getField(loaded, name);
     if (L.toBoolean(module)) {   // is it there?
-        if (module == SENTINEL)   // check loops
+        if (module == PackageLib.SENTINEL)   // check loops
             L.error("loop or previous error loading module '" + name + "'");
         L.pushObject(module);
         return 1;
@@ -234,7 +234,7 @@ PackageLib.prototype.require = function(L) {
         else
             L.pop(1);
     }
-    L.setField(loaded, name, SENTINEL); // package.loaded[name] = sentinel
+    L.setField(loaded, name, PackageLib.SENTINEL); // package.loaded[name] = sentinel
     L.pushString(name); // pass name as argument to module
     L.call(1, 1);       // run loaded module
     if (!Lua.isNil(L.value(-1))) { // non-nil return?
@@ -242,7 +242,7 @@ PackageLib.prototype.require = function(L) {
         L.setField(loaded, name, L.value(-1));
     }
     module = L.getField(loaded, name);
-    if (module == SENTINEL) { // module did not set a value?
+    if (module == PackageLib.SENTINEL) { // module did not set a value?
         module = Lua.valueOfBoolean(true);  // use true as result
         L.setField(loaded, name, module); // package.loaded[name] = true
     }
@@ -278,7 +278,7 @@ PackageLib.setfenv = function(L, module) {
  * use of passing it on the stack.
  */
 PackageLib.dooptions = function(L, module, n) {
-    for (var i:int = 2; i <= n; ++i) {
+    for (var i = 2; i <= n; ++i) {
         L.pushValue(i);   // get option (a function)
         L.pushObject(module);
         L.call(1, 0);
@@ -306,13 +306,13 @@ PackageLib.loaderror = function(L, filename) {
 };
 
 PackageLib.readable = function(filename) {
-    var f:InputStream = SystemUtil.getResourceAsStream(filename);
+    var f = SystemUtil.getResourceAsStream(filename);
     if (f == null)
         return false;
     try {
         f.close();
     } catch (e_) {
-        trace(e_.getStackTrace());
+        console.log(e_.getStackTrace());
     }
     return true;
 };
@@ -320,11 +320,11 @@ PackageLib.readable = function(filename) {
 PackageLib.pushnexttemplate = function(L, path) {
     var i = 0;
     // skip seperators
-    while (i < path.length && path.substr(i, 1) == PATHSEP) //TODO:
+    while (i < path.length && path.substr(i, 1) == PackageLib.PATHSEP) //TODO:
         ++i;
     if (i == path.length)
         return null;      // no more templates
-    var l = path.indexOf(PATHSEP, i);
+    var l = path.indexOf(PackageLib.PATHSEP, i);
     if (l < 0)
         l = path.length;
     L.pushString(path.substring(i, l)); // template
@@ -332,17 +332,17 @@ PackageLib.pushnexttemplate = function(L, path) {
 };
 
 PackageLib.prototype.findfile = function(L, name, pname) {
-    name = gsub(name, ".", DIRSEP);
+    name = PackageLib.gsub(name, ".", PackageLib.DIRSEP);
     var path = L.toString(L.getField(this._me, pname));
     if (path == null)
         L.error("'package." + pname + "' must be a string");
     L.pushString("");   // error accumulator
     while (true) {
-        path = pushnexttemplate(L, path);
+        path = PackageLib.pushnexttemplate(L, path);
         if (path == null)
             break;
-        var filename = gsub(L.toString(L.value(-1)), PATH_MARK, name);
-        if (readable(filename))   // does file exist and is readable?
+        var filename = PackageLib.gsub(L.toString(L.value(-1)), PackageLib.PATH_MARK, name);
+        if (PackageLib.readable(filename))   // does file exist and is readable?
             return filename;        // return that file name
         L.pop(1); // remove path template
         L.pushString("\n\tno file '" + filename + "'");
@@ -352,7 +352,7 @@ PackageLib.prototype.findfile = function(L, name, pname) {
 };
 
 /** Almost equivalent to luaL_gsub. */
-PackageLib.gsub(s, p, r) {
+PackageLib.gsub = function(s, p, r) {
     var b = new StringBuffer();
     // instead of incrementing the char *s, we use the index i
     var i = 0;

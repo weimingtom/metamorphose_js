@@ -31,7 +31,7 @@ Stack.prototype.lastElement = function() {
     return null;
 };
 
-Stack.prototype.getSze() {
+Stack.prototype.getSize = function() {
     return this._arr.length;
 };
 
@@ -42,7 +42,7 @@ Stack.prototype.getSze() {
  * 则丢弃索引 newSize 处及其之后的所有项。
  */
 //TODO:
-Stack.prototype.setSize(size) {
+Stack.prototype.setSize = function(size) {
     var i;
     var len = this._arr.length;
     if (size >= 0) {
@@ -60,7 +60,7 @@ Stack.prototype.setSize(size) {
 };
 
 Stack.prototype.pop = function() {
-    var obj:Object = this._arr.pop();
+    var obj = this._arr.pop();
     return obj;
 };
 

@@ -44,6 +44,6 @@
 var luaFunction = function(L) {
     throw new Error("abstract class error");
     return 0;
-}
+};
 
 module.exports = luaFunction;

@@ -3,6 +3,15 @@
 // which is unique within this class.  They are taken from the following
 // set.
 
+/** Constructs instance, filling in the 'which' member. */
+var MathLib = function(which) {
+    /**
+    * Which library function this object represents.  This value should
+    * be one of the "enums" defined in the class.
+    */
+    this._which = which;
+};
+
 MathLib.ABS = 1;
 //private static const acos:int = 2;
 //private static const asin:int = 3;
@@ -33,15 +42,6 @@ MathLib.TAN = 27;
 
 MathLib._rng = new Random();
 
-/** Constructs instance, filling in the 'which' member. */
-MathLib = function(which) {
-    /**
-    * Which library function this object represents.  This value should
-    * be one of the "enums" defined in the class.
-    */
-    this._which = which;
-};
-
 /**
  * Implements all of the functions in the Lua math library.  Do not
  * call directly.
@@ -50,59 +50,59 @@ MathLib = function(which) {
  */
 MathLib.prototype.luaFunction = function(L) {
     switch (this._which) {
-    case ABS:
-        return abs(L);
+    case MathLib.ABS:
+        return MathLib.abs(L);
 
-    case CEIL:
-        return ceil(L);
+    case MathLib.CEIL:
+        return MathLib.ceil(L);
 
-    case COS:
-        return cos(L);
+    case MathLib.COS:
+        return MathLib.cos(L);
 
-    case DEG:
-        return deg(L);
+    case MathLib.DEG:
+        return MathLib.deg(L);
 
-    case EXP:
-        return exp(L);
+    case MathLib.EXP:
+        return MathLib.exp(L);
 
-    case FLOOR:
-        return floor(L);
+    case MathLib.FLOOR:
+        return MathLib.floor(L);
 
-    case FMOD:
-        return fmod(L);
+    case MathLib.FMOD:
+        return MathLib.fmod(L);
 
-    case MAX:
-        return max(L);
+    case MathLib.MAX:
+        return MathLib.max(L);
 
-    case MIN:
-        return min(L);
+    case MathLib.MIN:
+        return MathLib.min(L);
 
-    case MODF:
-        return modf(L);
+    case MathLib.MODF:
+        return MathLib.modf(L);
 
-    case POW:
-        return pow(L);
+    case MathLib.POW:
+        return MathLib.pow(L);
 
-    case RAD:
-        return rad(L);
+    case MathLib.RAD:
+        return MathLib.rad(L);
 
-    case RANDOM:
-        return random(L);
+    case MathLib.RANDOM:
+        return MathLib.random(L);
 
-    case RANDOMSEED:
-        return randomseed(L);
+    case MathLib.RANDOMSEED:
+        return MathLib.randomseed(L);
 
-    case SIN:
-        return sin(L);
+    case MathLib.SIN:
+        return MathLib.sin(L);
 
-    case SQRT:
-        return sqrt(L);
+    case MathLib.SQRT:
+        return MathLib.sqrt(L);
 
-    case TAN:
-        return tan(L);
+    case MathLib.TAN:
+        return MathLib.tan(L);
     }
     return 0;
-}
+};
 
 /**
  * Opens the library into the given Lua state.  This registers
@@ -112,23 +112,23 @@ MathLib.prototype.luaFunction = function(L) {
 MathLib.open = function(L) {
     var t = L.__register("math");
 
-    r(L, "abs", ABS);
-    r(L, "ceil", CEIL);
-    r(L, "cos", COS);
-    r(L, "deg", DEG);
-    r(L, "exp", EXP);
-    r(L, "floor", FLOOR);
-    r(L, "fmod", FMOD);
-    r(L, "max", MAX);
-    r(L, "min", MIN);
-    r(L, "modf", MODF);
-    r(L, "pow", POW);
-    r(L, "rad", RAD);
-    r(L, "random", RANDOM);
-    r(L, "randomseed", RANDOMSEED);
-    r(L, "sin", SIN);
-    r(L, "sqrt", SQRT);
-    r(L, "tan", TAN);
+    MathLib.r(L, "abs", MathLib.ABS);
+    MathLib.r(L, "ceil", MathLib.CEIL);
+    MathLib.r(L, "cos", MathLib.COS);
+    MathLib.r(L, "deg", MathLib.DEG);
+    MathLib.r(L, "exp", MathLib.EXP);
+    MathLib.r(L, "floor", MathLib.FLOOR);
+    MathLib.r(L, "fmod", MathLib.FMOD);
+    MathLib.r(L, "max", MathLib.MAX);
+    MathLib.r(L, "min", MathLib.MIN);
+    MathLib.r(L, "modf", MathLib.MODF);
+    MathLib.r(L, "pow", MathLib.POW);
+    MathLib.r(L, "rad", MathLib.RAD);
+    MathLib.r(L, "random", MathLib.RANDOM);
+    MathLib.r(L, "randomseed", MathLib.RANDOMSEED);
+    MathLib.r(L, "sin", MathLib.SIN);
+    MathLib.r(L, "sqrt", MathLib.SQRT);
+    MathLib.r(L, "tan", MathLib.TAN);
 
     L.setField(t, "pi", Lua.valueOfNumber(Math.PI));
     L.setField(t, "huge", Lua.valueOfNumber(Number.POSITIVE_INFINITY));
@@ -138,7 +138,7 @@ MathLib.open = function(L) {
 MathLib.r = function(L, name, which) {
     var f = new MathLib(which);
     L.setField(L.getGlobal("math"), name, f);
-}
+};
 
 MathLib.abs = function(L) {
     L.pushNumber(Math.abs(L.checkNumber(1)));

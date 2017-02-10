@@ -71,7 +71,7 @@ LuaUserdata.prototype.getMetatable = function() {
  * Setter for metatable.
  * @param metatable The metatable.
  */
-LuaUserdata.prototype.setMetatable(metatable) {
+LuaUserdata.prototype.setMetatable = function(metatable) {
     this._metatable = metatable;
 };
 

@@ -1,9 +1,9 @@
-var OutOfMemoryError = funcion(str) {
-    if (str == undefined) {
+var OutOfMemoryError = function(str) {
+    if (str === undefined) {
         str = "";
     }
 	this.message = str;
-}
+};
 
 OutOfMemoryError.prototype = new Error();
 

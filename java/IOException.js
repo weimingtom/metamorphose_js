@@ -1,9 +1,9 @@
-var IOException = funcion(str) {
-    if (str == undefined) {
+var IOException = function(str) {
+    if (str === undefined) {
         str = "";
     }
 	this.message = str;
-}
+};
 
 IOException.prototype = new Error();
 

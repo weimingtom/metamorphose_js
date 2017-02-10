@@ -33,28 +33,28 @@ Calendar.DECEMBER = 26;
 
 Calendar._instance = new Calendar();
 
-Calendar.prototype._get(field) {
+Calendar.prototype._get = function(field) {
     switch(field) {
-    case SECOND:
+    case Calendar.SECOND:
         return this._date.seconds;
 
-    case MINUTE:
+    case Calendar.MINUTE:
         return this._date.minutes;
 
-    case HOUR:
+    case Calendar.HOUR:
         return this._date.hours;
 
-    case MONTH:
+    case Calendar.MONTH:
         return this._date.month;
 
-    case YEAR:
+    case Calendar.YEAR:
         return this._date.fullYear;
 
-    case DAY_OF_WEEK:
-        trace("DAY_OF_WEEK not implement");
+    case Calendar.DAY_OF_WEEK:
+        console.log("DAY_OF_WEEK not implement");
         return 0;
 
-    case DAY_OF_MONTH:
+    case Calendar.DAY_OF_MONTH:
         return this._date.day;
     }
 
@@ -62,40 +62,40 @@ Calendar.prototype._get(field) {
     return 0;
 };
 
-Calendar.prototype._set(field, value) {
+Calendar.prototype._set = function(field, value) {
     switch (field) {
-    case SECOND:
+    case Calendar.SECOND:
         this._date.seconds = value;
         return;
 
-    case MINUTE:
+    case Calendar.MINUTE:
         this._date.minutes = value;
         return;
 
-    case HOUR:
+    case Calendar.HOUR:
         this._date.hours = value;
         return;
 
-    case MONTH:
+    case Calendar.MONTH:
         this._date.month = value;
         return;
 
-    case YEAR:
+    case Calendar.YEAR:
         this._date.fullYear = value;
         return;
     }
     console.log("Calendar._set(): field not implement");
 };
 
-Calendar.prototype.getInstance(t) {
+Calendar.prototype.getInstance = function(t) {
     return Calendar._instance;
-}
+};
 
-Calendar.prototype.setTime(d) {
+Calendar.prototype.setTime = function(d) {
     this._date = d;
 };
 
-Calendar.prototype.getTime() {
+Calendar.prototype.getTime = function() {
     return this._date;
 };
 

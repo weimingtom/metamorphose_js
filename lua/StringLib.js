@@ -60,14 +60,14 @@ StringLib.UPPER = 15;
 
 StringLib.GMATCH_AUX = 16;
 
-StringLib.GMATCH_AUX_FUN = new StringLib(GMATCH_AUX);
+StringLib.GMATCH_AUX_FUN = new StringLib(StringLib.GMATCH_AUX);
 
 /**
  * Adjusts the output of string.format so that %e and %g use 'e'
  * instead of 'E' to indicate the exponent.  In other words so that
  * string.format follows the ISO C (ISO 9899) standard for printf.
  */
-StringLib.prototype.formatISO = function {
+StringLib.prototype.formatISO = function() {
     FormatItem.E_LOWER = 'e'.charCodeAt();
 };
 
@@ -79,50 +79,50 @@ StringLib.prototype.formatISO = function {
  */
 StringLib.prototype.luaFunction = function(L) {
     switch (this._which) {
-    case BYTE:
-        return byteFunction(L);
+    case StringLib.BYTE:
+        return StringLib.byteFunction(L);
 
-    case CHAR:
-        return charFunction(L);
+    case StringLib.CHAR:
+        return StringLib.charFunction(L);
 
-    case DUMP:
-        return dump(L);
+    case StringLib.DUMP:
+        return StringLib.dump(L);
 
-    case FIND:
-        return find(L);
+    case StringLib.FIND:
+        return StringLib.find(L);
 
-    case FORMAT:
-        return format(L);
+    case StringLib.FORMAT:
+        return StringLib.format(L);
 
-    case GMATCH:
-        return gmatch(L);
+    case StringLib.GMATCH:
+        return StringLib.gmatch(L);
 
-    case GSUB:
-        return gsub(L);
+    case StringLib.GSUB:
+        return StringLib.gsub(L);
 
-    case LEN:
-        return len(L);
+    case StringLib.LEN:
+        return StringLib.len(L);
 
-    case LOWER:
-        return lower(L);
+    case StringLib.LOWER:
+        return StringLib.lower(L);
 
-    case MATCH:
-        return match(L);
+    case StringLib.MATCH:
+        return StringLib.match(L);
 
-    case REP:
-        return rep(L);
+    case StringLib.REP:
+        return StringLib.rep(L);
 
-    case REVERSE:
-        return reverse(L);
+    case StringLib.REVERSE:
+        return StringLib.reverse(L);
 
-    case SUB:
-        return sub(L);
+    case StringLib.SUB:
+        return StringLib.sub(L);
 
-    case UPPER:
-        return upper(L);
+    case StringLib.UPPER:
+        return StringLib.upper(L);
 
-    case GMATCH_AUX:
-        return gmatchaux(L);
+    case StringLib.GMATCH_AUX:
+        return StringLib.gmatchaux(L);
     }
     return 0;
 };
@@ -136,21 +136,21 @@ StringLib.prototype.luaFunction = function(L) {
 StringLib.open = function(L) {
     var lib = L.__register("string");
 
-    r(L, "byte", BYTE);
-    r(L, "char", CHAR);
-    r(L, "dump", DUMP);
-    r(L, "find", FIND);
-    r(L, "format", FORMAT);
-    r(L, "gfind", GFIND);
-    r(L, "gmatch", GMATCH);
-    r(L, "gsub", GSUB);
-    r(L, "len", LEN);
-    r(L, "lower", LOWER);
-    r(L, "match", MATCH);
-    r(L, "rep", REP);
-    r(L, "reverse", REVERSE);
-    r(L, "sub", SUB);
-    r(L, "upper", UPPER);
+    StringLib.r(L, "byte", StringLib.BYTE);
+    StringLib.r(L, "char", StringLib.CHAR);
+    StringLib.r(L, "dump", StringLib.DUMP);
+    StringLib.r(L, "find", StringLib.FIND);
+    StringLib.r(L, "format", StringLib.FORMAT);
+    StringLib.r(L, "gfind", StringLib.GFIND);
+    StringLib.r(L, "gmatch", StringLib.GMATCH);
+    StringLib.r(L, "gsub", StringLib.GSUB);
+    StringLib.r(L, "len", StringLib.LEN);
+    StringLib.r(L, "lower", StringLib.LOWER);
+    StringLib.r(L, "match", StringLib.MATCH);
+    StringLib.r(L, "rep", StringLib.REP);
+    StringLib.r(L, "reverse", StringLib.REVERSE);
+    StringLib.r(L, "sub", StringLib.SUB);
+    StringLib.r(L, "upper", StringLib.UPPER);
 
     var mt = new LuaTable();
     L.setMetatable("", mt);     // set string metatable
@@ -167,8 +167,8 @@ StringLib.r = function(L, name, which) {
 /** Implements string.byte.  Name mangled to avoid keyword. */
 StringLib.byteFunction = function(L) {
     var s = L.checkString(1);
-    var posi = posrelat(L.optInt(2, 1), s);
-    var pose = posrelat(L.optInt(3, posi), s);
+    var posi = StringLib.posrelat(L.optInt(2, 1), s);
+    var pose = StringLib.posrelat(L.optInt(3, posi), s);
     if (posi <= 0) {
         posi = 1;
     }

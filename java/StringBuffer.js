@@ -1,5 +1,5 @@
 var StringBuffer = function(str) {
-    if (str == undefined) {
+    if (str === undefined) {
         str = "";
     }
     this._str = str;
@@ -33,7 +33,7 @@ StringBuffer.prototype.appendStringBuffer = function(buf) {
     this._str = this._str.concat(buf._str);
 };
 
-StringBuffer.prototype.appendString(str) {
+StringBuffer.prototype.appendString = function(str) {
     this._str = this._str.concat(str);
 };
 
@@ -44,7 +44,7 @@ StringBuffer.prototype.appendString(str) {
  * 
  * delete在Java中不是关键字，但在AS3中是关键字
  */
-StringBuffer.prototype._delete(start, end) {
+StringBuffer.prototype._delete = function(start, end) {
     //trace("StringBuffer._delete(" + start + "," + end + ")");
     if(end > this._str.length) {
         end = this._str.length; //end可能是个过大的数
@@ -62,13 +62,13 @@ StringBuffer.prototype._delete(start, end) {
 StringBuffer.prototype.insert = function(at, ch) {
     this._str = this._str.substring(0, at) + 
         String(ch) + 
-        this._str.substring(at)
+        this._str.substring(at);
 };
 
-StringBuffer.prototype.insertStringBuffer(at, buf) {
+StringBuffer.prototype.insertStringBuffer = function(at, buf) {
     this._str = this._str.substring(0, at) + 
         buf._str + 
-        this._str.substring(at)			
+        this._str.substring(at);			
 };
 
 StringBuffer.prototype.length = function() {
@@ -80,7 +80,7 @@ StringBuffer.prototype.charAt = function(index) {
 };
 
 StringBuffer.prototype.deleteCharAt = function(index) {
-    return _delete(index, index + 1);
+    return this._delete(index, index + 1);
 };
 
 module.exports = StringBuffer;

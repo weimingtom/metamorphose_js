@@ -78,7 +78,7 @@ StringReader.prototype.readMultiBytes = function(cbuf, off, len) {
 };
 
 StringReader.prototype.reset = function() {
-    this._current = _mark;
+    this._current = this._mark;
 };
 
 module.exports = StringReader;

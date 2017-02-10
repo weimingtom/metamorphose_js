@@ -77,7 +77,7 @@ LuaInternal.prototype.luaFunction = function(L) {
                 this._reader.reset();
                 if (c2 == Loader.HEADER[0]) {
                     this._stream = new FromReader(this._reader);
-                    var l2:Loader = new Loader(this._stream, this._chunkname);
+                    var l2 = new Loader(this._stream, this._chunkname);
                     p = l2.undump();
                 } else {
                     p = Syntax.parser(L, this._reader, this._chunkname);

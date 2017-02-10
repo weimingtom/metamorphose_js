@@ -1,23 +1,23 @@
 var PrintStream = function() {
-    init();
+    this.init();
 };
 
 PrintStream.OutputArr = null;
 
 PrintStream.init = function() {
-    OutputArr = new Array();
-    OutputArr.push("");
+    PrintStream.OutputArr = new Array();
+    PrintStream.OutputArr.push("");
 };
 
 //TODO:
 PrintStream.prototype.print = function(str) {
-    OutputArr[OutputArr.length - 1] += str;
+    PrintStream.OutputArr[PrintStream.OutputArr.length - 1] += str;
     console.log(str);
 };
 
 //TODO:
-PrintStream.prototype.println() {
-    OutputArr.push("");
+PrintStream.prototype.println = function() {
+    PrintStream.OutputArr.push("");
     console.log("\n");
 };
 
