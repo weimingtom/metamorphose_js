@@ -6,7 +6,7 @@ FuncState.as
 BaseLib.as
 MatchState.as
 LuaTable.as
-Loader.as
+() Loader.as
 () Proto.as
 () StringLib.as
 () FormatItem.as
