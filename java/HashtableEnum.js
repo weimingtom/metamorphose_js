@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 //注意：这个类不应该由Hashtable以外的类创建
 var HashtableEnum = function() {
     this._arr = null;
@@ -22,4 +24,9 @@ HashtableEnum.prototype.setArr = function(arr) {
     }
 };
 
-module.exports = HashtableEnum;
+if (typeof module !== 'undefined') {
+    module.exports = HashtableEnum;
+} else if (metamorphose) {
+    metamorphose.HashtableEnum = HashtableEnum;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

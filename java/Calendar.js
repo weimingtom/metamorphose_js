@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var Calendar = function() {
     this._date = null;
 };
@@ -99,4 +101,9 @@ Calendar.prototype.getTime = function() {
     return this._date;
 };
 
-module.exports = Calendar;
+if (typeof module !== 'undefined') {
+    module.exports = Calendar;
+} else if (metamorphose) {
+    metamorphose.Calendar = Calendar;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

@@ -1,3 +1,4 @@
+;(function(metamorphose) {
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/UpVal.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -43,7 +44,7 @@
  * member); hence they share updates to the variable.
  */
 
-var Slot = require("./Slot.js");
+var Slot = metamorphose ? metamorphose.Slot : require("./Slot.js");
 
 //http://www.cnblogs.com/dolphinX/p/3485260.html
 //http://www.ruanyifeng.com/blog/2010/05/object-oriented_javascript_encapsulation.html
@@ -87,4 +88,10 @@ UpVal.prototype.close = function() {
     this._offset = -1;
 };
 
-module.exports = UpVal;
+
+if (typeof module !== 'undefined') {
+    module.exports = UpVal;
+} else if (metamorphose) {
+    metamorphose.UpVal = UpVal;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

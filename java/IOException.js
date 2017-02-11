@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var IOException = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var IOException = function(str) {
 
 IOException.prototype = new Error();
 
-module.exports = IOException;
+if (typeof module !== 'undefined') {
+    module.exports = IOException;
+} else if (metamorphose) {
+    metamorphose.IOException = IOException;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaUserdata.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -91,4 +93,9 @@ LuaUserdata.prototype.setEnv = function(env) {
     this._env = env;
 };
 
-module.exports = LuaUserdata;
+if (typeof module !== 'undefined') {
+    module.exports = LuaUserdata;
+} else if (metamorphose) {
+    metamorphose.LuaUserdata = LuaUserdata;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

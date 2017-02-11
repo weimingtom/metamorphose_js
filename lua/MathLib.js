@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 // Each function in the library corresponds to an instance of
 // this class which is associated (the 'which' member) with an integer
 // which is unique within this class.  They are taken from the following
@@ -271,4 +273,9 @@ MathLib.tan = function(L) {
     return 1;
 };
 
-module.exports = MathLib;
+if (typeof module !== 'undefined') {
+    module.exports = MathLib;
+} else if (metamorphose) {
+    metamorphose.MathLib = MathLib;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

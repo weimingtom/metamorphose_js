@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var TimeZone = function() {
   this._id = null;  
 };
@@ -34,4 +36,9 @@ TimeZone.prototype.getID = function() {
     return this._id;
 };
 
-module.exports = TimeZone;
+if (typeof module !== 'undefined') {
+    module.exports = TimeZone;
+} else if (metamorphose) {
+    metamorphose.TimeZone = TimeZone;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

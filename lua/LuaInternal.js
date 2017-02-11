@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaInternal.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -104,4 +106,9 @@ LuaInternal.prototype.luaFunction = function(L) {
     return 0;
 };
 
-module.exports = LuaInternal;
+if (typeof module !== 'undefined') {
+    module.exports = LuaInternal;
+} else if (metamorphose) {
+    metamorphose.LuaInternal = LuaInternal;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var PrintStream = function() {
     this.init();
 };
@@ -21,4 +23,9 @@ PrintStream.prototype.println = function() {
     console.log("\n");
 };
 
-module.exports = PrintStream;
+if (typeof module !== 'undefined') {
+    module.exports = PrintStream;
+} else if (metamorphose) {
+    metamorphose.PrintStream = PrintStream;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

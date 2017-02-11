@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var Hashtable = function(initialCapacity) {
     if (initialCapacity === undefined) {
         initialCapacity = 11;
@@ -40,4 +42,9 @@ Hashtable.prototype.remove = function(key) {
     return pre;
 };
 
-module.exports = Hashtable;
+if (typeof module !== 'undefined') {
+    module.exports = Hashtable;
+} else if (metamorphose) {
+    metamorphose.Hashtable = Hashtable;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

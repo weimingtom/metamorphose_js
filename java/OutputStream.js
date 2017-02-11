@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /**
  * 此抽象类是表示输出字节流的所有类的超类。
  * 输出流接受输出字节并将这些字节发送到某个接收器。
@@ -36,4 +38,9 @@ OutputStream.prototype.throwError = function(str) {
     throw new Error(str);
 };
 
-module.exports = OutputStream;
+if (typeof module !== 'undefined') {
+    module.exports = OutputStream;
+} else if (metamorphose) {
+    metamorphose.OutputStream = OutputStream;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

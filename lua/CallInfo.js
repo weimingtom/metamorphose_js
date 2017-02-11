@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/CallInfo.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -121,4 +123,9 @@ CallInfo.prototype.tailcall = function(baseArg, topArg) {
     ++this._tailcalls;
 };
 
-module.exports = CallInfo;
+if (typeof module !== 'undefined') {
+    module.exports = CallInfo;
+} else if (metamorphose) {
+    metamorphose.CallInfo = CallInfo;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

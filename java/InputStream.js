@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /**
  * 
  * 此抽象类是表示字节输入流的所有类的超类。
@@ -57,4 +59,9 @@ InputStream.prototype.throwError = function(str) {
     throw new Error(str);
 };
 
-module.exports = InputStream;
+if (typeof module !== 'undefined') {
+    module.exports = InputStream;
+} else if (metamorphose) {
+    metamorphose.InputStream = InputStream;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

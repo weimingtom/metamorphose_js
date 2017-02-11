@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 //see http://codesnipp.it/code/939
 var MathUtil = function() {
 
@@ -15,4 +17,9 @@ MathUtil.toRadians = function(deg) {
     return (deg * Math.PI / 180);  
 };
 
-module.exports = MathUtil;
+if (typeof module !== 'undefined') {
+    module.exports = MathUtil;
+} else if (metamorphose) {
+    metamorphose.MathUtil = MathUtil;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

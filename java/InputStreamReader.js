@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /**
  *	用于读取字符流的抽象类。
  *	子类必须实现的方法只有 read(char[], int, int) 和 close()。
@@ -63,4 +65,9 @@ InputStreamReader.prototype.skip = function(n) {
     return this._i.skip(n);
 };
 
-module.exports = InputStreamReader;
+if (typeof module !== 'undefined') {
+    module.exports = InputStreamReader;
+} else if (metamorphose) {
+    metamorphose.InputStreamReader = InputStreamReader;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

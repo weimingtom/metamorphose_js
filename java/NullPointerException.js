@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var NullPointerException = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var NullPointerException = function(str) {
 
 NullPointerException.prototype = new Error();
 
-module.exports = NullPointerException;
+if (typeof module !== 'undefined') {
+    module.exports = NullPointerException;
+} else if (metamorphose) {
+    metamorphose.NullPointerException = NullPointerException;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

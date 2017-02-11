@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var RuntimeException = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var RuntimeException = function(str) {
 
 RuntimeException.prototype = new Error();
 
-module.exports = RuntimeException;
+if (typeof module !== 'undefined') {
+    module.exports = RuntimeException;
+} else if (metamorphose) {
+    metamorphose.RuntimeException = RuntimeException;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

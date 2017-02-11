@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -39,6 +41,9 @@ var BlockCnt = function() {
     this.isbreakable = false;/* true if `block' is a loop */
 };
 
-module.exports = BlockCnt;
-
-
+if (typeof module !== 'undefined') {
+    module.exports = BlockCnt;
+} else if (metamorphose) {
+    metamorphose.BlockCnt = BlockCnt;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

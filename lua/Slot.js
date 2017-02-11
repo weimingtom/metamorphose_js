@@ -1,3 +1,4 @@
+;(function(metamorphose) {
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -25,8 +26,7 @@
 //see jillcode(Java Implementation of Lua Language, Jill):
 //	http://code.google.com/p/jillcode/
 //这里的代码移植自jillcode(Lua的Java实现，Jill):
-//	http://code.google.com/p/jillcode/	
-
+//	http://code.google.com/p/jillcode/
 var Slot = function() {
 	this._r = null;
 	this._d = 0;
@@ -78,4 +78,10 @@ Slot.prototype.getD = function() {
     return this._d;
 };
 
-module.exports = Slot;
+
+if (typeof module !== 'undefined') {
+    module.exports = Slot;
+} else if (metamorphose) {
+    metamorphose.Slot = Slot;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

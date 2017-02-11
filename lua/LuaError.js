@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header$
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -36,4 +38,10 @@ LuaError.prototype.getErrorStatus = function() {
     return this._errorStatus;
 };
 
-module.exports = LuaError;
+if (typeof module !== 'undefined') {
+    module.exports = LuaError;
+} else if (metamorphose) {
+    metamorphose.LuaError = LuaError;
+}
+})(typeof window !== 'undefined' && window.metamorphose);
+

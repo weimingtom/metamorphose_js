@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var Runtime = function() {
 
 };
@@ -17,4 +19,9 @@ Runtime.prototype.freeMemory = function() {
     return 0;
 };
 
-module.exports = Runtime;
+if (typeof module !== 'undefined') {
+    module.exports = Runtime;
+} else if (metamorphose) {
+    metamorphose.Runtime = Runtime;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

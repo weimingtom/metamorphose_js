@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Expdesc.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -163,4 +165,10 @@ Expdesc.prototype.setT = function(t) {
     this._t = t;
 };
 
-module.exports = Expdesc;
+if (typeof module !== 'undefined') {
+    module.exports = Expdesc;
+} else if (metamorphose) {
+    metamorphose.Expdesc = Expdesc;
+}
+})(typeof window !== 'undefined' && window.metamorphose);
+

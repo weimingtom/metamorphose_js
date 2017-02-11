@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var ByteArrayOutputStream = function() {
     this._bytes = new ByteArray();
 };
@@ -32,4 +34,9 @@ ByteArrayOutputStream.prototype.writeChar = function(b) {
     this._bytes.writeBytes(bytes);
 };
 
-module.exports = ByteArrayOutputStream;
+if (typeof module !== 'undefined') {
+    module.exports = ByteArrayOutputStream;
+} else if (metamorphose) {
+    metamorphose.ByteArrayOutputStream = ByteArrayOutputStream;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

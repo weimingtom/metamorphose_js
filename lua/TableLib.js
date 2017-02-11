@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/TableLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -292,4 +294,9 @@ TableLib.aux_getn = function(L, n) {
     return t.getn();
 };
 
-module.exports = TableLib;
+if (typeof module !== 'undefined') {
+    module.exports = TableLib;
+} else if (metamorphose) {
+    metamorphose.TableLib = TableLib;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

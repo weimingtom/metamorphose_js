@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var NumberFormatException = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var NumberFormatException = function(str) {
 
 NumberFormatException.prototype = new Error();
 
-module.exports = NumberFormatException;
+if (typeof module !== 'undefined') {
+    module.exports = NumberFormatException;
+} else if (metamorphose) {
+    metamorphose.NumberFormatException = NumberFormatException;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

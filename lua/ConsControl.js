@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -37,4 +39,9 @@ var ConsControl = function(t) {
     this.tostore = 0;  /* number of array elements pending to be stored */    
 };
 
-module.exports = ConsControl;
+if (typeof module !== 'undefined') {
+    module.exports = ConsControl;
+} else if (metamorphose) {
+    metamorphose.ConsControl = ConsControl;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

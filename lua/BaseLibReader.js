@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BaseLibReader.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -102,4 +104,9 @@ BaseLibReader.prototype.reset = function() {
     this._i = this._mark;
 };
 
-module.exports = BaseLibReader;
+if (typeof module !== 'undefined') {
+    module.exports = BaseLibReader;
+} else if (metamorphose) {
+    metamorphose.BaseLibReader = BaseLibReader;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

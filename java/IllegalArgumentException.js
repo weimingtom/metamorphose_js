@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var IllegalArgumentException = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var IllegalArgumentException = function(str) {
 
 IllegalArgumentException.prototype = new Error();
 
-module.exports = IllegalArgumentException;
+if (typeof module !== 'undefined') {
+    module.exports = IllegalArgumentException;
+} else if (metamorphose) {
+    metamorphose.IllegalArgumentException = IllegalArgumentException;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

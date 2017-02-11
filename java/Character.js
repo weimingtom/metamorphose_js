@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 //注意：Character.toString用String.fromCharCode()代替
 var Character = function() {
 
@@ -19,4 +21,9 @@ Character.toLowerCase = function(ch) {
     return String.fromCharCode(ch).toLowerCase();	
 };
 
-module.exports = Character;
+if (typeof module !== 'undefined') {
+    module.exports = Character;
+} else if (metamorphose) {
+    metamorphose.Character = Character;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

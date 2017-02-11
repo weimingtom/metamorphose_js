@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -169,4 +171,10 @@ DumpState.prototype.getWriter = function() {
     return this._writer;
 };
 
-module.exports = DumpState;
+if (typeof module !== 'undefined') {
+    module.exports = DumpState;
+} else if (metamorphose) {
+    metamorphose.DumpState = DumpState;
+}
+})(typeof window !== 'undefined' && window.metamorphose);
+

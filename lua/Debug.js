@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Debug.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -125,4 +127,9 @@ Debug.prototype.getShortsrc = function() {
     return this._shortsrc;
 };
 
-module.exports = Debug;
+if (typeof module !== 'undefined') {
+    module.exports = Debug;
+} else if (metamorphose) {
+    metamorphose.Debug = Debug;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

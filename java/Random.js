@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var Random = function() {
     
 };
@@ -14,4 +16,9 @@ Random.prototype.setSeed = function(seed) {
 
 };
 
-module.exports = Random;
+if (typeof module !== 'undefined') {
+    module.exports = Random;
+} else if (metamorphose) {
+    metamorphose.Random = Random;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

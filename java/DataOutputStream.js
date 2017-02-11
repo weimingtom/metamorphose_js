@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /**
  * 数据输出流允许应用程序以适当方式将基本 Java 数据类型写入输出流中。
  * 然后，应用程序可以使用数据输入流将数据读入。
@@ -121,4 +123,9 @@ DataOutputStream.prototype.writeUTF = function(str) {
     this.written += bytes.length;
 };
 
-module.exports = DataOutputStream;
+if (typeof module !== 'undefined') {
+    module.exports = DataOutputStream;
+} else if (metamorphose) {
+    metamorphose.DataOutputStream = DataOutputStream;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

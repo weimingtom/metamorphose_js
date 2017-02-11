@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /**
  * Stack 类表示后进先出（LIFO）的对象堆栈。
  * 它通过五个操作对类 Vector 进行了扩展 ，
@@ -69,4 +71,9 @@ Stack.prototype.elementAt = function(i) {
     return obj;
 };
 
-module.exports = Stack;
+if (typeof module !== 'undefined') {
+    module.exports = Stack;
+} else if (metamorphose) {
+    metamorphose.Stack = Stack;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var OutOfMemoryError = function(str) {
     if (str === undefined) {
         str = "";
@@ -7,4 +9,9 @@ var OutOfMemoryError = function(str) {
 
 OutOfMemoryError.prototype = new Error();
 
-module.exports = OutOfMemoryError;
+if (typeof module !== 'undefined') {
+    module.exports = OutOfMemoryError;
+} else if (metamorphose) {
+    metamorphose.OutOfMemoryError = OutOfMemoryError;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

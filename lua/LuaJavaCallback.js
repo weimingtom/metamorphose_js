@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaJavaCallback.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -41,9 +43,14 @@
  * large amount.
  */
 
-var luaFunction = function(L) {
+var LuaJavaCallback = function(L) {
     throw new Error("abstract class error");
     return 0;
 };
 
-module.exports = luaFunction;
+if (typeof module !== 'undefined') {
+    module.exports = LuaJavaCallback;
+} else if (metamorphose) {
+    metamorphose.LuaJavaCallback = LuaJavaCallback;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

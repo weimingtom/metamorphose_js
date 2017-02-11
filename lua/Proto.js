@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Proto.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -473,4 +475,9 @@ Proto.prototype.getSizeupvalues = function() {
     return this._sizeupvalues;
 };
 
-module.exports = Proto;
+if (typeof module !== 'undefined') {
+    module.exports = Proto;
+} else if (metamorphose) {
+    metamorphose.Proto = Proto;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

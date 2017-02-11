@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var SystemUtil = function(){
 };
 
@@ -27,3 +29,10 @@ SystemUtil.getResourceAsStream = function(s) {
 SystemUtil.currentTimeMillis = function() {
     return 0;			
 };
+
+if (typeof module !== 'undefined') {
+    module.exports = SystemUtil;
+} else if (metamorphose) {
+    metamorphose.SystemUtil = SystemUtil;
+}
+})(typeof window !== 'undefined' && window.metamorphose);

@@ -1,3 +1,5 @@
+;(function(metamorphose) {
+
 var StringBuffer = function(str) {
     if (str === undefined) {
         str = "";
@@ -83,4 +85,9 @@ StringBuffer.prototype.deleteCharAt = function(index) {
     return this._delete(index, index + 1);
 };
 
-module.exports = StringBuffer;
+if (typeof module !== 'undefined') {
+    module.exports = StringBuffer;
+} else if (metamorphose) {
+    metamorphose.StringBuffer = StringBuffer;
+}
+})(typeof window !== 'undefined' && window.metamorphose);
