@@ -7,7 +7,7 @@ BaseLib.as
 MatchState.as
 LuaTable.as
 Loader.as
-Proto.as
+() Proto.as
 () StringLib.as
 () FormatItem.as
 () PackageLib.as
