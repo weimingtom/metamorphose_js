@@ -1,7 +1,7 @@
 ------------------------
 
 Lua.as
-Syntax.as
+() Syntax.as
 () FuncState.as
 () BaseLib.as
 () MatchState.as
