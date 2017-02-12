@@ -4,7 +4,7 @@ Lua.as
 Syntax.as
 FuncState.as
 BaseLib.as
-MatchState.as
+() MatchState.as
 () LuaTable.as
 () Loader.as
 () Proto.as
