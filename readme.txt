@@ -3,7 +3,7 @@
 Lua.as
 Syntax.as
 FuncState.as
-BaseLib.as
+() BaseLib.as
 () MatchState.as
 () LuaTable.as
 () Loader.as
