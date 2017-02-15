@@ -8,4 +8,6 @@ var upVal = new UpVal(123, null);
 console.log(upVal.getOffset());
 upVal.close();
 
+console.log("upVal instanceof UpVal = " + (upVal instanceof UpVal));
+    
 })(typeof window !== 'undefined' && window.metamorphose);

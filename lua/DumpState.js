@@ -95,13 +95,13 @@ DumpState.prototype.DumpConstants = function(f) {
         var o = k[i].r;
         if (o == Lua.NIL) {
             this._writer.writeByte(Lua.TNIL);
-        } else if (o is Boolean) {
+        } else if (o instanceof Boolean) {
             this._writer.writeByte(Lua.TBOOLEAN);
             this._writer.writeBoolean(o as Boolean);
         } else if (o == Lua.NUMBER) {
             this._writer.writeByte(Lua.TNUMBER);
             this.DumpNumber(k[i].d);
-        } else if (o is String) {
+        } else if (o instanceof String) {
             this._writer.writeByte(Lua.TSTRING);
             this.DumpString(o as String);
         } else {

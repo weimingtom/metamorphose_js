@@ -437,7 +437,7 @@ Lua.prototype.createTable = function(narr, nrec) {
  * @throws IOException when writer does.
  */
 Lua.dump = function(_function, writer) {  //throws IOException
-    if (!(_function is LuaFunction)) {
+    if (!(_function instanceof LuaFunction)) {
         throw new IOException("Cannot dump " + typeName(____type(_function)));
     }
     var f = _function;
@@ -452,7 +452,7 @@ Lua.dump = function(_function, writer) {  //throws IOException
  * @return true when equal.
  */
 Lua.prototype.equal = function(o1, o2) {
-    if (o1 is Number) {
+    if (o1 instanceof Number) {
         return o1.equals(o2);
     }
     return vmEqualRef(o1, o2);
@@ -508,21 +508,21 @@ Lua.prototype.gc = function(what, data) {
 * @return its environment table.
 */
 Lua.prototype.getFenv = function(o) {
-    if (o is LuaFunction) {
+    if (o instanceof LuaFunction) {
         var f1 = o;
         return f1.env;
     }
-    if (o is LuaJavaCallback) {
+    if (o instanceof LuaJavaCallback) {
         var f2 = o;
         // :todo: implement this case.
         return null;
     }
     
-    if (o is LuaUserdata) {
+    if (o instanceof LuaUserdata) {
         var u = o;
         return u.env;
     }
-    if (o is Lua) {
+    if (o instanceof Lua) {
         var l = o;
         return l.global;
     }
@@ -566,10 +566,10 @@ Lua.prototype.getGlobals = function() {
 Lua.prototype.getMetatable = function(o) {
     var mt;
 
-    if (o is LuaTable) {
+    if (o instanceof LuaTable) {
         var t = o;
         mt = t.metatable;
-    } else if (o is LuaUserdata) {
+    } else if (o instanceof LuaUserdata) {
         var u = o;
         mt = u.metatable;
     } else {
@@ -635,7 +635,7 @@ Lua.isBoolean = function(o) {
  * @return true if and only if the object is a Lua Java Function.
  */
 Lua.isJavaFunction = function(o) {
-    return o is LuaJavaCallback;
+    return o instanceof LuaJavaCallback;
 };
 
 /**
@@ -645,8 +645,8 @@ Lua.isJavaFunction = function(o) {
  * @return true if and only if the object is a function.
  */
 Lua.isFunction = function(o) {
-    return o is LuaFunction ||
-        o is LuaJavaCallback;
+    return o instanceof LuaFunction ||
+        o instanceof LuaJavaCallback;
 };
 
 /**
@@ -684,7 +684,7 @@ Lua.isNumber = function(o) {
  * @return true if and only if object is a string or number.
  */
 Lua.isString = function(o) {
-    return o is String || o is Number;
+    return o instanceof String || o instanceof Number;
 };
 
 /**
@@ -693,7 +693,7 @@ Lua.isString = function(o) {
  * @return <code>true</code> if and only if the object is a Lua table.
  */
 Lua.isTable = function(o) {
-    return o is LuaTable;
+    return o instanceof LuaTable;
 };
 
 /**
@@ -702,7 +702,7 @@ Lua.isTable = function(o) {
  * @return <code>true</code> if and only if the object is a Lua thread.
  */
 Lua.isThread = function(o) {
-    return o is Lua;
+    return o instanceof Lua;
 };
 
 /**
@@ -711,7 +711,7 @@ Lua.isThread = function(o) {
  * @return true if and only if the object is a Lua userdata.
  */
 Lua.isUserdata = function(o) {
-    return o is LuaUserdata;
+    return o instanceof LuaUserdata;
 };
 
 /**
@@ -735,13 +735,13 @@ Lua.isUserdata = function(o) {
  */
 Lua.isValue = function(o) {
     return o == NIL ||
-        o is Boolean ||
-        o is String ||
-        o is Number ||
-        o is LuaFunction ||
-        o is LuaJavaCallback ||
-        o is LuaTable ||
-        o is LuaUserdata;
+        o instanceof Boolean ||
+        o instanceof String ||
+        o instanceof Number ||
+        o instanceof LuaFunction ||
+        o instanceof LuaJavaCallback ||
+        o instanceof LuaTable ||
+        o instanceof LuaUserdata;
 };
 
 /**
@@ -829,7 +829,7 @@ Lua.prototype.__load = function(_in, chunkname) {
 Lua.prototype.next = function(idx) {
     var o = value(idx);
     // :todo: api check
-    var t = o as LuaTable;
+    var t = o;
     var key = value(-1);
     pop(1);
     var e = t.keys();
@@ -892,19 +892,19 @@ Lua.prototype.newUserdata = function(ref) {
  * @return its length.
  */
 Lua.objLen = function(o) {
-    if (o is String) {
+    if (o instanceof String) {
         var s = o;
         return s.length;
     }
-    if (o is LuaTable) {
+    if (o instanceof LuaTable) {
         var t = o;
         return t.getn();
     }
-    if (o is Number) {
+    if (o instanceof Number) {
         return vmTostring(o).length;
     }
     return 0;
-}
+};
 
 
 /**
@@ -1019,7 +1019,7 @@ Lua.prototype.pushNil = function() {
 */
 Lua.prototype.pushNumber = function(d) {
     // :todo: optimise to avoid creating Double instance
-    pushObject(new Number(d));
+    pushObject(Number(d));
 };
 
 /**
@@ -1059,7 +1059,7 @@ Lua.rawEqual = function(o1, o2) {
 Lua.rawGet = function(t, k) {
     var table = t;
     return table.getlua(k);
-}
+};
 
 /**
 * Gets an element from an array, without using metamethods.
@@ -1090,8 +1090,8 @@ Lua.prototype.rawSet = function(t, k, v) {
 * @param v  the new value to be stored at index <var>i</var>.
 */
 Lua.prototype.rawSetI = function(t, i, v) {
-    apiCheck(t is LuaTable);
-    var h = t as LuaTable;
+    apiCheck(t instanceof LuaTable);
+    var h = t;
     h.putnum(i, v);
 };
 
@@ -1162,24 +1162,24 @@ Lua.prototype.setFenv = function(o, table) {
     // LuaFunction, LuaJavaCallback, LuaUserdata, Lua.  One cast to an
     // interface and an interface method call may be shorter
     // than this mess.
-    var t = table as LuaTable;
+    var t = table;
 
-    if (o is LuaFunction) {
+    if (o instanceof LuaFunction) {
         var f1 = o;
         f1.env = t;
         return true;
     }
-    if (o is LuaJavaCallback) {
-        var f2 = o as LuaJavaCallback;
+    if (o instanceof LuaJavaCallback) {
+        var f2 = o;
         // :todo: implement this case.
         return false;
     }
-    if (o is LuaUserdata) {
+    if (o instanceof LuaUserdata) {
         var u = o;
         u.env = t;
         return true;
     }
-    if (o is Lua) {
+    if (o instanceof Lua) {
         var l = o;
         l.global = t;
         return true;
@@ -1195,7 +1195,7 @@ Lua.prototype.setFenv = function(o, table) {
  */
 Lua.prototype.setField = functionn(t, name, v) {
     var s = new Slot();
-    s.init2(name as Object);
+    s.init2(name);
     vmSettable(t, s, v);
 };
 
@@ -1208,13 +1208,13 @@ Lua.prototype.setMetatable = function(o, mt) {
     if (isNil(mt)) {
         mt = null;
     } else {
-        apiCheck(mt is LuaTable);
+        apiCheck(mt instanceof LuaTable);
     }
     var mtt = mt;
-    if (o is LuaTable) {
+    if (o instanceof LuaTable) {
         var t = o;
         t.setMetatable(mtt);
-    } else if (o is LuaUserdata) {
+    } else if (o instanceof LuaUserdata) {
         var u = o;
         u.metatable = mtt;
     } else {
@@ -1274,7 +1274,7 @@ Lua.prototype.setStatus = function(status) {
  * @return an Enumeration object.
  */
 Lua.prototype.tableKeys = function(t) {
-    if (!(t is LuaTable)) {
+    if (!(t instanceof LuaTable)) {
         error("table required");
         // NOTREACHED
     }
@@ -1332,10 +1332,10 @@ Lua.prototype.toString = function(o) {
  * @return  The resulting Lua instance.
  */
 Lua.prototype.toThread = function(o) {
-    if (!(o is Lua)) {
+    if (!(o instanceof Lua)) {
         return null;
     }
-    return o as Lua;
+    return o;
 };
 
 /**
@@ -1346,8 +1346,8 @@ Lua.prototype.toThread = function(o) {
  * @return  value as userdata or <code>null</code>.
  */
 Lua.prototype.toUserdata = function(o) {
-    if (o is LuaUserdata) {
-        return o as LuaUserdata;
+    if (o instanceof LuaUserdata) {
+        return o;
     }
     return null;
 };
@@ -1362,7 +1362,7 @@ Lua.prototype.type = function(idx) {
     if (idx < 0) {
         return TNONE;
     }
-    return ___type(this._stack[idx] as Slot);
+    return ___type(this._stack[idx]);
 };
 
 /**
@@ -1386,19 +1386,19 @@ Lua.prototype.___type = function(s) {
 Lua.____type = function(o) {
     if (o == NIL) {
         return TNIL;
-    } else if (o is Number) {
+    } else if (o instanceof Number) {
         return TNUMBER;
-    } else if (o is Boolean) {
+    } else if (o instanceof Boolean) {
         return TBOOLEAN;
-    } else if (o is String) {
+    } else if (o instanceof String) {
         return TSTRING;
-    } else if (o is LuaTable) {
+    } else if (o instanceof LuaTable) {
         return TTABLE;
-    } else if (o is LuaFunction || o is LuaJavaCallback) {
+    } else if (o instanceof LuaFunction || o instanceof LuaJavaCallback) {
         return TFUNCTION;
-    } else if (o is LuaUserdata) {
+    } else if (o instanceof LuaUserdata) {
         return TUSERDATA;
-    } else if (o is Lua) {
+    } else if (o instanceof Lua) {
         return TTHREAD;
     }
     return TNONE;
@@ -1414,7 +1414,7 @@ Lua.typeName = function(type) {
         return "no value";
     }
     return TYPENAME[type];
-}
+};
 
 /**
  * Gets a value from the stack.
@@ -1428,7 +1428,7 @@ Lua.prototype.value = function(idx) {
     if (idx < 0) {
         return NIL;
     }
-    return (this._stack[idx] as Slot).asObject();
+    return (this._stack[idx]).asObject();
 };
 
 /**
@@ -1456,7 +1456,7 @@ Lua.valueOfBoolean = function(b) {
  */
 Lua.valueOfNumber = function(d) {
     // :todo: consider interning "common" numbers, like 0, 1, -1, etc.
-    return new Number(d);
+    return Number(d);//FIXME:new Number(d);
 };
 
 /**
@@ -1725,7 +1725,7 @@ Lua.prototype.findTable = function(t, fname, szhint) {
         } else if (!isTable(v)) {    // field has a non-table value?
             return part;
         }
-        t = v as LuaTable;
+        t = v;
         i = e + 1;
     } while (e >= 0);
     pushObject(t);
@@ -1922,8 +1922,8 @@ Lua.prototype.getInfo = function(what, ar) {
     var callinfo = null;
     // :todo: complete me
     if (ar.ici > 0) {  // no tail call?
-        callinfo = this._civ.elementAt(ar.ici) as CallInfo;
-        f = (this._stack[callinfo.func] as Slot).r;
+        callinfo = this._civ.elementAt(ar.ici);
+        f = (this._stack[callinfo.func]).r;
         //# assert isFunction(f)
     }
     var status = auxgetinfo(what, ar, f, callinfo);
@@ -1949,7 +1949,7 @@ Lua.prototype.getStack = function(level) {
     var ici;    // Index of CallInfo
 
     for (ici = this._civ.size - 1; level > 0 && ici > 0; --ici) {
-        var ci = this._civ.elementAt(ici) as CallInfo;
+        var ci = this._civ.elementAt(ici);
         --level;
         if (isLua(ci)) {                   // Lua function?
             level -= ci.tailcalls;        // skip lost tail calls
@@ -2012,8 +2012,8 @@ Lua.prototype.currentline = function(ci) {
     if (pc < 0) {
         return -1;        // only active Lua functions have current-line info
     } else {
-        var faso = (this._stack[ci.func] as Slot).r;
-        var f = faso as LuaFunction;
+        var faso = (this._stack[ci.func]).r;
+        var f = faso;
         return f.proto.getline(pc);
     }
 };
@@ -2029,13 +2029,13 @@ Lua.prototype.currentpc = function(ci) {
 };
 
 Lua.prototype.funcinfo = function(ar, cl) {
-    if (cl is LuaJavaCallback) {
+    if (cl instanceof LuaJavaCallback) {
         ar.source = "=[Java]";
         ar.linedefined = -1;
         ar.lastlinedefined = -1;
         ar.what = "Java";
     } else {
-        var p = (cl as LuaFunction).proto;
+        var p = (cl).proto;
         ar.source = p.source;
         ar.linedefined = p.linedefined;
         ar.lastlinedefined = p.lastlinedefined;
@@ -2046,7 +2046,7 @@ Lua.prototype.funcinfo = function(ar, cl) {
 /** Equivalent to macro isLua _and_ f_isLua from lstate.h. */
 Lua.prototype.isLua = function(callinfo) {
     var f = (this._stack[callinfo.func]).r;
-    return f is LuaFunction;
+    return f instanceof LuaFunction;
 };
 
 Lua.pcRel = function(pc) {
@@ -2097,11 +2097,11 @@ Lua.prototype.dSeterrorobj = function(errcode, oldtop) {
     }
     switch (errcode) {
     case ERRMEM:
-        (this._stack[oldtop] as Slot).r = MEMERRMSG;
+        (this._stack[oldtop]).r = MEMERRMSG;
         break;
 
     case ERRERR:
-        (this._stack[oldtop] as Slot).r = "error in error handling";
+        (this._stack[oldtop]).r = "error in error handling";
         break;
 
     case ERRFILE:
@@ -2129,7 +2129,7 @@ Lua.prototype.dThrow = function(status) {
 Lua.prototype.fClose = function(level) {
     var i = this._openupval.length;
     while (--i >= 0) {
-        var uv = this._openupval[i] as UpVal; //FIXME:var uv:UpVal = this._openupval.elementAt(i) as UpVal;
+        var uv = this._openupval[i]; //FIXME:var uv:UpVal = this._openupval.elementAt(i) as UpVal;
         if (uv.offset < level) {
             break;
         }
@@ -2147,7 +2147,7 @@ Lua.prototype.fFindupval = function(idx) {
      */
     var i = this._openupval.length;//FIXME:.size();
     while (--i >= 0) {
-        var uv2 = this._openupval[i] as UpVal; //FIXME:var uv2:UpVal = this._openupval.elementAt(i) as UpVal;
+        var uv2 = this._openupval[i]; //FIXME:var uv2:UpVal = this._openupval.elementAt(i) as UpVal;
         if (uv2.offset == idx) {
             return uv2;
         }
@@ -2157,7 +2157,7 @@ Lua.prototype.fFindupval = function(idx) {
     }
     // i points to be position _after_ which we want to insert a new
     // UpVal (it's -1 when we want to insert at the beginning).
-    var uv = new UpVal(idx, this._stack[idx] as Slot);
+    var uv = new UpVal(idx, this._stack[idx]);
     this._openupval.splice(i+1, 0, uv);//FIXME:this._openupval.insertElementAt(uv, i+1);
     return uv;
 };
@@ -2185,12 +2185,12 @@ Lua.prototype.gAritherror = function(p1, p2) {
 
 /** <var>p1</var> and <var>p2</var> are absolute stack indexes. */
 Lua.prototype.gConcaterror = function(p1, p2) {
-    if ((this._stack[p1]).r is String) {
+    if ((this._stack[p1]).r instanceof String) {
         p1 = p2;
     }
     // assert !(p1 instanceof String);
-    gTypeerror(this._stack[p1] as Slot, "concatenate");
-}
+    gTypeerror(this._stack[p1], "concatenate");
+};
 
 Lua.prototype.gCheckcode = function(p) {
     // :todo: implement me.
@@ -2425,7 +2425,7 @@ Lua.ARGB = function(instruction) {
 
 Lua.SETARG_B = function(i, b) {
     return (i & ~(0x1ff << 23)) | ((b & 0x1ff) << 23);
-}
+};
 
 /** Equivalent of macro GETARG_C */
 Lua.ARGC = function(instruction) {
@@ -2476,10 +2476,10 @@ Lua.ISK = function(field) {
 */
 Lua.prototype.RK = function(k/*Slot[] */, field) {
     if (ISK(field)) {
-        return k[field & 0xff] as Slot;
+        return k[field & 0xff];
     }
-    return this._stack[this._base + field] as Slot;
-}
+    return this._stack[this._base + field];
+};
 
 /**
 * Slower version of RK that does not receive the constant array.  Not
@@ -2487,7 +2487,7 @@ Lua.prototype.RK = function(k/*Slot[] */, field) {
 * to avoid having a constant array passed around too much.
 */
 Lua.prototype.__RK = function(field) {
-    var _function = (this._stack[__ci().func]).r as LuaFunction;
+    var _function = (this._stack[__ci().func]).r;
     var k = _function.proto.constant; //Slot[]
     return RK(k, field);
 };
@@ -2601,14 +2601,14 @@ Lua.prototype.vmConcat = function(total, last) {
         var top = this._base + last + 1;
         var n = 2;  // number of elements handled in this pass (at least 2)
         if (!tostring(top-2)|| !tostring(top-1)) {
-            if (!call_binTM(this._stack[top - 2] as Slot, this._stack[top - 1],
-                this._stack[top - 2] as Slot, "__concat")) {
+            if (!call_binTM(this._stack[top - 2], this._stack[top - 1],
+                this._stack[top - 2], "__concat")) {
                 gConcaterror(top-2, top-1);
             }
-        } else if (((this._stack[top - 1] as Slot).r).length > 0) {
-            var tl = ((this._stack[top - 1] as Slot).r).length;
+        } else if (((this._stack[top - 1]).r).length > 0) {
+            var tl = ((this._stack[top - 1]).r).length;
             for (n = 1; n < total && tostring(top-n-1); ++n) {
-                tl += ((this._stack[top - n - 1] as Slot).r as String).length;
+                tl += ((this._stack[top - n - 1]).r).length;
                 if (tl < 0) {
                     gRunerror("string length overflow");
                 }
@@ -2616,14 +2616,14 @@ Lua.prototype.vmConcat = function(total, last) {
             var buffer = new StringBuffer();
             buffer.init(tl);
             for (var i = n; i > 0; i--) {        // concat all strings
-                buffer.appendString((this._stack[top - i] as Slot).r as String);
+                buffer.appendString((this._stack[top - i]).r);
             }
-            (this._stack[top - n] as Slot).r = buffer.toString();
+            (this._stack[top - n]).r = buffer.toString();
         }
         total -= n - 1;     // got n strings to create 1 new
         last -= n - 1;
     } while (total > 1); // repeat until only 1 result left
-}
+};
 
 /**
  * Primitive for testing Lua equality of two values.  Equivalent of
@@ -2658,15 +2658,15 @@ Lua.prototype.vmEqualRef = function(a, b) {
         return false;
     }
     // Same class, but different objects.
-    if (a is LuaJavaCallback ||
-        a is LuaTable) {
+    if (a instanceof LuaJavaCallback ||
+        a instanceof LuaTable) {
         // Resort to metamethods.
         var tm = get_compTM(getMetatable(a), getMetatable(b), "__eq");
         if (NIL == tm) {   // no TM?
             return false;
         }
         var s = new Slot();
-        callTMres(s, tm, a as Slot, b as Slot);   // call TM   //TODO:
+        callTMres(s, tm, a, b);   // call TM   //TODO:
         return !isFalse(s.r);
     }
     return false;
@@ -2687,7 +2687,7 @@ Lua.prototype.vmExecute = function(nexeccalls) {
 reentry:
     while (true) {
         // assert stack[ci.function()].r instanceof LuaFunction;
-        var _function = (this._stack[__ci().func] as Slot).r as LuaFunction;
+        var _function = (this._stack[__ci().func]).r;
         var proto = _function.proto;
         var code = proto.code; //int[]
         var k = proto.constant; //Slot[] 
@@ -2720,13 +2720,13 @@ reentry:
 
             switch (OPCODE(i)) {
             case OP_MOVE:
-                (this._stack[this._base + a] as Slot).r = (this._stack[this._base + ARGB(i)] as Slot).r;
-                (this._stack[this._base + a] as Slot).d = (this._stack[this._base + ARGB(i)] as Slot).d;
+                (this._stack[this._base + a]).r = (this._stack[this._base + ARGB(i)]).r;
+                (this._stack[this._base + a]).d = (this._stack[this._base + ARGB(i)]).d;
                 continue;
 
             case OP_LOADK:
-                (this._stack[this._base + a] as Slot).r = (k[ARGBx(i)] as Slot).r;
-                (this._stack[this._base + a] as Slot).d = (k[ARGBx(i)] as Slot).d;
+                (this._stack[this._base + a]).r = (k[ARGBx(i)]).r;
+                (this._stack[this._base + a]).d = (k[ARGBx(i)]).d;
                 if (D) 
                 {
                     trace("OP_LOADK:stack[" + (this._base+a) + 
@@ -2735,7 +2735,7 @@ reentry:
                 continue;
 
             case OP_LOADBOOL:
-                (this._stack[this._base + a] as Slot).r = valueOfBoolean(ARGB(i) != 0);
+                (this._stack[this._base + a]).r = valueOfBoolean(ARGB(i) != 0);
                 if (ARGC(i) != 0)
                 {
                     ++pc;
@@ -2747,7 +2747,7 @@ reentry:
                     var b = this._base + ARGB(i);
                     do
                     {
-                        (this._stack[b--] as Slot).r = NIL;
+                        (this._stack[b--]).r = NIL;
                     } while (b >= this._base + a);
                     continue;
                 }
@@ -2764,26 +2764,26 @@ reentry:
                 rb = k[ARGBx(i)];
                 // assert rb instance of String;
                 this._savedpc = pc; // Protect
-                vmGettable(_function.env, rb, this._stack[this._base + a] as Slot);
+                vmGettable(_function.env, rb, this._stack[this._base + a]);
                 continue;
 
             case OP_GETTABLE:
                 {
                     this._savedpc = pc; // Protect
-                    var h = (this._stack[this._base + ARGB(i)] as Slot).asObject();
+                    var h = (this._stack[this._base + ARGB(i)]).asObject();
                     if (D)
                     {
                         trace("OP_GETTABLE index = " + (this._base + ARGB(i)) + 
                             ", size = " + this._stack.length +
                             ", h = " + h);
                     }
-                    vmGettable(h, RK(k, ARGC(i)), this._stack[this._base + a] as Slot);
+                    vmGettable(h, RK(k, ARGC(i)), this._stack[this._base + a]);
                     continue;
                 }
 
             case OP_SETUPVAL:
                 {
-                    var uv:UpVal = _function.upVal(ARGB(i));
+                    var uv = _function.upVal(ARGB(i));
                     uv.value = objectAt(this._base + a);
                     continue;
                 }
@@ -2791,7 +2791,7 @@ reentry:
             case OP_SETGLOBAL:
                 this._savedpc = pc; // Protect
                 // :todo: consider inlining objectAt
-                vmSettable(_function.env, k[ARGBx(i)] as Slot,
+                vmSettable(_function.env, k[ARGBx(i)],
                     objectAt(this._base + a));
                 continue;
 
@@ -2807,8 +2807,8 @@ reentry:
                 {
                     var b3 = ARGB(i);
                     var c = ARGC(i);
-                    (this._stack[this._base + a] as Slot).r = new LuaTable();
-                    ((this._stack[this._base + a] as Slot).r as LuaTable).init(oFb2int(b3), oFb2int(c));
+                    (this._stack[this._base + a]).r = new LuaTable();
+                    ((this._stack[this._base + a]).r).init(oFb2int(b3), oFb2int(c));
                     continue;
                 }
 
@@ -2816,10 +2816,10 @@ reentry:
                 {
                     var b4 = ARGB(i);
                     rb = this._stack[this._base + b4];
-                    (this._stack[this._base + a + 1] as Slot).r = rb.r;
-                    (this._stack[this._base + a + 1] as Slot).d = rb.d;
+                    (this._stack[this._base + a + 1]).r = rb.r;
+                    (this._stack[this._base + a + 1]).d = rb.d;
                     this._savedpc = pc; // Protect
-                    vmGettable(rb.asObject(), RK(k, ARGC(i)), (this._stack[this._base + a] as Slot));
+                    vmGettable(rb.asObject(), RK(k, ARGC(i)), (this._stack[this._base + a]));
                     continue;
                 }
 
@@ -2829,16 +2829,16 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var sum = rb.d + rc.d;
-                    (this._stack[this._base+a] as Slot).d = sum;
-                    (this._stack[this._base+a] as Slot).r = NUMBER;
+                    (this._stack[this._base+a]).d = sum;
+                    (this._stack[this._base+a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
                     var sum2 = NUMOP[0] + NUMOP[1];
-                    (this._stack[this._base + a] as Slot).d = sum2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = sum2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__add"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__add"))
                 {
                     gAritherror(rb, rc);
                 }
@@ -2850,16 +2850,16 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var difference = rb.d - rc.d;
-                    (this._stack[this._base + a] as Slot).d = difference;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = difference;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
-                    var difference2 = (NUMOP[0] as Number) - (NUMOP[1] as Number);
-                    (this._stack[this._base + a] as Slot).d = difference2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    var difference2 = (NUMOP[0]) - (NUMOP[1]);
+                    (this._stack[this._base + a]).d = difference2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__sub"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__sub"))
                 {
                     gAritherror(rb, rc);
                 }
@@ -2871,16 +2871,16 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var product = rb.d * rc.d;
-                    (this._stack[this._base + a] as Slot).d = product;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = product;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
-                    var product2 = (NUMOP[0] as Number) * (NUMOP[1] as Number);
-                    (this._stack[this._base + a] as Slot).d = product2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    var product2 = (NUMOP[0]) * (NUMOP[1]);
+                    (this._stack[this._base + a]).d = product2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__mul"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__mul"))
                 {
                     gAritherror(rb, rc);
                 }
@@ -2892,16 +2892,16 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var quotient = rb.d / rc.d;
-                    (this._stack[this._base + a] as Slot).d = quotient;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = quotient;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
-                    var quotient2 = (NUMOP[0] as Number) / (NUMOP[1] as Number);
-                    (this._stack[this._base + a] as Slot).d = quotient2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    var quotient2 = (NUMOP[0]) / (NUMOP[1]);
+                    (this._stack[this._base + a]).d = quotient2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__div"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__div"))
                 {
                     gAritherror(rb, rc);
                 }
@@ -2913,16 +2913,16 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var modulus = __modulus(rb.d, rc.d);
-                    (this._stack[this._base + a] as Slot).d = modulus;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = modulus;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
-                    var modulus2 = __modulus(NUMOP[0] as Number, NUMOP[1] as Number);
-                    (this._stack[this._base + a] as Slot).d = modulus2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    var modulus2 = __modulus(NUMOP[0], NUMOP[1]);
+                    (this._stack[this._base + a]).d = modulus2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__mod"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__mod"))
                 {
                     gAritherror(rb, rc);
                 }
@@ -2934,34 +2934,34 @@ reentry:
                 if (rb.r == NUMBER && rc.r == NUMBER)
                 {
                     var result = iNumpow(rb.d, rc.d);
-                    (this._stack[this._base + a] as Slot).d = result;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = result;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
                 else if (toNumberPair(rb, rc, NUMOP))
                 {
                     var result2 = iNumpow(NUMOP[0], NUMOP[1]);
-                    (this._stack[this._base + a] as Slot).d = result2;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                    (this._stack[this._base + a]).d = result2;
+                    (this._stack[this._base + a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a] as Slot, "__pow"))
+                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__pow"))
                 {
                     gAritherror(rb, rc);
                 }
                 continue;
 
             case OP_UNM:
-                rb = this._stack[this._base + ARGB(i)] as Slot;
+                rb = this._stack[this._base + ARGB(i)];
                 if (rb.r == NUMBER)
                 {
-                    (this._stack[this._base+a] as Slot).d = -rb.d;
-                    (this._stack[this._base+a] as Slot).r = NUMBER;
+                    (this._stack[this._base+a]).d = -rb.d;
+                    (this._stack[this._base+a]).r = NUMBER;
                 }
                 else if (Lua.tonumber(rb, NUMOP))
                 {
-                    (this._stack[this._base+a] as Slot).d = -(NUMOP[0] as Number);
-                    (this._stack[this._base+a] as Slot).r = NUMBER;
+                    (this._stack[this._base+a]).d = -(NUMOP[0]);
+                    (this._stack[this._base+a]).r = NUMBER;
                 }
-                else if (!call_binTM(rb, rb, this._stack[this._base + a] as Slot, "__unm"))
+                else if (!call_binTM(rb, rb, this._stack[this._base + a], "__unm"))
                 {
                     gAritherror(rb, rb);
                 }
@@ -2971,30 +2971,26 @@ reentry:
                 {
                     // All numbers are treated as true, so no need to examine
                     // the .d field.
-                    var ra = (this._stack[this._base + ARGB(i)] as Slot).r;
-                    (this._stack[this._base+a] as Slot).r = valueOfBoolean(isFalse(ra));
+                    var ra = (this._stack[this._base + ARGB(i)]).r;
+                    (this._stack[this._base+a]).r = valueOfBoolean(isFalse(ra));
                     continue;
                 }
 
             case OP_LEN:
-                rb = this._stack[this._base + ARGB(i)] as Slot;
-                if (rb.r is LuaTable)
-                {
-                    var t2 = rb.r as LuaTable;
-                    (this._stack[this._base + a] as Slot).d = t2.getn();
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                rb = this._stack[this._base + ARGB(i)];
+                if (rb.r instanceof LuaTable) {
+                    var t2 = rb.r;
+                    (this._stack[this._base + a]).d = t2.getn();
+                    (this._stack[this._base + a]).r = NUMBER;
                     continue;
-                }
-                else if (rb.r is String)
-                {
-                    var s = rb.r as String;
-                    (this._stack[this._base + a] as Slot).d = s.length;
-                    (this._stack[this._base + a] as Slot).r = NUMBER;
+                } else if (rb.r instanceof String) {
+                    var s = rb.r;
+                    (this._stack[this._base + a]).d = s.length;
+                    (this._stack[this._base + a]).r = NUMBER;
                     continue;
                 }
                 this._savedpc = pc; // Protect
-                if (!call_binTM(rb, rb, this._stack[this._base + a] as Slot, "__len"))
-                {
+                if (!call_binTM(rb, rb, this._stack[this._base + a], "__len")) {
                     gTypeerror(rb, "get length of");
                 }
                 continue;
@@ -3010,8 +3006,8 @@ reentry:
                     // converting each stack slot, but simply using
                     // StringBuffer.append on whatever is there).
                     vmConcat(c_CONCAT - b_CONCAT + 1, c_CONCAT);
-                    (this._stack[this._base + a] as Slot).r = (this._stack[this._base + b_CONCAT] as Slot).r;
-                    (this._stack[this._base + a] as Slot).d = (this._stack[this._base + b_CONCAT] as Slot).d;
+                    (this._stack[this._base + a]).r = (this._stack[this._base + b_CONCAT]).r;
+                    (this._stack[this._base + a]).d = (this._stack[this._base + b_CONCAT]).d;
                     continue;
                 }
 
@@ -3026,7 +3022,7 @@ reentry:
                 if (vmEqual(rb, rc) == (a != 0))
                 {
                     // dojump
-                    pc += ARGsBx(code[pc] as int);
+                    pc += ARGsBx(code[pc]);
                 }
                 ++pc;
                 continue;
@@ -3038,7 +3034,7 @@ reentry:
                 if (vmLessthan(rb, rc) == (a != 0))
                 {
                     // dojump
-                    pc += ARGsBx(code[pc] as int);
+                    pc += ARGsBx(code[pc]);
                 }
                 ++pc;
                 continue;
@@ -3050,28 +3046,27 @@ reentry:
                 if (vmLessequal(rb, rc) == (a != 0))
                 {
                     // dojump
-                    pc += ARGsBx(code[pc] as int);
+                    pc += ARGsBx(code[pc]);
                 }
                 ++pc;
                 continue;
 
             case OP_TEST:
-                if (isFalse((this._stack[this._base + a] as Slot).r) != (ARGC(i) != 0))
+                if (isFalse((this._stack[this._base + a]).r) != (ARGC(i) != 0))
                 {
                     // dojump
-                    pc += ARGsBx(code[pc] as int);
+                    pc += ARGsBx(code[pc]);
                 }
                 ++pc;
                 continue;
 
             case OP_TESTSET:
-                rb = this._stack[this._base + ARGB(i)] as Slot;
-                if (isFalse(rb.r) != (ARGC(i) != 0))
-                {
-                    (this._stack[this._base + a] as Slot).r = rb.r;
-                    (this._stack[this._base + a] as Slot).d = rb.d;
+                rb = this._stack[this._base + ARGB(i)];
+                if (isFalse(rb.r) != (ARGC(i) != 0)) {
+                    (this._stack[this._base + a]).r = rb.r;
+                    (this._stack[this._base + a]).d = rb.d;
                     // dojump
-                    pc += ARGsBx(code[pc] as int);
+                    pc += ARGsBx(code[pc]);
                 }
                 ++pc;
                 continue;
@@ -3118,7 +3113,7 @@ reentry:
                         case PCRLUA:
                             {
                                 // tail call: put new frame in place of previous one.
-                                var ci = this._civ.elementAt(this._civ.size - 2) as CallInfo;
+                                var ci = this._civ.elementAt(this._civ.size - 2);
                                 var func = ci.func;
                                 var fci = __ci();    // Fresh CallInfo
                                 var pfunc = fci.func;
@@ -3128,8 +3123,8 @@ reentry:
                                 for (aux=0; pfunc + aux < this._stackSize; ++aux)
                                 {
                                     // move frame down
-                                    (this._stack[func + aux] as Slot).r = (this._stack[pfunc + aux] as Slot).r;
-                                    (this._stack[func + aux] as Slot).d = (this._stack[pfunc + aux] as Slot).d;
+                                    (this._stack[func + aux]).r = (this._stack[pfunc + aux]).r;
+                                    (this._stack[func + aux]).d = (this._stack[pfunc + aux]).d;
                                 }
                                 stacksetsize(func + aux);        // correct top
                                 // assert stackSize == base + ((LuaFunction)stack[func]).proto().maxstacksize();
@@ -3175,18 +3170,18 @@ reentry:
 
             case OP_FORLOOP:
                 {
-                    var step = (this._stack[this._base + a + 2] as Slot).d;
-                    var idx = (this._stack[this._base + a] as Slot).d + step;
-                    var limit = (this._stack[this._base + a + 1] as Slot).d;
+                    var step = (this._stack[this._base + a + 2]).d;
+                    var idx = (this._stack[this._base + a]).d + step;
+                    var limit = (this._stack[this._base + a + 1]).d;
                     if ((0 < step && idx <= limit) ||
                         (step <= 0 && limit <= idx))
                     {
                         // dojump
                         pc += ARGsBx(i);
-                        (this._stack[this._base + a] as Slot).d = idx;    // internal index
-                        (this._stack[this._base + a] as Slot).r = NUMBER;
-                        (this._stack[this._base + a + 3] as Slot).d = idx;  // external index
-                        (this._stack[this._base + a + 3] as Slot).r = NUMBER;
+                        (this._stack[this._base + a]).d = idx;    // internal index
+                        (this._stack[this._base + a]).r = NUMBER;
+                        (this._stack[this._base + a + 3]).d = idx;  // external index
+                        (this._stack[this._base + a + 3]).r = NUMBER;
                     }
                     continue;
                 }
@@ -3209,10 +3204,10 @@ reentry:
                     {
                         gRunerror("'for' step must be a number");
                     }
-                    var step_FORPREP = (this._stack[pstep] as Slot).d;
-                    var idx_FORPREP = (this._stack[init] as Slot).d - step_FORPREP;
-                    (this._stack[init] as Slot).d = idx_FORPREP;
-                    (this._stack[init] as Slot).r = NUMBER;
+                    var step_FORPREP = (this._stack[pstep]).d;
+                    var idx_FORPREP = (this._stack[init]).d - step_FORPREP;
+                    (this._stack[init]).d = idx_FORPREP;
+                    (this._stack[init]).r = NUMBER;
                     // dojump
                     pc += ARGsBx(i);
                     continue;
@@ -3221,23 +3216,22 @@ reentry:
 
             case OP_TFORLOOP:
                 {
-                    var cb = this._base+a+3;  // call base
-                    (this._stack[cb + 2] as Slot).r = (this._stack[this._base + a + 2] as Slot).r;
-                    (this._stack[cb + 2] as Slot).d = (this._stack[this._base + a + 2] as Slot).d;
-                    (this._stack[cb + 1] as Slot).r = (this._stack[this._base + a + 1] as Slot).r;
-                    (this._stack[cb + 1] as Slot).d = (this._stack[this._base + a + 1] as Slot).d;
-                    (this._stack[cb] as Slot).r = (this._stack[this._base + a] as Slot).r;
-                    (this._stack[cb] as Slot).d = (this._stack[this._base + a] as Slot).d;
+                    var cb = this._base + a + 3;  // call base
+                    (this._stack[cb + 2]).r = (this._stack[this._base + a + 2]).r;
+                    (this._stack[cb + 2]).d = (this._stack[this._base + a + 2]).d;
+                    (this._stack[cb + 1]).r = (this._stack[this._base + a + 1]).r;
+                    (this._stack[cb + 1]).d = (this._stack[this._base + a + 1]).d;
+                    (this._stack[cb]).r = (this._stack[this._base + a]).r;
+                    (this._stack[cb]).d = (this._stack[this._base + a]).d;
                     stacksetsize(cb + 3);
                     this._savedpc = pc; // Protect
                     vmCall(cb, ARGC(i));
                     stacksetsize(__ci().top);
-                    if (NIL != (this._stack[cb] as Slot).r)     // continue loop
-                    {
-                        (this._stack[cb - 1] as Slot).r = (this._stack[cb] as Slot).r;
-                        (this._stack[cb - 1] as Slot).d = (this._stack[cb] as Slot).d;
+                    if (NIL != (this._stack[cb]).r) {    // continue loop
+                        (this._stack[cb - 1]).r = (this._stack[cb]).r;
+                        (this._stack[cb - 1]).d = (this._stack[cb]).d;
                         // dojump
-                        pc += ARGsBx(code[pc] as int);
+                        pc += ARGsBx(code[pc]);
                     }
                     ++pc;
                     continue;
@@ -3248,16 +3242,14 @@ reentry:
                     var n = ARGB(i);
                     var c_SETLIST = ARGC(i);
                     var setstack = false;
-                    if (0 == n)
-                    {
+                    if (0 == n) {
                         n = (this._stackSize - (this._base + a)) - 1;
                         setstack = true;
                     }
-                    if (0 == c_SETLIST)
-                    {
-                        c_SETLIST = code[pc++] as int;
+                    if (0 == c_SETLIST) {
+                        c_SETLIST = code[pc++];
                     }
-                    var t3 = (this._stack[this._base+a] as Slot).r as LuaTable;
+                    var t3 = (this._stack[this._base+a]).r;
                     var last = ((c_SETLIST - 1) * LFIELDS_PER_FLUSH) + n;
                     // :todo: consider expanding space in table
                     for (; n > 0; n--)
@@ -3278,21 +3270,21 @@ reentry:
 
             case OP_CLOSURE:
                 {
-                    var p = _function.proto.proto[ARGBx(i)] as Proto;
+                    var p = _function.proto.proto[ARGBx(i)];
                     var nup = p.nups;
                     var up = new Array(nup); //UpVal[] 
                     for (var j = 0; j < nup; j++, pc++) {
-                        var _in = code[pc] as int;
+                        var _in = code[pc];
                         if (OPCODE(_in) == OP_GETUPVAL) {
-                            up[j] = _function.upVal(ARGB(_in)) as UpVal;
+                            up[j] = _function.upVal(ARGB(_in));
                         } else {
                             // assert OPCODE(in) == OP_MOVE;
-                            up[j] = fFindupval(this._base + ARGB(_in)) as UpVal;
+                            up[j] = fFindupval(this._base + ARGB(_in));
                         }	
                     }
                     var nf = new LuaFunction(p, up, _function.env);
                     //up = null;
-                    (this._stack[this._base + a] as Slot).r = nf;
+                    (this._stack[this._base + a]).r = nf;
                     continue;
                 }
 
@@ -3312,13 +3304,13 @@ reentry:
                     {
                         if (j_VARARG < n_VARARG)
                         {
-                            var src = this._stack[this._base - n_VARARG + j_VARARG] as Slot;
-                            (this._stack[this._base + a + j_VARARG] as Slot).r = src.r;
-                            (this._stack[this._base + a + j_VARARG] as Slot).d = src.d;
+                            var src = this._stack[this._base - n_VARARG + j_VARARG];
+                            (this._stack[this._base + a + j_VARARG]).r = src.r;
+                            (this._stack[this._base + a + j_VARARG]).d = src.d;
                         }
                         else
                         {
-                            (this._stack[this._base + a + j_VARARG] as Slot).r = NIL;
+                            (this._stack[this._base + a + j_VARARG]).r = NIL;
                         }
                     }
                     continue;
@@ -3337,7 +3329,7 @@ Lua.iNumpow = function(a, b) {
     if (a == 0.0)
         return invert ? NaN : a ;
     var result = 1.0 ;
-    var ipow = b as int;
+    var ipow = b;
     b -= ipow ;
     var t = a ;
     while (ipow > 0) {
@@ -3369,8 +3361,8 @@ Lua.iNumpow = function(a, b) {
 Lua.prototype.vmGettable = function(t, key, val) {
     var tm;
     for (var loop = 0; loop < MAXTAGLOOP; ++loop) {
-        if (t is LuaTable) {       // 't' is a table?
-            var h = t as LuaTable;
+        if (t instanceof LuaTable) {       // 't' is a table?
+            var h = t;
             h.__getlua(key, SPARE_SLOT);
 
             if (SPARE_SLOT.r != NIL) {
@@ -3407,10 +3399,10 @@ Lua.prototype.vmLessthan = function(l, r) {
         gOrdererror(l, r);
     } else if (l.r == NUMBER) {
         return l.d < r.d;
-    } else if (l.r is String) {
+    } else if (l.r instanceof String) {
         // :todo: PUC-Rio use strcoll, maybe we should use something
         // equivalent.
-        return (l.r as String) < (r.r as String); //TODO:compareTo
+        return (l.r) < (r.r); //TODO:compareTo
     }
     var res = call_orderTM(l, r, "__lt");
     if (res >= 0) {
@@ -3427,8 +3419,8 @@ Lua.prototype.vmLessequal = function(l, r) {
         gOrdererror(l, r);
     } else if (l.r == NUMBER) {
         return l.d <= r.d;
-    } else if (l.r is String) {
-        return (l.r as String) <= (r.r as String); //TODO: CompareTo
+    } else if (l.r instanceof String) {
+        return (l.r) <= (r.r); //TODO: CompareTo
     }
     var res = call_orderTM(l, r, "__le");       // first try 'le'
     if (res >= 0) {
@@ -3464,8 +3456,8 @@ Lua.prototype.vmPoscall = function(firstResult) {
     // The movement is always downwards, so copying from the top-most
     // result first is always correct.
     while (i != 0 && firstResult < top) {
-        (this._stack[res] as Slot).r = (this._stack[firstResult] as Slot).r;
-        (this._stack[res] as Slot).d = (this._stack[firstResult] as Slot).d;
+        (this._stack[res]).r = (this._stack[firstResult]).r;
+        (this._stack[res]).d = (this._stack[firstResult]).d;
         ++res;
         ++firstResult;
         i--;
@@ -3476,7 +3468,7 @@ Lua.prototype.vmPoscall = function(firstResult) {
     // :todo: consider using two stacksetsize calls to nil out
     // remaining required results.
     while (i-- > 0) {
-        (this._stack[res++] as Slot).r = NIL;
+        (this._stack[res++]).r = NIL;
     }
     stacksetsize(res);
     return wanted != MULTRET;
@@ -3495,7 +3487,7 @@ Lua.prototype.vmPrecall = function(func, r) {
         faso = tryfuncTM(func);
     }
     __ci().savedpc = this._savedpc;
-    if (faso is LuaFunction) {
+    if (faso instanceof LuaFunction) {
         var f = faso;
         var p = f.proto;
         // :todo: ensure enough stack
@@ -3519,7 +3511,7 @@ Lua.prototype.vmPrecall = function(func, r) {
         stacksetsize(top);
         // :todo: implement call hook.
         return PCRLUA;
-    } else if (faso is LuaJavaCallback) {
+    } else if (faso instanceof LuaJavaCallback) {
         var fj = faso;
         // :todo: checkstack (not sure it's necessary)
         this._base = func + 1;
@@ -3551,7 +3543,7 @@ Lua.prototype.vmPrecall = function(func, r) {
 Lua.prototype.vmSettable = function(t, key, val) {
     for (var loop = 0; loop < MAXTAGLOOP; ++loop) {
         var tm;
-        if (t is LuaTable) { // 't' is a table
+        if (t instanceof LuaTable) { // 't' is a table
             var h = t;
             h.__getlua(key, SPARE_SLOT);
             if (SPARE_SLOT.r != NIL) {  // result is not nil?
@@ -3585,10 +3577,10 @@ Lua.prototype.vmSettable = function(t, key, val) {
 Lua.NUMBER_FMT = ".14g";
 
 Lua.vmTostring = function(o) {
-    if (o is String) {
-        return o as String;
+    if (o instanceof String) {
+        return o;
     }
-    if (!(o is Number)) {
+    if (!(o instanceof Number)) {
         return null;
     }
     // Convert number to string.  PUC-Rio abstracts this operation into
@@ -3624,7 +3616,7 @@ Lua.prototype.adjust_varargs = function(p, actual) {
     var newbase = this._stackSize; // final position of first argument
     for (var i = 0; i < nfixargs; ++i) {
         // :todo: arraycopy?
-        pushSlot(this._stack[fixed + i] as Slot);
+        pushSlot(this._stack[fixed + i]);
         (this._stack[fixed + i]).r = NIL;
     }
     return newbase;
@@ -3829,8 +3821,8 @@ Lua.prototype.stackInsertAt = function(o, i) {
     // index slots to lower index slots.
     // A loop from n to 1 copies n slots.
     for (var j = n; j >= 1; --j) {
-        (this._stack[i + j]).r = (this._stack[i + j - 1] as Slot).r;
-        (this._stack[i + j]).d = (this._stack[i + j - 1] as Slot).d;
+        (this._stack[i + j]).r = (this._stack[i + j - 1]).r;
+        (this._stack[i + j]).d = (this._stack[i + j - 1]).d;
     }
     (this._stack[i]).setObject(o);
 };
@@ -3870,7 +3862,7 @@ Lua.tonumber = function(o, out /*double[] */) {
         out[0] = o.d;
         return true;
     }
-    if (!(o.r is String)) {
+    if (!(o.r instanceof String)) {
         return false;
     }
     if (oStr2d(o.r, out)) {
@@ -3937,7 +3929,7 @@ Lua.prototype.tostring = function(idx) {
 Lua.prototype.tryfuncTM = function(func) {
     var tm = tagmethod((this._stack[func]).asObject(), "__call");
     if (!isFunction(tm)) {
-        gTypeerror(this._stack[func] as Slot, "call");
+        gTypeerror(this._stack[func], "call");
     }
     stackInsertAt(tm, func);
     return tm;
@@ -3993,9 +3985,9 @@ Lua.prototype.objectAt = function(idx) {
  * @param idx  absolute index into stack (0 <= idx < stackSize).
  */
 Lua.prototype.setObjectAt = function(o, idx) {
-    if (o is Number) {
+    if (o instanceof Number) {
         (this._stack[idx]).r = NUMBER;
-        (this._stack[idx]).d = o as Number;
+        (this._stack[idx]).d = o;
         return;
     }
     if (D) {

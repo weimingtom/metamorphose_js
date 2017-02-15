@@ -118,7 +118,7 @@ LuaTable.prototype.hashCode = function() {
 };
 
 LuaTable.arrayindex = function(key) {
-    if (key is Number) {
+    if (key instanceof Number) {
         var d = key;
         var k = d;
         if (k == d) {
@@ -340,7 +340,7 @@ LuaTable.prototype.getn = function() {
  * is non-<code>null</code>.
  */
 LuaTable.prototype.getlua = function(key) {
-    if (key is Number) {
+    if (key instanceof Number) {
         var d = key;
         if (d <= this._sizeArray && d >=1) {
             var i = d;
@@ -408,7 +408,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
     if (key == Lua.NIL) {
         L.gRunerror("table index is nil");
     }
-    if (key is Number) {
+    if (key instanceof Number) {
         d = key;
         var j = d;
 

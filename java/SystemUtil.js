@@ -6,7 +6,7 @@ var SystemUtil = function(){
 SystemUtil.out = new PrintStream();
 		
 SystemUtil.arraycopy = function(src, srcPos, dest, destPos, length) {
-    if(src != null && dest != null && src is Array && dest is Array) {
+    if(src != null && dest != null && src instanceof Array && dest instanceof Array) {
         for (var i = destPos; i < destPos + length; i++) {　
             dest[i] = src[i]; 
             //trace("arraycopy:", i, (src as Array)[i]); 
