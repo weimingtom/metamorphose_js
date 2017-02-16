@@ -1,5 +1,6 @@
 ;(function(metamorphose) {
 
+var ByteArray = metamorphose ? metamorphose.ByteArray : require("./ByteArray.js");
 /**
  * 数据输出流允许应用程序以适当方式将基本 Java 数据类型写入输出流中。
  * 然后，应用程序可以使用数据输入流将数据读入。

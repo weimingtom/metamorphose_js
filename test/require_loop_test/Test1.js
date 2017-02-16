@@ -1,6 +1,6 @@
 var Test2 = require("./Test2.js")
 
-var Test1 = function() {
+var Test1 = function () {
     console.log("Test1>>>");
 };
 

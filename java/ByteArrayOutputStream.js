@@ -1,5 +1,8 @@
 ;(function(metamorphose) {
 
+var ByteArray = metamorphose ? metamorphose.ByteArray : require('./ByteArray.js');
+var OutputStream = metamorphose ? metamorphose.OutputStream : require('./OutputStream.js');
+
 var ByteArrayOutputStream = function() {
     this._bytes = new ByteArray();
 };
