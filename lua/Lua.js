@@ -1,7 +1,9 @@
 ;(function(metamorphose) {
 var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
-var Runtime = metamorphose ? metamorphose.Runtime : require('./Runtime.js');
+var Runtime = metamorphose ? metamorphose.Runtime : require('../java/Runtime.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 
+var StringReader = metamorphose ? metamorphose.StringReader : require('../java/StringReader.js');
 var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
 var IllegalArgumentException = metamorphose ? metamorphose.IllegalArgumentException : require('../java/IllegalArgumentException.js');
 var IOException = metamorphose ? metamorphose.IOException : require('../java/IOException.js');
@@ -14,6 +16,9 @@ var LuaFunction = metamorphose ? metamorphose.LuaFunction : require('./LuaFuncti
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 var LuaUserdata = metamorphose ? metamorphose.LuaUserdata : require('./LuaUserdata.js');
 var LuaInternal = metamorphose ? metamorphose.LuaInternal : require('./LuaInternal.js');
+var Debug = metamorphose ? metamorphose.Debug : require('./Debug.js');
+var LuaError = metamorphose ? metamorphose.LuaError : require('../java/LuaError.js');
+var UpVal = metamorphose ? metamorphose.UpVal : require('./UpVal.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Lua.java#3 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -862,8 +867,8 @@ Lua.prototype.next = function(idx) {
         if (k.equals(key)) {
             if (e.hasMoreElements()) {
                 key = e.nextElement();
-                pushObject(key);
-                pushObject(t.getlua(key));
+                this.pushObject(key);
+                this.pushObject(t.getlua(key));
                 return true;
             }
             return false;
@@ -916,7 +921,7 @@ Lua.objLen = function(o) {
         return t.getn();
     }
     if (o instanceof Number) {
-        return vmTostring(o).length;
+        return this.vmTostring(o).length;
     }
     return 0;
 };
@@ -944,7 +949,7 @@ Lua.objLen = function(o) {
  * @return 0 if successful, else a non-zero error code.
  */
 Lua.prototype.pcall = function(nargs, nresults, ef) {
-    apiChecknelems(nargs + 1);
+    this.apiChecknelems(nargs + 1);
     var restoreStack = this._stackSize - (nargs + 1);
     // Most of this code comes from luaD_pcall
     var restoreCi = this._civ.size;
@@ -954,29 +959,29 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
     var old_allowhook = this._allowhook;
     var errorStatus = 0;
     try {
-        call(nargs, nresults);
+        this.call(nargs, nresults);
     } catch (e) {
-        trace(e.getStackTrace());
-        fClose(restoreStack);   // close eventual pending closures
-        dSeterrorobj(e.errorStatus, restoreStack);
+        console.log(e.getStackTrace());
+        this.fClose(restoreStack);   // close eventual pending closures
+        this.dSeterrorobj(e.errorStatus, restoreStack);
         this._nCcalls = oldnCcalls;
         this._civ.size = restoreCi;
-        var ci = __ci();
+        var ci = this.__ci();
         this._base = ci.base;
         this._savedpc = ci.savedpc;
         this._allowhook = old_allowhook;
         errorStatus = e.errorStatus;
     } catch (e) {
-        trace(e.getStackTrace());
-        fClose(restoreStack);     // close eventual pending closures
-        dSeterrorobj(ERRMEM, restoreStack);
+        console.log(e.getStackTrace());
+        this.fClose(restoreStack);     // close eventual pending closures
+        this.dSeterrorobj(Lua.ERRMEM, restoreStack);
         this._nCcalls = oldnCcalls;
         this._civ.size = restoreCi;
-        var ci2 = __ci();
-        this._base = ci.base;
+        var ci2 = this.__ci();
+        this._base = this.ci.base;
         this._savedpc = ci2.savedpc;
         this._allowhook = old_allowhook;
-        errorStatus = ERRMEM;
+        errorStatus = Lua.ERRMEM;
     }
     /**/
     this._errfunc = old_errfunc;
@@ -991,7 +996,7 @@ Lua.prototype.pop = function(n) {
     if (n < 0) {
         throw new IllegalArgumentException();
     }
-    stacksetsize(this._stackSize - n);
+    this.stacksetsize(this._stackSize - n);
 };
 
 /**
@@ -1004,7 +1009,7 @@ Lua.prototype.pop = function(n) {
  */
 Lua.prototype.pushObject = function(o) {
     // see also a private overloaded version of this for Slot.
-    stackAdd(o);
+    this.stackAdd(o);
 };
 
 /**
@@ -1012,7 +1017,7 @@ Lua.prototype.pushObject = function(o) {
  * @param b  the boolean to push.
  */
 Lua.prototype.pushBoolean = function(b) {
-    pushObject(valueOfBoolean(b));
+    this.pushObject(this.valueOfBoolean(b));
 };
 
 /**
@@ -1020,12 +1025,12 @@ Lua.prototype.pushBoolean = function(b) {
  * @param s  the string to push.
  */
 Lua.prototype.pushLiteral = function(s) {
-    pushObject(s);
+    this.pushObject(s);
 };
 
 /** Push nil onto the stack. */
 Lua.prototype.pushNil = function() {
-    pushObject(NIL);
+    this.pushObject(Lua.NIL);
 };
 
 /**
@@ -1034,7 +1039,7 @@ Lua.prototype.pushNil = function() {
 */
 Lua.prototype.pushNumber = function(d) {
     // :todo: optimise to avoid creating Double instance
-    pushObject(Number(d));
+    this.pushObject(Number(d));
 };
 
 /**
@@ -1042,7 +1047,7 @@ Lua.prototype.pushNumber = function(d) {
  * @param s  the string to push.
  */
 Lua.prototype.pushString = function(s) {
-    pushObject(s);
+    this.pushObject(s);
 };
 
 /**
@@ -1052,7 +1057,7 @@ Lua.prototype.pushString = function(s) {
  */
 Lua.prototype.pushValue = function(idx) {
     // :todo: optimised to avoid creating Double instance
-    pushObject(value(idx));
+    this.pushObject(this.value(idx));
 };
 
 /**
@@ -1062,7 +1067,7 @@ Lua.prototype.pushValue = function(idx) {
  * @return  true if and only if they compare equal.
  */
 Lua.rawEqual = function(o1, o2) {
-    return oRawequal(o1, o2);
+    return this.oRawequal(o1, o2);
 };
 
 /**
@@ -1105,7 +1110,7 @@ Lua.prototype.rawSet = function(t, k, v) {
 * @param v  the new value to be stored at index <var>i</var>.
 */
 Lua.prototype.rawSetI = function(t, i, v) {
-    apiCheck(t instanceof LuaTable);
+    this.apiCheck(t instanceof LuaTable);
     var h = t;
     h.putnum(i, v);
 };
@@ -1117,7 +1122,7 @@ Lua.prototype.rawSetI = function(t, i, v) {
  * @param f     the LuaJavaCallback to register.
  */
 Lua.prototype.register = function(name, f) {
-    setGlobal(name, f);
+    this.setGlobal(name, f);
 };
 
 /**
@@ -1129,11 +1134,11 @@ Lua.prototype.register = function(name, f) {
  * @return Lua.YIELD, 0, or an error code.
  */
 Lua.prototype.resume = function(narg) {
-    if (status != YIELD) {
-        if (status != 0)
-            return resume_error("cannot resume dead coroutine");
+    if (this.status != Lua.YIELD) {
+        if (this.status != 0)
+            return this.resume_error("cannot resume dead coroutine");
         else if (this._civ.size != 1)
-            return resume_error("cannot resume non-suspended coroutine");
+            return this.resume_error("cannot resume non-suspended coroutine");
     }
     // assert errfunc == 0 && nCcalls == 0;
     var errorStatus = 0;
@@ -1142,30 +1147,30 @@ protect:
         try {
             // This block is equivalent to resume from ldo.c
             var firstArg = this._stackSize - narg;
-            if (status == 0) {  // start coroutine?
+            if (this.status == 0) {  // start coroutine?
                 // assert civ.size() == 1 && firstArg > base);
-                if (vmPrecall(firstArg - 1, MULTRET) != PCRLUA)
+                if (this.vmPrecall(firstArg - 1, Lua.MULTRET) != Lua.PCRLUA)
                     break protect;
             } else {     // resuming from previous yield
                 // assert status == YIELD;
-                status = 0;
-                if (!isLua(__ci())) {      // 'common' yield
+                this.status = 0;
+                if (!this.isLua(this.__ci())) {      // 'common' yield
                     // finish interrupted execution of 'OP_CALL'
                     // assert ...
-                    if (vmPoscall(firstArg))      // complete it...
-                        stacksetsize(__ci().top);  // and correct top
+                    if (this.vmPoscall(firstArg))      // complete it...
+                        this.stacksetsize(this.__ci().top);  // and correct top
                 } else    // yielded inside a hook: just continue its execution
-                    this._base = __ci().base;
+                    this._base = this.__ci().base;
             }
-            vmExecute(this._civ.size - 1);
+            this.vmExecute(this._civ.size - 1);
         } catch (e) {
-            trace(e.getStackTrace());
-            status = e.errorStatus;   // mark thread as 'dead'
-            dSeterrorobj(e.errorStatus, this._stackSize);
-            __ci().top = this._stackSize;
+            console.log(e.getStackTrace());
+            this.status = e.errorStatus;   // mark thread as 'dead'
+            this.dSeterrorobj(e.errorStatus, this._stackSize);
+            this.__ci().top = this._stackSize;
         }
     } while (false);
-    return status;
+    return this.status;
 };
 
 /**
@@ -1213,7 +1218,7 @@ Lua.prototype.setFenv = function(o, table) {
 Lua.prototype.setField = function(t, name, v) {
     var s = new Slot();
     s.init2(name);
-    vmSettable(t, s, v);
+    this.vmSettable(t, s, v);
 };
 
 /**
@@ -1222,10 +1227,10 @@ Lua.prototype.setField = function(t, name, v) {
 * @param mt  The new metatable.
 */
 Lua.prototype.setMetatable = function(o, mt) {
-    if (isNil(mt)) {
+    if (this.isNil(mt)) {
         mt = null;
     } else {
-        apiCheck(mt instanceof LuaTable);
+        this.apiCheck(mt instanceof LuaTable);
     }
     var mtt = mt;
     if (o instanceof LuaTable) {
@@ -1235,7 +1240,7 @@ Lua.prototype.setMetatable = function(o, mt) {
         var u = o;
         u.metatable = mtt;
     } else {
-        this._metatable[____type(o)] = mtt;
+        this._metatable[this.____type(o)] = mtt;
     }
 };
 
@@ -1247,7 +1252,7 @@ Lua.prototype.setMetatable = function(o, mt) {
 Lua.prototype.setGlobal = function(name, value) {
     var s = new Slot();
     s.init2(name);
-    vmSettable(this._global, s, value);
+    this.vmSettable(this._global, s, value);
 };
 
 /**
@@ -1259,7 +1264,7 @@ Lua.prototype.setGlobal = function(name, value) {
 Lua.prototype.setTable = function(t, k, v) {
     var s = new Slot();
     s.init2(k);
-    vmSettable(t, s, v);
+    this.vmSettable(t, s, v);
 };
 
 /**
@@ -1270,7 +1275,7 @@ Lua.prototype.setTop = function(n) {
     if (n < 0) {
         throw new IllegalArgumentException();
     }
-    stacksetsize(this._base + n);
+    this.stacksetsize(this._base + n);
 };
 
 /**
@@ -1292,7 +1297,7 @@ Lua.prototype.setStatus = function(status) {
  */
 Lua.prototype.tableKeys = function(t) {
     if (!(t instanceof LuaTable)) {
-        error("table required");
+        this.error("table required");
         // NOTREACHED
     }
     return (t).keys();
@@ -1304,7 +1309,7 @@ Lua.prototype.tableKeys = function(t) {
  * @return  the resulting primitive boolean.
  */
 Lua.prototype.toBoolean = function(o) {
-    return !(o == NIL || o == false);
+    return !(o == Lua.NIL || o == false);
 };
 
 /**
@@ -1314,7 +1319,7 @@ Lua.prototype.toBoolean = function(o) {
  * @return  the resulting int.
  */
 Lua.prototype.toInteger = function(o) {
-    return toNumber(o);
+    return this.toNumber(o);
 };
 
 /**
@@ -1324,9 +1329,9 @@ Lua.prototype.toInteger = function(o) {
  * @return  The resulting number.
  */
 Lua.prototype.toNumber = function(o) {
-    SPARE_SLOT.setObject(o);
-    if (Lua.tonumber(SPARE_SLOT, NUMOP)) {
-        return NUMOP[0];
+    Lua.SPARE_SLOT.setObject(o);
+    if (Lua.tonumber(Lua.SPARE_SLOT, Lua.NUMOP)) {
+        return Lua.NUMOP[0];
     }
     return 0;
 };
@@ -1340,7 +1345,7 @@ Lua.prototype.toNumber = function(o) {
  * @return  The resulting string.
  */
 Lua.prototype.toString = function(o) {
-    return vmTostring(o);
+    return this.vmTostring(o);
 };
 
 /**
@@ -1375,11 +1380,11 @@ Lua.prototype.toUserdata = function(o) {
  * @return  the type, or {@link #TNONE} if there is no value at <var>idx</var>
  */
 Lua.prototype.type = function(idx) {
-    idx = absIndex(idx);
+    idx = this.absIndex(idx);
     if (idx < 0) {
-        return TNONE;
+        return Lua.TNONE;
     }
-    return ___type(this._stack[idx]);
+    return this.___type(this._stack[idx]);
 };
 
 /**
@@ -1388,10 +1393,10 @@ Lua.prototype.type = function(idx) {
  * @return
  */
 Lua.prototype.___type = function(s) {
-    if (s.r == NUMBER) {
-        return TNUMBER;
+    if (s.r == Lua.NUMBER) {
+        return Lua.TNUMBER;
     }
-    return ____type(s.r);
+    return this.____type(s.r);
 };
 
 /**
@@ -1401,24 +1406,24 @@ Lua.prototype.___type = function(s) {
  * @return  the Lua type from an enumeration.
  */
 Lua.____type = function(o) {
-    if (o == NIL) {
-        return TNIL;
+    if (o == Lua.NIL) {
+        return Lua.TNIL;
     } else if (o instanceof Number) {
-        return TNUMBER;
+        return Lua.TNUMBER;
     } else if (o instanceof Boolean) {
-        return TBOOLEAN;
+        return Lua.TBOOLEAN;
     } else if (o instanceof String) {
-        return TSTRING;
+        return Lua.TSTRING;
     } else if (o instanceof LuaTable) {
-        return TTABLE;
+        return Lua.TTABLE;
     } else if (o instanceof LuaFunction || o instanceof LuaJavaCallback) {
-        return TFUNCTION;
+        return Lua.TFUNCTION;
     } else if (o instanceof LuaUserdata) {
-        return TUSERDATA;
+        return Lua.TUSERDATA;
     } else if (o instanceof Lua) {
-        return TTHREAD;
+        return Lua.TTHREAD;
     }
-    return TNONE;
+    return Lua.TNONE;
 };
 
 /**
@@ -1427,10 +1432,10 @@ Lua.____type = function(o) {
  * @return  the type's name.
  */
 Lua.typeName = function(type) {
-    if (TNONE == type) {
+    if (Lua.TNONE == type) {
         return "no value";
     }
-    return TYPENAME[type];
+    return Lua.TYPENAME[type];
 };
 
 /**
@@ -1441,9 +1446,9 @@ Lua.typeName = function(type) {
  * @return  the Lua value from the stack.
  */
 Lua.prototype.value = function(idx) {
-    idx = absIndex(idx);
+    idx = this.absIndex(idx);
     if (idx < 0) {
-        return NIL;
+        return Lua.NIL;
     }
     return (this._stack[idx]).asObject();
 };
@@ -1485,12 +1490,12 @@ Lua.prototype.xmove = function(to, n) {
     if (this == to) {
         return;
     }
-    apiChecknelems(n);
+    this.apiChecknelems(n);
     // L.apiCheck(from.G() == to.G());
     for (var i = 0; i < n; ++i) {
-        to.pushObject(value( -n + i));
+        to.pushObject(this.value( -n + i));
     }
-    pop(n);
+    this.pop(n);
 };
 
 /**
@@ -1507,9 +1512,9 @@ Lua.prototype.xmove = function(to, n) {
  */
 Lua.prototype.yield = function(nresults) {
     if (this._nCcalls > 0)
-        gRunerror("attempt to yield across metamethod/Java-call boundary");
+        this.gRunerror("attempt to yield across metamethod/Java-call boundary");
     this._base = this._stackSize - nresults;     // protect stack slots below
-    status = YIELD;
+    this.status = Lua.YIELD;
     return -1;
 };
 
@@ -1567,7 +1572,7 @@ Lua.prototype.apiCheck = function(cond) {
 };
 
 Lua.prototype.apiChecknelems = function(n) {
-    apiCheck(n <= this._stackSize - this._base);
+    this.apiCheck(n <= this._stackSize - this._base);
 };
 
 /**
@@ -1580,7 +1585,7 @@ Lua.prototype.argCheck = function(cond, numarg, extramsg) {
     if (cond) {
         return;
     }
-    argError(numarg, extramsg);
+    this.argError(numarg, extramsg);
 };
 
 /**
@@ -1592,7 +1597,7 @@ Lua.prototype.argCheck = function(cond, numarg, extramsg) {
 Lua.prototype.argError = function(narg, extramsg) {
     // :todo: use debug API as per PUC-Rio
     if (true) {
-        return error("bad argument " + narg + " (" + extramsg + ")");
+        return this.error("bad argument " + narg + " (" + extramsg + ")");
     }
     return 0;
 };
@@ -1604,14 +1609,14 @@ Lua.prototype.argError = function(narg, extramsg) {
  * @return  true if and only if metamethod was found and called.
  */
 Lua.prototype.callMeta = function(obj, event) {
-    var o = value(obj);
-    var ev = getMetafield(o, event);
-    if (ev == NIL) {
+    var o = this.value(obj);
+    var ev = this.getMetafield(o, event);
+    if (ev == Lua.NIL) {
         return false;
     }
-    pushObject(ev);
-    pushObject(o);
-    call(1, 1);
+    this.pushObject(ev);
+    this.pushObject(o);
+    this.call(1, 1);
     return true;
 };
 
@@ -1621,8 +1626,8 @@ Lua.prototype.callMeta = function(obj, event) {
  * @param narg  argument index.
  */
 Lua.prototype.checkAny = function(narg) {
-    if (type(narg) == TNONE) {
-        argError(narg, "value expected");
+    if (this.type(narg) == Lua.TNONE) {
+        this.argError(narg, "value expected");
     }
 };
 
@@ -1633,7 +1638,7 @@ Lua.prototype.checkAny = function(narg) {
  * @return  the argument as an int.
  */
 Lua.prototype.checkInt = function(narg) {
-    return checkNumber(narg);
+    return this.checkNumber(narg);
 };
 
 /**
@@ -1642,10 +1647,10 @@ Lua.prototype.checkInt = function(narg) {
  * @return  the argument as a double.
  */
 Lua.prototype.checkNumber = function(narg) {
-    var o = value(narg);
-    var d = toNumber(o);
-    if (d == 0 && !isNumber(o)) {
-        tagError(narg, TNUMBER);
+    var o = this.value(narg);
+    var d = this.toNumber(o);
+    if (d == 0 && !this.isNumber(o)) {
+        this.tagError(narg, Lua.TNUMBER);
     }
     return d;
 };
@@ -1662,16 +1667,16 @@ Lua.prototype.checkOption = function(narg, def, lst /*String[] */) {
     var name;
 
     if (def == null) {
-        name = checkString(narg);
+        name = this.checkString(narg);
     } else {
-        name = optString(narg, def);
+        name = this.optString(narg, def);
     }
     for (var i = 0; i < lst.length; ++i) {
         if (lst[i].equals(name)) {
             return i;
         }
     }
-    return argError(narg, "invalid option '" + name + "'");
+    return this.argError(narg, "invalid option '" + name + "'");
 };
 
 /**
@@ -1681,9 +1686,9 @@ Lua.prototype.checkOption = function(narg, def, lst /*String[] */) {
  * @return  the argument as a string.
  */
 Lua.prototype.checkString = function(narg) {
-    var s = toString(value(narg));
+    var s = this.toString(this.value(narg));
     if (s == null) {
-        tagError(narg, TSTRING);
+        this.tagError(narg, Lua.TSTRING);
     }
     return s;
 };
@@ -1694,8 +1699,8 @@ Lua.prototype.checkString = function(narg) {
  * @param t     typecode (from {@link #type} for example).
  */
 Lua.prototype.checkType = function(narg, t) {
-    if (type(narg) != t) {
-        tagError(narg, t);
+    if (this.type(narg) != t) {
+        this.tagError(narg, t);
     }
 };
 
@@ -1705,16 +1710,16 @@ Lua.prototype.checkType = function(narg, t) {
  * @return  a status code, as per {@link #load}.
  */
 Lua.prototype.doString = function(s) {
-    var status = __load(Lua.stringReader(s), s);
+    var status = this.__load(Lua.stringReader(s), s);
     if (status == 0) {
-        status = pcall(0, MULTRET, null);
+        status = this.pcall(0, Lua.MULTRET, null);
     }
     return status;
 };
 
 Lua.prototype.errfile = function(what, fname, e) {
-    pushString("cannot " + what + " " + fname + ": " + e.toString());
-    return ERRFILE;
+    this.pushString("cannot " + what + " " + fname + ": " + e.toString());
+    return Lua.ERRFILE;
 };
 
 /**
@@ -1734,18 +1739,18 @@ Lua.prototype.findTable = function(t, fname, szhint) {
         } else {
             part = fname.substring(i, e);
         }
-        var v = rawGet(t, part);
-        if (isNil(v)) {    // no such field?
-            v = createTable(0,
+        var v = this.rawGet(t, part);
+        if (this.isNil(v)) {    // no such field?
+            v = this.createTable(0,
                 (e >= 0) ? 1 : szhint);     // new table for field
-            setTable(t, part, v);
-        } else if (!isTable(v)) {    // field has a non-table value?
+            this.setTable(t, part, v);
+        } else if (!this.isTable(v)) {    // field has a non-table value?
             return part;
         }
         t = v;
         i = e + 1;
     } while (e >= 0);
-    pushObject(t);
+    this.pushObject(t);
     return null;
 };
 
@@ -1757,15 +1762,15 @@ Lua.prototype.findTable = function(t, fname, szhint) {
  * @return            the field from the metatable, or nil.
  */
 Lua.prototype.getMetafield = function(o, event) {
-    var mt = getMetatable(o);
+    var mt = this.getMetatable(o);
     if (mt == null) {
-        return NIL;
+        return Lua.NIL;
     }
     return mt.getlua(event);
 };
 
 Lua.prototype.isNoneOrNil = function(narg) {
-    return type(narg) <= TNIL;
+    return this.type(narg) <= Lua.TNIL;
 };
 
 /**
@@ -1784,7 +1789,7 @@ Lua.prototype.loadFile = function(filename) {
     }
     var _in = /*getClass()*/SystemUtil.getResourceAsStream(filename); //TODO:
     if (_in == null) {
-        return errfile("open", filename, new IOException());
+        return this.errfile("open", filename, new IOException());
     }
     var status = 0;
     try {
@@ -1794,10 +1799,10 @@ Lua.prototype.loadFile = function(filename) {
             // :todo: handle this case
         }
         _in.reset();
-        status = load(_in, "@" + filename);
+        status = this.load(_in, "@" + filename);
     } catch (e) {
         console.log(e.getStackTrace());
-        return errfile("read", filename, e);
+        return this.errfile("read", filename, e);
     }
     return status;
 };
@@ -1810,7 +1815,7 @@ Lua.prototype.loadFile = function(filename) {
  * @return status code, as per {@link #load}.
  */
 Lua.prototype.loadString = function(s, chunkname) {
-    return __load(stringReader(s), chunkname);
+    return this.__load(this.stringReader(s), chunkname);
 };
 
 /**
@@ -1821,10 +1826,10 @@ Lua.prototype.loadString = function(s, chunkname) {
  * @return an int.
  */
 Lua.prototype.optInt = function(narg, def) {
-    if (isNoneOrNil(narg)) {
+    if (this.isNoneOrNil(narg)) {
         return def;
     }
-    return checkInt(narg);
+    return this.checkInt(narg);
 };
 
 /**
@@ -1834,10 +1839,10 @@ Lua.prototype.optInt = function(narg, def) {
  * @return a double.
  */
 Lua.prototype.optNumber = function(narg, def) {
-    if (isNoneOrNil(narg)) {
+    if (this.isNoneOrNil(narg)) {
         return def;
     }
-    return checkNumber(narg);
+    return this.checkNumber(narg);
 };
 
 /**
@@ -1847,10 +1852,10 @@ Lua.prototype.optNumber = function(narg, def) {
  * @return a string.
  */
 Lua.prototype.optString = function(narg, def) {
-    if (isNoneOrNil(narg)) {
+    if (this.isNoneOrNil(narg)) {
         return def;
     }
-    return checkString(narg);
+    return this.checkString(narg);
 };
 
 /**
@@ -1859,24 +1864,24 @@ Lua.prototype.optString = function(narg, def) {
  * @return the new table
  */
 Lua.prototype.__register = function(name) {
-    findTable(this._registry, LOADED, 1);
-    var loaded = value(-1);
-    pop(1);
-    var t = getField(loaded, name);
-    if (!isTable(t)) {   // not found?
+    this.findTable(this._registry, Lua.LOADED, 1);
+    var loaded = this.value(-1);
+    this.pop(1);
+    var t = this.getField(loaded, name);
+    if (!this.isTable(t)) {   // not found?
         // try global variable (and create one if it does not exist)
-        if (findTable(getGlobals(), name, 0) != null) {
-            error("name conflict for module '" + name + "'");
+        if (this.findTable(this.getGlobals(), name, 0) != null) {
+            this.error("name conflict for module '" + name + "'");
         }
-        t = value(-1);
-        pop(1);
-        setField(loaded, name, t);        // _LOADED[name] = new table
+        t = this.value(-1);
+        this.pop(1);
+        this.setField(loaded, name, t);        // _LOADED[name] = new table
     }
     return t;
 };
 
 Lua.prototype.tagError = function(narg, tag) {
-    typerror(narg, typeName(tag));
+    this.typerror(narg, this.typeName(tag));
 };
 
 /**
@@ -1885,7 +1890,7 @@ Lua.prototype.tagError = function(narg, tag) {
  * @return  the name of the value's type.
  */
 Lua.prototype.typeNameOfIndex = function(idx) {
-    return TYPENAME[type(idx)];
+    return Lua.TYPENAME[this.type(idx)];
 };
 
 /**
@@ -1894,7 +1899,7 @@ Lua.prototype.typeNameOfIndex = function(idx) {
  * @param tname  Name of type expected.
  */
 Lua.prototype.typerror = function(narg, tname) {
-    argError(narg, tname + " expected, got " + typeNameOfIndex(narg));
+    this.argError(narg, tname + " expected, got " + this.typeNameOfIndex(narg));
 };
 
 /**
@@ -1904,9 +1909,9 @@ Lua.prototype.typerror = function(narg, tname) {
  * @return a description for that level.
  */
 Lua.prototype.where = function(level) {
-    var ar = getStack(level);         // check function at level
+    var ar = this.getStack(level);         // check function at level
     if (ar != null) {
-        getInfo("Sl", ar);                // get info about it
+        this.getInfo("Sl", ar);                // get info about it
         if (ar.currentline > 0) {        // is there info?
             return ar.shortsrc + ":" + ar.currentline + ": ";
         }
@@ -1943,12 +1948,12 @@ Lua.prototype.getInfo = function(what, ar) {
         f = (this._stack[callinfo.func]).r;
         //# assert isFunction(f)
     }
-    var status = auxgetinfo(what, ar, f, callinfo);
+    var status = this.auxgetinfo(what, ar, f, callinfo);
     if (what.indexOf('f') >= 0) {
         if (f == null) {
-            pushObject(NIL);
+            this.pushObject(Lua.NIL);
         } else {
-            pushObject(f);
+            this.pushObject(f);
         }
     }
     return status;
@@ -1968,7 +1973,7 @@ Lua.prototype.getStack = function(level) {
     for (ici = this._civ.size - 1; level > 0 && ici > 0; --ici) {
         var ci = this._civ.elementAt(ici);
         --level;
-        if (isLua(ci)) {                   // Lua function?
+        if (this.isLua(ci)) {                   // Lua function?
             level -= ci.tailcalls;        // skip lost tail calls
         }
     }
@@ -1990,7 +1995,7 @@ Lua.prototype.setHook = function(func, mask, count) {
     }
     this._hook = func;
     this._basehookcount = count;
-    resethookcount();
+    this.resethookcount();
     this._hookmask = mask;
 };
 
@@ -2006,11 +2011,11 @@ Lua.prototype.auxgetinfo = function(what, ar, f, ci) {
     for (var i = 0; i < what.length; ++i) {
         switch (what.charAt(i)) {
         case 'S':
-            funcinfo(ar, f);
+            this.funcinfo(ar, f);
             break;
 
         case 'l':
-            ar.currentline = (ci != null) ? currentline(ci) : -1;
+            ar.currentline = (ci != null) ? this.currentline(ci) : -1;
             break;
 
         case 'f':       // handled by getInfo
@@ -2025,7 +2030,7 @@ Lua.prototype.auxgetinfo = function(what, ar, f, ci) {
 };
 
 Lua.prototype.currentline = function(ci) {
-    var pc = currentpc(ci);
+    var pc = this.currentpc(ci);
     if (pc < 0) {
         return -1;        // only active Lua functions have current-line info
     } else {
@@ -2036,13 +2041,13 @@ Lua.prototype.currentline = function(ci) {
 };
 
 Lua.prototype.currentpc = function(ci) {
-    if (!isLua(ci)) {    // function is not a Lua function?
+    if (!this.isLua(ci)) {    // function is not a Lua function?
         return -1;
     }
-    if (ci == __ci()) {
+    if (ci == this.__ci()) {
         ci.savedpc = this._savedpc;
     }
-    return pcRel(ci.savedpc);
+    return this.pcRel(ci.savedpc);
 };
 
 Lua.prototype.funcinfo = function(ar, cl) {
@@ -2083,21 +2088,21 @@ Lua.prototype.dCallhook = function(event, line) {
     var hook = this._hook;
     if (hook != null && this._allowhook) {
         var top = this._stackSize;
-        var ci_top = __ci().top;
+        var ci_top = this.__ci().top;
         var ici = this._civ.size - 1;
-        if (event == HOOKTAILRET) { // not supported yet
+        if (event == Lua.HOOKTAILRET) { // not supported yet
             ici = 0;
         }
         var ar = new Debug(ici);
         ar.event = event;
         ar.currentline = line;
-        __ci().top = this._stackSize;
+        this.__ci().top = this._stackSize;
         this._allowhook = false;        // cannot call hooks inside a hook
         hook.luaHook(this, ar);
         //# assert !allowhook
         this._allowhook = true;
-        __ci().top = ci_top;
-        stacksetsize(top);
+        this.__ci().top = ci_top;
+        this.stacksetsize(top);
     }
 };
 
@@ -2108,26 +2113,26 @@ Lua.MEMERRMSG = "not enough memory";
 * {@link #resume} uses this value for oldtop.
 */
 Lua.prototype.dSeterrorobj = function(errcode, oldtop) {
-    var msg = objectAt(this._stackSize - 1);
+    var msg = this.objectAt(this._stackSize - 1);
     if (this._stackSize == oldtop) {
-        stacksetsize(oldtop + 1);
+        this.stacksetsize(oldtop + 1);
     }
     switch (errcode) {
-    case ERRMEM:
-        (this._stack[oldtop]).r = MEMERRMSG;
+    case Lua.ERRMEM:
+        (this._stack[oldtop]).r = Lua.MEMERRMSG;
         break;
 
-    case ERRERR:
+    case Lua.ERRERR:
         (this._stack[oldtop]).r = "error in error handling";
         break;
 
-    case ERRFILE:
-    case ERRRUN:
-    case ERRSYNTAX:
-        setObjectAt(msg, oldtop);
+    case Lua.ERRFILE:
+    case Lua.ERRRUN:
+    case Lua.ERRSYNTAX:
+        this.setObjectAt(msg, oldtop);
         break;
     }
-    stacksetsize(oldtop+1);
+    this.stacksetsize(oldtop+1);
 };
 
 Lua.prototype.dThrow = function(status) {
@@ -2194,10 +2199,10 @@ Lua.prototype.fFindupval = function(idx) {
  * or overloading gTypeerror).
  */
 Lua.prototype.gAritherror = function(p1, p2) {
-    if (!Lua.tonumber(p1, NUMOP)) {
+    if (!Lua.tonumber(p1, Lua.NUMOP)) {
         p2 = p1;  // first operand is wrong
     }
-    gTypeerror(p2, "perform arithmetic on");
+    this.gTypeerror(p2, "perform arithmetic on");
 };
 
 /** <var>p1</var> and <var>p2</var> are absolute stack indexes. */
@@ -2206,7 +2211,7 @@ Lua.prototype.gConcaterror = function(p1, p2) {
         p1 = p2;
     }
     // assert !(p1 instanceof String);
-    gTypeerror(this._stack[p1], "concatenate");
+    this.gTypeerror(this._stack[p1], "concatenate");
 };
 
 Lua.prototype.gCheckcode = function(p) {
@@ -2215,45 +2220,45 @@ Lua.prototype.gCheckcode = function(p) {
 };
 
 Lua.prototype.gErrormsg = function(message) {
-    pushObject(message);
+    this.pushObject(message);
     if (this._errfunc != null) {       // is there an error handling function
-        if (!isFunction(this._errfunc)) {
-            dThrow(ERRERR);
+        if (!this.isFunction(this._errfunc)) {
+            this.dThrow(Lua.ERRERR);
         }
-        insert(this._errfunc, getTop());        // push function (under error arg)
-        vmCall(this._stackSize - 2, 1);        // call it
+        this.insert(this._errfunc, this.getTop());        // push function (under error arg)
+        this.vmCall(this._stackSize - 2, 1);        // call it
     }
-    dThrow(ERRRUN);
+    this.dThrow(Lua.ERRRUN);
     // NOTREACHED
     return 0;
 };
 
 Lua.prototype.gOrdererror = function(p1, p2) {
-    var t1 = typeName(___type(p1));
-    var t2 = typeName(___type(p2));
+    var t1 = this.typeName(this.___type(p1));
+    var t2 = this.typeName(this.___type(p2));
     if (t1.charAt(2) == t2.charAt(2)) {
-        gRunerror("attempt to compare two " + t1 + "values");
+        this.gRunerror("attempt to compare two " + t1 + "values");
     } else {
-        gRunerror("attempt to compare " + t1 + " with " + t2);
+        this.gRunerror("attempt to compare " + t1 + " with " + t2);
     }
     // NOTREACHED
     return false;
 };
 
 Lua.prototype.gRunerror = function(s) {
-    gErrormsg(s);
+    this.gErrormsg(s);
 };
 
 Lua.prototype.gTypeerror = function(o, op) {
-    var t = typeName(____type(o));
-    gRunerror("attempt to " + op + " a " + t + " value");
+    var t = this.typeName(this.____type(o));
+    this.gRunerror("attempt to " + op + " a " + t + " value");
 };
 
 Lua.prototype.__gTypeerror = function(p, op) {
     // :todo: PUC-Rio searches the stack to see if the value (which may
     // be a reference to stack cell) is a local variable.
     // For now we cop out and just call gTypeerror(Object, String)
-    gTypeerror(p.asObject(), op);
+    this.gTypeerror(p.asObject(), op);
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -2267,9 +2272,9 @@ Lua.IDSIZE = 60;
  * @return a string no longer than IDSIZE.
  */
 Lua.oChunkid = function(source) {
-    var len = IDSIZE;
+    var len = Lua.IDSIZE;
     if (source.charAt() == "=") {
-        if (source.length < IDSIZE + 1) {
+        if (source.length < Lua.IDSIZE + 1) {
             return source.substring(1);
         } else {
             return source.substring(1, 1+len);
@@ -2320,8 +2325,8 @@ Lua.oFb2int = function(x) {
 /** Equivalent to luaO_rawequalObj. */
 Lua.oRawequal = function(a, b) {
     // see also vmEqual
-    if (NIL == a) {
-        return NIL == b;
+    if (Lua.NIL == a) {
+        return Lua.NIL == b;
     }
     // Now a is not null, so a.equals() is a valid call.
     // Numbers (Doubles), Booleans, Strings all get compared by value,
@@ -2338,7 +2343,7 @@ Lua.oStr2d = function(s, out/*double[] */) {
         out[0] = Number(s);
         return true;
     } catch (e0_) {
-        trace(e0_.getStackTrace());
+        console.log(e0_.getStackTrace());
         try {
             // Attempt hexadecimal conversion.
             // :todo: using String.trim is not strictly accurate, because it
@@ -2351,10 +2356,10 @@ Lua.oStr2d = function(s, out/*double[] */) {
             } else {
                 return false;
             }
-            out[0] = int(s);// TODO:16进制 16);
+            out[0] = parseInt(s);// TODO:16进制 16);
             return true;
         } catch (e1_) {
-            trace(e1_.getStackTrace());
+            console.log(e1_.getStackTrace());
             return false;
         }
     }
@@ -2471,11 +2476,11 @@ Lua.SETARG_Bx = function(i, bx) {
 /** Equivalent of macro GETARG_sBx */
 Lua.ARGsBx = function(instruction) {
     // As ARGBx but with (2**17-1) subtracted.
-    return (instruction >>> 14) - MAXARG_sBx;
+    return (instruction >>> 14) - Lua.MAXARG_sBx;
 };
 
 Lua.SETARG_sBx = function(i, bx) {
-    return (i & 0x3fff) | ((bx+MAXARG_sBx) << 14) ;  // CHECK THIS IS RIGHT
+    return (i & 0x3fff) | ((bx + Lua.MAXARG_sBx) << 14) ;  // CHECK THIS IS RIGHT
 };
 
 Lua.ISK = function(field) {
@@ -2492,7 +2497,7 @@ Lua.ISK = function(field) {
 * (stack) or the constant array (k).
 */
 Lua.prototype.RK = function(k/*Slot[] */, field) {
-    if (ISK(field)) {
+    if (Lua.ISK(field)) {
         return k[field & 0xff];
     }
     return this._stack[this._base + field];
@@ -2504,9 +2509,9 @@ Lua.prototype.RK = function(k/*Slot[] */, field) {
 * to avoid having a constant array passed around too much.
 */
 Lua.prototype.__RK = function(field) {
-    var _function = (this._stack[__ci().func]).r;
+    var _function = (this._stack[this.__ci().func]).r;
     var k = _function.proto.constant; //Slot[]
-    return RK(k, field);
+    return Lua.RK(k, field);
 };
 
 // CREATE functions are required by FuncState, so default access.
@@ -2575,28 +2580,28 @@ Lua.OP_VARARG = 37;
 
 Lua.SIZE_C = 9;
 Lua.SIZE_B = 9;
-Lua.SIZE_Bx = SIZE_C + SIZE_B;
+Lua.SIZE_Bx = Lua.SIZE_C + Lua.SIZE_B;
 Lua.SIZE_A = 8;
 
 Lua.SIZE_OP = 6;
 
 Lua.POS_OP = 0;
-Lua.POS_A = POS_OP + SIZE_OP;
-Lua.POS_C = POS_A + SIZE_A;
-Lua.POS_B = POS_C + SIZE_C;
-Lua.POS_Bx = POS_C;
+Lua.POS_A = Lua.POS_OP + Lua.SIZE_OP;
+Lua.POS_C = Lua.POS_A + Lua.SIZE_A;
+Lua.POS_B = Lua.POS_C + Lua.SIZE_C;
+Lua.POS_Bx = Lua.POS_C;
 
-Lua.MAXARG_Bx = (1<<SIZE_Bx)-1;
-Lua.MAXARG_sBx = MAXARG_Bx>>1;    // `sBx' is signed
+Lua.MAXARG_Bx = (1 << Lua.SIZE_Bx) - 1;
+Lua.MAXARG_sBx = Lua.MAXARG_Bx >> 1;    // `sBx' is signed
 
 
-Lua.MAXARG_A = (1<<SIZE_A)-1;
-Lua.MAXARG_B = (1<<SIZE_B)-1;
-Lua.MAXARG_C = (1<<SIZE_C)-1;
+Lua.MAXARG_A = (1<<Lua.SIZE_A)-1;
+Lua.MAXARG_B = (1<<Lua.SIZE_B)-1;
+Lua.MAXARG_C = (1<<Lua.SIZE_C)-1;
 
 /* this bit 1 means constant (0 means register) */
-Lua.BITRK = 1 << (SIZE_B - 1) ;
-Lua.MAXINDEXRK = BITRK - 1 ;
+Lua.BITRK = 1 << (Lua.SIZE_B - 1) ;
+Lua.MAXINDEXRK = Lua.BITRK - 1 ;
 
 
 /**
@@ -2606,8 +2611,8 @@ Lua.MAXINDEXRK = BITRK - 1 ;
  */
 Lua.prototype.vmCall = function(func, r) {
     ++this._nCcalls;
-    if (vmPrecall(func, r) == PCRLUA) {
-        vmExecute(1);
+    if (this.vmPrecall(func, r) == Lua.PCRLUA) {
+        this.vmExecute(1);
     }
     --this._nCcalls;
 };
@@ -2617,17 +2622,17 @@ Lua.prototype.vmConcat = function(total, last) {
     do {
         var top = this._base + last + 1;
         var n = 2;  // number of elements handled in this pass (at least 2)
-        if (!tostring(top-2)|| !tostring(top-1)) {
-            if (!call_binTM(this._stack[top - 2], this._stack[top - 1],
+        if (!this.tostring(top-2)|| !this.tostring(top-1)) {
+            if (!this.call_binTM(this._stack[top - 2], this._stack[top - 1],
                 this._stack[top - 2], "__concat")) {
-                gConcaterror(top-2, top-1);
+                this.gConcaterror(top-2, top-1);
             }
         } else if (((this._stack[top - 1]).r).length > 0) {
             var tl = ((this._stack[top - 1]).r).length;
-            for (n = 1; n < total && tostring(top-n-1); ++n) {
+            for (n = 1; n < total && this.tostring(top-n-1); ++n) {
                 tl += ((this._stack[top - n - 1]).r).length;
                 if (tl < 0) {
-                    gRunerror("string length overflow");
+                    this.gRunerror("string length overflow");
                 }
             }
             var buffer = new StringBuffer();
@@ -2650,14 +2655,14 @@ Lua.prototype.vmConcat = function(total, last) {
  */
 Lua.prototype.vmEqual = function(a, b) {
     // Deal with number case first
-    if (NUMBER == a.r) {
-        if (NUMBER != b.r) {
+    if (Lua.NUMBER == a.r) {
+        if (Lua.NUMBER != b.r) {
             return false;
         }
         return a.d == b.d;
     }
     // Now we're only concerned with the .r field.
-    return vmEqualRef(a.r, b.r);
+    return this.vmEqualRef(a.r, b.r);
 };
 
 /**
@@ -2671,20 +2676,20 @@ Lua.prototype.vmEqualRef = function(a, b) {
     }
     //TODO:
     //if (a.getClass != b.getClass())
-    if (getQualifiedClassName(a) == getQualifiedClassName(b)) {
+    if (this.getQualifiedClassName(a) == this.getQualifiedClassName(b)) {
         return false;
     }
     // Same class, but different objects.
     if (a instanceof LuaJavaCallback ||
         a instanceof LuaTable) {
         // Resort to metamethods.
-        var tm = get_compTM(getMetatable(a), getMetatable(b), "__eq");
-        if (NIL == tm) {   // no TM?
+        var tm = this.get_compTM(this.getMetatable(a), this.getMetatable(b), "__eq");
+        if (Lua.NIL == tm) {   // no TM?
             return false;
         }
         var s = new Slot();
-        callTMres(s, tm, a, b);   // call TM   //TODO:
-        return !isFalse(s.r);
+        this.callTMres(s, tm, a, b);   // call TM   //TODO:
+        return !this.isFalse(s.r);
     }
     return false;
 };
@@ -2704,7 +2709,7 @@ Lua.prototype.vmExecute = function(nexeccalls) {
 reentry:
     while (true) {
         // assert stack[ci.function()].r instanceof LuaFunction;
-        var _function = (this._stack[__ci().func]).r;
+        var _function = (this._stack[this.__ci().func]).r;
         var proto = _function.proto;
         var code = proto.code; //int[]
         var k = proto.constant; //Slot[] 
@@ -2721,244 +2726,239 @@ reentry:
 
             var i = code[pc++];       // VM instruction.
             // :todo: line hook
-            if ((this._hookmask & MASKCOUNT) != 0 && --this._hookcount == 0) {
-                traceexec(pc);
-                if (status == YIELD) { // did hook yield?
+            if ((this._hookmask & Lua.MASKCOUNT) != 0 && --this._hookcount == 0) {
+                this.traceexec(pc);
+                if (this.status == Lua.YIELD) { // did hook yield?
                     this._savedpc = pc - 1;
                     return;
                 }
                 // base = this.base
             }
 
-            var a  = ARGA(i);          // its A field.
+            var a  = Lua.ARGA(i);          // its A field.
             var rb;
             var rc;
 
 
-            switch (OPCODE(i)) {
-            case OP_MOVE:
-                (this._stack[this._base + a]).r = (this._stack[this._base + ARGB(i)]).r;
-                (this._stack[this._base + a]).d = (this._stack[this._base + ARGB(i)]).d;
+            switch (Lua.OPCODE(i)) {
+            case Lua.OP_MOVE:
+                (this._stack[this._base + a]).r = (this._stack[this._base + Lua.ARGB(i)]).r;
+                (this._stack[this._base + a]).d = (this._stack[this._base + Lua.ARGB(i)]).d;
                 continue;
 
-            case OP_LOADK:
-                (this._stack[this._base + a]).r = (k[ARGBx(i)]).r;
-                (this._stack[this._base + a]).d = (k[ARGBx(i)]).d;
-                if (D) 
-                {
-                    trace("OP_LOADK:stack[" + (this._base+a) + 
-                        "]=k[" + ARGBx(i) + "]=" + k[ARGBx(i)].d);
+            case Lua.OP_LOADK:
+                (this._stack[this._base + a]).r = (k[Lua.ARGBx(i)]).r;
+                (this._stack[this._base + a]).d = (k[Lua.ARGBx(i)]).d;
+                if (Lua.D) {
+                    console.log("OP_LOADK:stack[" + (this._base+a) + 
+                        "]=k[" + Lua.ARGBx(i) + "]=" + k[Lua.ARGBx(i)].d);
                 }
                 continue;
 
-            case OP_LOADBOOL:
-                (this._stack[this._base + a]).r = valueOfBoolean(ARGB(i) != 0);
-                if (ARGC(i) != 0)
-                {
+            case Lua.OP_LOADBOOL:
+                (this._stack[this._base + a]).r = this.valueOfBoolean(Lua.ARGB(i) != 0);
+                if (Lua.ARGC(i) != 0) {
                     ++pc;
                 }
                 continue;
 
-            case OP_LOADNIL:
+            case Lua.OP_LOADNIL:
                 {
-                    var b = this._base + ARGB(i);
-                    do
-                    {
-                        (this._stack[b--]).r = NIL;
+                    var b = this._base + Lua.ARGB(i);
+                    do {
+                        (this._stack[b--]).r = Lua.NIL;
                     } while (b >= this._base + a);
                     continue;
                 }
 
-            case OP_GETUPVAL:
+            case Lua.OP_GETUPVAL:
                 {
-                    var b2 = ARGB(i);
+                    var b2 = Lua.ARGB(i);
                     // :todo: optimise path
-                    setObjectAt(_function.upVal(b2).value, this._base + a);
+                    this.setObjectAt(_function.upVal(b2).value, this._base + a);
                     continue;
                 }
 
-            case OP_GETGLOBAL:
-                rb = k[ARGBx(i)];
+            case Lua.OP_GETGLOBAL:
+                rb = k[Lua.ARGBx(i)];
                 // assert rb instance of String;
                 this._savedpc = pc; // Protect
-                vmGettable(_function.env, rb, this._stack[this._base + a]);
+                this.vmGettable(_function.env, rb, this._stack[this._base + a]);
                 continue;
 
-            case OP_GETTABLE:
+            case Lua.OP_GETTABLE:
                 {
                     this._savedpc = pc; // Protect
-                    var h = (this._stack[this._base + ARGB(i)]).asObject();
-                    if (D)
-                    {
-                        trace("OP_GETTABLE index = " + (this._base + ARGB(i)) + 
+                    var h = (this._stack[this._base + Lua.ARGB(i)]).asObject();
+                    if (Lua.D) {
+                        console.log("OP_GETTABLE index = " + (this._base + Lua.ARGB(i)) + 
                             ", size = " + this._stack.length +
                             ", h = " + h);
                     }
-                    vmGettable(h, RK(k, ARGC(i)), this._stack[this._base + a]);
+                    this.vmGettable(h, Lua.RK(k, Lua.ARGC(i)), this._stack[this._base + a]);
                     continue;
                 }
 
-            case OP_SETUPVAL:
+            case Lua.OP_SETUPVAL:
                 {
-                    var uv = _function.upVal(ARGB(i));
-                    uv.value = objectAt(this._base + a);
+                    var uv = _function.upVal(Lua.ARGB(i));
+                    uv.value = this.objectAt(this._base + a);
                     continue;
                 }
 
-            case OP_SETGLOBAL:
+            case Lua.OP_SETGLOBAL:
                 this._savedpc = pc; // Protect
                 // :todo: consider inlining objectAt
-                vmSettable(_function.env, k[ARGBx(i)],
-                    objectAt(this._base + a));
+                this.vmSettable(_function.env, k[Lua.ARGBx(i)],
+                    this.objectAt(this._base + a));
                 continue;
 
-            case OP_SETTABLE:
+            case Lua.OP_SETTABLE:
                 {
                     this._savedpc = pc; // Protect
                     var t = this._stack[this._base + a].asObject();
-                    vmSettable(t, RK(k, ARGB(i)), RK(k, ARGC(i)).asObject());
+                    this.vmSettable(t, Lua.RK(k, Lua.ARGB(i)), Lua.RK(k, Lua.ARGC(i)).asObject());
                     continue;
                 }
 
-            case OP_NEWTABLE:
+            case Lua.OP_NEWTABLE:
                 {
-                    var b3 = ARGB(i);
-                    var c = ARGC(i);
+                    var b3 = Lua.ARGB(i);
+                    var c = Lua.ARGC(i);
                     (this._stack[this._base + a]).r = new LuaTable();
-                    ((this._stack[this._base + a]).r).init(oFb2int(b3), oFb2int(c));
+                    ((this._stack[this._base + a]).r).init(this.oFb2int(b3), this.oFb2int(c));
                     continue;
                 }
 
-            case OP_SELF:
+            case Lua.OP_SELF:
                 {
-                    var b4 = ARGB(i);
+                    var b4 = Lua.ARGB(i);
                     rb = this._stack[this._base + b4];
                     (this._stack[this._base + a + 1]).r = rb.r;
                     (this._stack[this._base + a + 1]).d = rb.d;
                     this._savedpc = pc; // Protect
-                    vmGettable(rb.asObject(), RK(k, ARGC(i)), (this._stack[this._base + a]));
+                    this.vmGettable(rb.asObject(), Lua.RK(k, Lua.ARGC(i)), (this._stack[this._base + a]));
                     continue;
                 }
 
-            case OP_ADD:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
+            case Lua.OP_ADD:
+                rb = Lua.RK(k, Lua.ARGB(i));
+                rc = Lua.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER)
                 {
                     var sum = rb.d + rc.d;
                     (this._stack[this._base+a]).d = sum;
-                    (this._stack[this._base+a]).r = NUMBER;
+                    (this._stack[this._base+a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var sum2 = NUMOP[0] + NUMOP[1];
+                    var sum2 = Lua.NUMOP[0] + Lua.NUMOP[1];
                     (this._stack[this._base + a]).d = sum2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__add"))
+                else if (!this.call_binTM(rb, rc, this._stack[this._base + a], "__add"))
                 {
-                    gAritherror(rb, rc);
+                    this.gAritherror(rb, rc);
                 }
                 continue;
 
-            case OP_SUB:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
+            case Lua.OP_SUB:
+                rb = Lua.RK(k, Lua.ARGB(i));
+                rc = Lua.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER)
                 {
                     var difference = rb.d - rc.d;
                     (this._stack[this._base + a]).d = difference;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var difference2 = (NUMOP[0]) - (NUMOP[1]);
+                    var difference2 = (Lua.NUMOP[0]) - (Lua.NUMOP[1]);
                     (this._stack[this._base + a]).d = difference2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__sub"))
+                else if (!this.call_binTM(rb, rc, this._stack[this._base + a], "__sub"))
                 {
-                    gAritherror(rb, rc);
+                    this.gAritherror(rb, rc);
                 }
                 continue;
 
-            case OP_MUL:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
-                {
+            case Lua.OP_MUL:
+                rb = this.RK(k, Lua.ARGB(i));
+                rc = this.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER) {
                     var product = rb.d * rc.d;
                     (this._stack[this._base + a]).d = product;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var product2 = (NUMOP[0]) * (NUMOP[1]);
+                    var product2 = (Lua.NUMOP[0]) * (Lua.NUMOP[1]);
                     (this._stack[this._base + a]).d = product2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__mul"))
+                else if (!this.call_binTM(rb, rc, this._stack[this._base + a], "__mul"))
                 {
-                    gAritherror(rb, rc);
+                    this.gAritherror(rb, rc);
                 }
                 continue;
 
-            case OP_DIV:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
+            case Lua.OP_DIV:
+                rb = Lua.RK(k, Lua.ARGB(i));
+                rc = Lua.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER)
                 {
                     var quotient = rb.d / rc.d;
                     (this._stack[this._base + a]).d = quotient;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var quotient2 = (NUMOP[0]) / (NUMOP[1]);
+                    var quotient2 = (Lua.NUMOP[0]) / (Lua.NUMOP[1]);
                     (this._stack[this._base + a]).d = quotient2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__div"))
+                else if (!this.call_binTM(rb, rc, this._stack[this._base + a], "__div"))
                 {
-                    gAritherror(rb, rc);
+                    this.gAritherror(rb, rc);
                 }
                 continue;
 
-            case OP_MOD:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
+            case Lua.OP_MOD:
+                rb = Lua.RK(k, Lua.ARGB(i));
+                rc = Lua.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER)
                 {
-                    var modulus = __modulus(rb.d, rc.d);
+                    var modulus = this.__modulus(rb.d, rc.d);
                     (this._stack[this._base + a]).d = modulus;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var modulus2 = __modulus(NUMOP[0], NUMOP[1]);
+                    var modulus2 = this.__modulus(Lua.NUMOP[0], Lua.NUMOP[1]);
                     (this._stack[this._base + a]).d = modulus2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (!call_binTM(rb, rc, this._stack[this._base + a], "__mod"))
+                else if (!this.call_binTM(rb, rc, this._stack[this._base + a], "__mod"))
                 {
-                    gAritherror(rb, rc);
+                    this.gAritherror(rb, rc);
                 }
                 continue;
 
-            case OP_POW:
-                rb = RK(k, ARGB(i));
-                rc = RK(k, ARGC(i));
-                if (rb.r == NUMBER && rc.r == NUMBER)
+            case Lua.OP_POW:
+                rb = Lua.RK(k, Lua.ARGB(i));
+                rc = Lua.RK(k, Lua.ARGC(i));
+                if (rb.r == Lua.NUMBER && rc.r == Lua.NUMBER)
                 {
-                    var result = iNumpow(rb.d, rc.d);
+                    var result = this.iNumpow(rb.d, rc.d);
                     (this._stack[this._base + a]).d = result;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
-                else if (toNumberPair(rb, rc, NUMOP))
+                else if (this.toNumberPair(rb, rc, Lua.NUMOP))
                 {
-                    var result2 = iNumpow(NUMOP[0], NUMOP[1]);
+                    var result2 = this.iNumpow(Lua.NUMOP[0], Lua.NUMOP[1]);
                     (this._stack[this._base + a]).d = result2;
-                    (this._stack[this._base + a]).r = NUMBER;
+                    (this._stack[this._base + a]).r = Lua.NUMBER;
                 }
                 else if (!call_binTM(rb, rc, this._stack[this._base + a], "__pow"))
                 {
