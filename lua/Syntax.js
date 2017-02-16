@@ -1,16 +1,17 @@
 ;(function(metamorphose) {
-
-var Hashtable =  metamorphose ? metamorphose.Hashtable : require('./Hashtable.js');
-var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./SystemUtil.js');
-var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('./StringBuffer.js');
-var Character = metamorphose ? metamorphose.Character : require('./Character.js');
+var Hashtable =  metamorphose ? metamorphose.Hashtable : require('../java/Hashtable.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+var Character = metamorphose ? metamorphose.Character : require('../java/Character.js');
+    
 var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
-
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
 var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
 var ConsControl = metamorphose ? metamorphose.ConsControl : require('./ConsControl.js');
-//var Syntax = metamorphose ? metamorphose.Syntax : require('./Excepton/Syntax.js');
+var LHSAssign = metamorphose ? metamorphose.LHSAssign : require('./LHSAssign.js');
+var BlockCnt = metamorphose ? metamorphose.BlockCnt : require('./BlockCnt.js');
+var Proto = metamorphose ? metamorphose.Proto : require('./Proto.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -1056,12 +1057,12 @@ Syntax.prototype.explist1 = function(v) { // throws IOException
 Syntax.prototype.exprstat = function() { // throws IOException
     // stat -> func | assignment
     var v = new LHSAssign();
-    primaryexp(v.v);
+    this.primaryexp(v.v);
     if (v.v.k == Expdesc.VCALL) {     // stat -> func
         this._fs.setargc(v.v, 1); // call statement uses no results
     } else {     // stat -> assignment
         v.prev = null;
-        assignment(v, 1);
+        this.assignment(v, 1);
     }
 };
 
@@ -1096,20 +1097,20 @@ Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
     var e = new Expdesc();
     var kind = lh.v.k;
     if (!(Expdesc.VLOCAL <= kind && kind <= Expdesc.VINDEXED))
-        xSyntaxerror("syntax error");
-    if (testnext(','.charCodeAt())) {   /* assignment -> `,' primaryexp assignment */
+        this.xSyntaxerror("syntax error");
+    if (this.testnext(','.charCodeAt())) {   /* assignment -> `,' primaryexp assignment */
         var nv = new LHSAssign();
         nv.init(lh); //TODO:
-        primaryexp(nv.v);
+        this.primaryexp(nv.v);
         if (nv.v.k == Expdesc.VLOCAL)
-            check_conflict(lh, nv.v);
-        assignment(nv, nvars+1);
+            this.check_conflict(lh, nv.v);
+        this.assignment(nv, nvars+1);
     } else {   /* assignment -> `=' explist1 */
         var nexps;
-        checknext('='.charCodeAt());
-        nexps = explist1(e);
+        this.checknext('='.charCodeAt());
+        nexps = this.explist1(e);
         if (nexps != nvars) {
-            adjust_assign(nvars, nexps, e);
+            this.adjust_assign(nvars, nexps, e);
             if (nexps > nvars)
                 this._fs.freereg -= nexps - nvars;  /* remove extra values */
         } else {
@@ -1127,30 +1128,30 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
     var line = this._linenumber;
     switch (String.fromCharCode(this._token)) {
     case '(':         // funcargs -> '(' [ explist1 ] ')'
-        if (line != lastline) {
-            xSyntaxerror("ambiguous syntax (function call x new statement)");
+        if (line != this.lastline) {
+            this.xSyntaxerror("ambiguous syntax (function call x new statement)");
         }
-        xNext();
+        this.xNext();
         if (this._token == ')'.charCodeAt()) { // arg list is empty? 
             args.kind = Expdesc.VVOID;
         } else {
-            explist1(args);
+            this.explist1(args);
             this._fs.kSetmultret(args);
         }
-        check_match(')'.charCodeAt(), '('.charCodeAt(), line);
+        this.check_match(')'.charCodeAt(), '('.charCodeAt(), line);
         break;
 
     case '{':         // funcargs -> constructor
-        constructor(args);
+        this.constructor(args);
         break;
 
-    case String.fromCharCode(TK_STRING):   // funcargs -> STRING
+    case String.fromCharCode(Syntax.TK_STRING):   // funcargs -> STRING
         this.codestring(args, this._tokenS);
-        xNext();        // must use tokenS before 'next'
+        this.xNext();        // must use tokenS before 'next'
         break;
 
     default:
-        xSyntaxerror("function arguments expected");
+        this.xSyntaxerror("function arguments expected");
         return;
     }
     // assert (f.kind() == VNONRELOC);
@@ -1176,19 +1177,19 @@ Syntax.prototype.prefixexp = function(v) { // throws IOException
     case '(':
         {
             var line = this._linenumber;
-            xNext();
-            expr(v);
-            check_match(')'.charCodeAt(), '('.charCodeAt(), line);
+            this.xNext();
+            this.expr(v);
+            this.check_match(')'.charCodeAt(), '('.charCodeAt(), line);
             this._fs.kDischargevars(v);
             return;
         }
 
-    case String.fromCharCode(TK_NAME):
-        singlevar(v);
+    case String.fromCharCode(Syntax.TK_NAME):
+        this.singlevar(v);
         return;
 
     default:
-        xSyntaxerror("unexpected symbol");
+        this.xSyntaxerror("unexpected symbol");
         return;
     }
 };
@@ -1196,18 +1197,18 @@ Syntax.prototype.prefixexp = function(v) { // throws IOException
 Syntax.prototype.primaryexp = function(v) { // throws IOException 
     // primaryexp ->
     //    prefixexp { '.' NAME | '[' exp ']' | ':' NAME funcargs | funcargs }
-    prefixexp(v);
+    this.prefixexp(v);
     while (true) {
         switch (String.fromCharCode(this._token)) {
         case '.':  /* field */
-            field(v);
+            this.field(v);
             break;
 
         case '[':  /* `[' exp1 `]' */
             {
                 var key = new Expdesc();
                 this._fs.kExp2anyreg(v);
-                yindex(key);
+                this.yindex(key);
                 this._fs.kIndexed(v, key);
             }
             break;
@@ -1215,18 +1216,18 @@ Syntax.prototype.primaryexp = function(v) { // throws IOException
         case ':':  /* `:' NAME funcargs */
             {
                 var key2 = new Expdesc() ;
-                xNext();
-                checkname(key2);
+                this.xNext();
+                this.checkname(key2);
                 this._fs.kSelf(v, key2);
-                funcargs(v);
+                this.funcargs(v);
             }
             break;
 
         case '(':
-        case String.fromCharCode(TK_STRING):
+        case String.fromCharCode(Syntax.TK_STRING):
         case '{':     // funcargs
             this._fs.kExp2nextreg(v);
-            funcargs(v);
+            this.funcargs(v);
             break;
 
         default:
@@ -1237,18 +1238,18 @@ Syntax.prototype.primaryexp = function(v) { // throws IOException
 
 Syntax.prototype.retstat = function() { // throws IOException
     // stat -> RETURN explist
-    xNext();    // skip RETURN
+    this.xNext();    // skip RETURN
     // registers with returned values (first, nret)
     var first = 0;
     var nret;
-    if (block_follow(this._token) || this._token == ';'.charCodeAt()) {
+    if (this.block_follow(this._token) || this._token == ';'.charCodeAt()) {
         // return no values
         first = 0;
         nret = 0;
     } else {
         var e = new Expdesc();
-        nret = explist1(e);
-        if (hasmultret(e.k)) {
+        nret = this.explist1(e);
+        if (this.hasmultret(e.k)) {
             this._fs.kSetmultret(e);
             if (e.k == Expdesc.VCALL && nret == 1) {   /* tail call? */
                 this._fs.setcode(e, Lua.SET_OPCODE(this._fs.getcode(e), Lua.OP_TAILCALL));
@@ -1273,97 +1274,97 @@ Syntax.prototype.simpleexp = function(v) { // throws IOException
     // simpleexp -> NUMBER | STRING | NIL | true | false | ... |
     //              constructor | FUNCTION body | primaryexp
     switch (this._token) {
-    case TK_NUMBER:
+    case Syntax.TK_NUMBER:
         v.init(Expdesc.VKNUM, 0);
         v.nval = this._tokenR;
         break;
 
-    case TK_STRING:
-        codestring(v, this._tokenS);
+    case Syntax.TK_STRING:
+        this.codestring(v, this._tokenS);
         break;
 
-    case TK_NIL:
+    case Syntax.TK_NIL:
         v.init(Expdesc.VNIL, 0);
         break;
 
-    case TK_TRUE:
+    case Syntax.TK_TRUE:
         v.init(Expdesc.VTRUE, 0);
         break;
 
-    case TK_FALSE:
+    case Syntax.TK_FALSE:
         v.init(Expdesc.VFALSE, 0);
         break;
 
-    case TK_DOTS:  /* vararg */
+    case Syntax.TK_DOTS:  /* vararg */
         if (!this._fs.f.isVararg)
-            xSyntaxerror("cannot use \"...\" outside a vararg function");
+            this.xSyntaxerror("cannot use \"...\" outside a vararg function");
         v.init(Expdesc.VVARARG, this._fs.kCodeABC(Lua.OP_VARARG, 0, 1, 0));
         break;
 
     case '{'.charCodeAt():   /* constructor */
-        constructor(v);
+        this.constructor(v);
         return;
 
-    case TK_FUNCTION:
-        xNext();
-        body(v, false, this._linenumber);
+    case Syntax.TK_FUNCTION:
+        this.xNext();
+        this.body(v, false, this._linenumber);
         return;
 
     default:
-        primaryexp(v);
+        this.primaryexp(v);
         return;
     }
-    xNext();
+    this.xNext();
 };
 
 Syntax.prototype.statement = function() { //throws IOException
     var line = this._linenumber;
     switch (this._token) {
-    case TK_IF:   // stat -> ifstat
-        ifstat(line);
+    case Syntax.TK_IF:   // stat -> ifstat
+        this.ifstat(line);
         return false;
 
-    case TK_WHILE:  // stat -> whilestat
-        whilestat(line);
+    case Syntax.TK_WHILE:  // stat -> whilestat
+        this.whilestat(line);
         return false;
 
-    case TK_DO:       // stat -> DO block END
-        xNext();         // skip DO
-        block();
-        check_match(TK_END, TK_DO, line);
+    case Syntax.TK_DO:       // stat -> DO block END
+        this.xNext();         // skip DO
+        this.block();
+        this.check_match(Syntax.TK_END, Syntax.TK_DO, line);
         return false;
 
-    case TK_FOR:      // stat -> forstat
-        forstat(line);
+    case Syntax.TK_FOR:      // stat -> forstat
+        this.forstat(line);
         return false;
 
-    case TK_REPEAT:   // stat -> repeatstat
-        repeatstat(line);
+    case Syntax.TK_REPEAT:   // stat -> repeatstat
+        this.repeatstat(line);
         return false;
 
-    case TK_FUNCTION:
-        funcstat(line); // stat -> funcstat
+    case Syntax.TK_FUNCTION:
+        this.funcstat(line); // stat -> funcstat
         return false;
 
-    case TK_LOCAL:    // stat -> localstat
-        xNext();         // skip LOCAL
-        if (testnext(TK_FUNCTION))  // local function?
-            localfunc();
+    case Syntax.TK_LOCAL:    // stat -> localstat
+        this.xNext();         // skip LOCAL
+        if (this.testnext(Syntax.TK_FUNCTION))  // local function?
+            this.localfunc();
         else
-            localstat();
+            this.localstat();
         return false;
 
-    case TK_RETURN:
-        retstat();
+    case Syntax.TK_RETURN:
+        this.retstat();
         return true;  // must be last statement
 
-    case TK_BREAK:  // stat -> breakstat
-        xNext();       // skip BREAK
-        breakstat();
+    case Syntax.TK_BREAK:  // stat -> breakstat
+        this.xNext();       // skip BREAK
+        this.breakstat();
         return true;  // must be last statement
 
     default:
-        exprstat();
+        this.exprstat();
         return false;
     }
 };
@@ -1396,68 +1397,68 @@ Syntax.OPR_NOUNOPR = 3;
 Syntax.getbinopr = function(op) {
     switch (String.fromCharCode(op)) {
     case '+': 
-        return OPR_ADD;
+        return Syntax.OPR_ADD;
 
     case '-': 
-        return OPR_SUB;
+        return Syntax.OPR_SUB;
 
     case '*': 
-        return OPR_MUL;
+        return Syntax.OPR_MUL;
 
     case '/': 
-        return OPR_DIV;
+        return Syntax.OPR_DIV;
 
     case '%': 
-        return OPR_MOD;
+        return Syntax.OPR_MOD;
 
     case '^': 
-        return OPR_POW;
+        return Syntax.OPR_POW;
 
-    case String.fromCharCode(TK_CONCAT): 
-        return OPR_CONCAT;
+    case String.fromCharCode(Syntax.TK_CONCAT): 
+        return Syntax.OPR_CONCAT;
 
-    case String.fromCharCode(TK_NE): 
-        return OPR_NE;
+    case String.fromCharCode(Syntax.TK_NE): 
+        return Syntax.OPR_NE;
 
-    case String.fromCharCode(TK_EQ): 
-        return OPR_EQ;
+    case String.fromCharCode(Syntax.TK_EQ): 
+        return Syntax.OPR_EQ;
 
     case '<': 
-        return OPR_LT;
+        return Syntax.OPR_LT;
 
-    case String.fromCharCode(TK_LE): 
-        return OPR_LE;
+    case String.fromCharCode(Syntax.TK_LE): 
+        return Syntax.OPR_LE;
 
     case '>': 
-        return OPR_GT;
+        return Syntax.OPR_GT;
 
-    case String.fromCharCode(TK_GE): 
-        return OPR_GE;
+    case String.fromCharCode(Syntax.TK_GE): 
+        return Syntax.OPR_GE;
 
-    case String.fromCharCode(TK_AND): 
-        return OPR_AND;
+    case String.fromCharCode(Syntax.TK_AND): 
+        return Syntax.OPR_AND;
 
-    case String.fromCharCode(TK_OR): 
-        return OPR_OR;
+    case String.fromCharCode(Syntax.TK_OR): 
+        return Syntax.OPR_OR;
 
     default: 
-        return OPR_NOBINOPR;
+        return Syntax.OPR_NOBINOPR;
     }
 };
 
 Syntax.getunopr = function(op) {
     switch (String.fromCharCode(op)) {
-    case String.fromCharCode(TK_NOT): 
-        return OPR_NOT;
+    case String.fromCharCode(Syntax.TK_NOT): 
+        return Syntax.OPR_NOT;
 
     case '-': 
-        return OPR_MINUS;
+        return Syntax.OPR_MINUS;
 
     case '#': 
-        return OPR_LEN;
+        return Syntax.OPR_LEN;
 
     default: 
-        return OPR_NOUNOPR;
+        return Syntax.OPR_NOUNOPR;
     }
 };
 
@@ -1486,27 +1487,27 @@ Syntax.UNARY_PRIORITY = 8;
  * higher than <var>limit</var>.
  */
 Syntax.prototype.subexpr = function(v, limit) { // throws IOException
-    enterlevel();
-    var uop = getunopr(this._token);
-    if (uop != OPR_NOUNOPR) {
-        xNext();
-        subexpr(v, UNARY_PRIORITY);
+    this.enterlevel();
+    var uop = this.getunopr(this._token);
+    if (uop != Syntax.OPR_NOUNOPR) {
+        this.xNext();
+        this.subexpr(v, Syntax.UNARY_PRIORITY);
         this._fs.kPrefix(uop, v);
     } else {
-        simpleexp(v);
+        this.simpleexp(v);
     }
     // expand while operators have priorities higher than 'limit'
-    var op = getbinopr(this._token);
-    while (op != OPR_NOBINOPR && PRIORITY[op][0] > limit) {
+    var op = this.getbinopr(this._token);
+    while (op != Syntax.OPR_NOBINOPR && Syntax.PRIORITY[op][0] > limit) {
         var v2 = new Expdesc();
-        xNext();
+        this.xNext();
         this._fs.kInfix(op, v);
         // read sub-expression with higher priority
-        var nextop = subexpr(v2, PRIORITY[op][1]);
+        var nextop = this.subexpr(v2, Syntax.PRIORITY[op][1]);
         this._fs.kPosfix(op, v, v2);
         op = nextop;
     }
-    leavelevel();
+    this.leavelevel();
     return op;
 };
 
@@ -1523,7 +1524,7 @@ Syntax.prototype.enterblock = function(f, bl, isbreakable) {
 Syntax.prototype.leaveblock = function(f) {
     var bl = f.bl;
     f.bl = bl.previous;
-    removevars(bl.nactvar);
+    this.removevars(bl.nactvar);
     if (bl.upval)
         f.kCodeABC(Lua.OP_CLOSE, bl.nactvar, 0, 0);
     /* loops have no body */
@@ -1542,10 +1543,10 @@ Syntax.prototype.leaveblock = function(f) {
 Syntax.prototype.block = function() { // throws IOException
     /* block -> chunk */
     var bl = new BlockCnt();
-    enterblock(this._fs, bl, false);
-    chunk();
+    this.enterblock(this._fs, bl, false);
+    this.chunk();
     //# assert bl.breaklist == FuncState.NO_JUMP
-    leaveblock(this._fs);
+    this.leaveblock(this._fs);
 };
 
 Syntax.prototype.breakstat = function() {
@@ -1557,7 +1558,7 @@ Syntax.prototype.breakstat = function() {
         bl = bl.previous;
     }
     if (bl == null)
-        xSyntaxerror("no loop to break");
+        this.xSyntaxerror("no loop to break");
     if (upval)
         this._fs.kCodeABC(Lua.OP_CLOSE, bl.nactvar, 0, 0);
     bl.breaklist = this._fs.kConcat(bl.breaklist, this._fs.kJump());
@@ -1567,16 +1568,16 @@ Syntax.prototype.funcstat = function(line) { //throws IOException
     /* funcstat -> FUNCTION funcname body */
     var b = new Expdesc();
     var v = new Expdesc();
-    xNext();  /* skip FUNCTION */
-    var needself = funcname(v);
-    body(b, needself, line);
+    this.xNext();  /* skip FUNCTION */
+    var needself = this.funcname(v);
+    this.body(b, needself, line);
     this._fs.kStorevar(v, b);
     this._fs.kFixline(line);  /* definition `happens' in the first line */
 };
 
 Syntax.prototype.checknext = function(c) { // throws IOException
-    check(c);
-    xNext();
+    this.check(c);
+    this.xNext();
 };
 
 Syntax.prototype.parlist = function() { // throws IOException
@@ -1586,25 +1587,25 @@ Syntax.prototype.parlist = function() { // throws IOException
     if (this._token != ')'.charCodeAt()) {   /* is `parlist' not empty? */
         do {
             switch (this._token) {
-            case TK_NAME:    /* param -> NAME */
+            case Syntax.TK_NAME:    /* param -> NAME */
                 {
-                    new_localvar(str_checkname(), nparams++);
+                    this.new_localvar(this.str_checkname(), nparams++);
                     break;
                 }
 
-            case TK_DOTS:    /* param -> `...' */
+            case Syntax.TK_DOTS:    /* param -> `...' */
                 {
-                    xNext();
+                    this.xNext();
                     f.isVararg = true;
                     break;
                 }
 
             default: 
-                xSyntaxerror("<name> or '...' expected");
+                this.xSyntaxerror("<name> or '...' expected");
             }
-        } while ((!f.isVararg) && testnext(','.charCodeAt()));
+        } while ((!f.isVararg) && this.testnext(','.charCodeAt()));
     }
-    adjustlocalvars(nparams);
+    this.adjustlocalvars(nparams);
     f.numparams = this._fs.nactvar ; /* VARARG_HASARG not now used */
     this._fs.kReserveregs(this._fs.nactvar);  /* reserve register for parameters */
 };
@@ -1617,34 +1618,34 @@ Syntax.prototype.getlocvar = function(i) {
 Syntax.prototype.adjustlocalvars = function(nvars) {
     this._fs.nactvar += nvars;
     for (; nvars != 0; nvars--) {
-        getlocvar(this._fs.nactvar - nvars).startpc = this._fs.pc;
+        this.getlocvar(this._fs.nactvar - nvars).startpc = this._fs.pc;
     }
 };
 
 Syntax.prototype.new_localvarliteral = function(v, n) {
-    new_localvar(v, n) ;
+    this.new_localvar(v, n) ;
 };
 
 Syntax.prototype.errorlimit = function(limit, what) {
     var msg = this._fs.f.linedefined == 0 ?
         "main function has more than " + limit + " " + what :
         "function at line " + this._fs.f.linedefined + " has more than " + limit + " " + what;
-    xLexerror(msg, 0);
+    this.xLexerror(msg, 0);
 };
 
 Syntax.prototype.yChecklimit = function(v, l, m) {
     if (v > l)
-        errorlimit(l,m);
+        this.errorlimit(l,m);
 };
 
 Syntax.prototype.new_localvar = function(name, n) {
-    yChecklimit(this._fs.nactvar + n + 1, Lua.MAXVARS, "local variables");
-    this._fs.actvar[this._fs.nactvar + n] = registerlocalvar(name);
+    this.yChecklimit(this._fs.nactvar + n + 1, Lua.MAXVARS, "local variables");
+    this._fs.actvar[this._fs.nactvar + n] = this.registerlocalvar(name);
 };
 
 Syntax.prototype.registerlocalvar = function(varname) {
     var f = this._fs.f;
-    f.ensureLocvars(this._L, this._fs.nlocvars, /*Short*/int.MAX_VALUE) ; //TODO:
+    f.ensureLocvars(this._L, this._fs.nlocvars, /*Short*/Number.MAX_SAFE_INTEGER) ; //TODO:
     f.locvars[this._fs.nlocvars].varname = varname;
     return this._fs.nlocvars++;
 };
@@ -1652,20 +1653,20 @@ Syntax.prototype.registerlocalvar = function(varname) {
 Syntax.prototype.body = function(e, needself, line) { // throws IOException
     /* body ->  `(' parlist `)' chunk END */
     var new_fs = new FuncState(this);
-    open_func(new_fs);
+    this.open_func(new_fs);
     new_fs.f.linedefined = line;
-    checknext('('.charCodeAt());
+    this.checknext('('.charCodeAt());
     if (needself) {
-        new_localvarliteral("self", 0);
-        adjustlocalvars(1);
+        this.new_localvarliteral("self", 0);
+        this.adjustlocalvars(1);
     }
-    parlist();
-    checknext(')'.charCodeAt());
-    chunk();
+    this.parlist();
+    this.checknext(')'.charCodeAt());
+    this.chunk();
     new_fs.f.lastlinedefined = this._linenumber;
-    check_match(TK_END, TK_FUNCTION, line);
-    close_func();
-    pushclosure(new_fs, e);
+    this.check_match(Syntax.TK_END, Syntax.TK_FUNCTION, line);
+    this.close_func();
+    this.pushclosure(new_fs, e);
 };
 
 Syntax.prototype.UPVAL_K = function(upvaldesc) {
@@ -1689,21 +1690,21 @@ Syntax.prototype.pushclosure = function(func, v) {
     v.init(Expdesc.VRELOCABLE, this._fs.kCodeABx(Lua.OP_CLOSURE, 0, this._fs.np - 1));
     for (var i = 0; i < ff.nups; i++) {
         var upvalue = func.upvalues[i] ;
-        var o = (UPVAL_K(upvalue) == Expdesc.VLOCAL) ? Lua.OP_MOVE :
+        var o = (Syntax.UPVAL_K(upvalue) == Expdesc.VLOCAL) ? Lua.OP_MOVE :
                                                      Lua.OP_GETUPVAL;
-        this._fs.kCodeABC(o, 0, UPVAL_INFO(upvalue), 0);
+        this._fs.kCodeABC(o, 0, Syntax.UPVAL_INFO(upvalue), 0);
     }
 };
 
 Syntax.prototype.funcname = function(v) { // throws IOException
     /* funcname -> NAME {field} [`:' NAME] */
     var needself = false;
-    singlevar(v);
+    this.singlevar(v);
     while (this._token == '.'.charCodeAt())
-        field(v);
+        this.field(v);
     if (this._token == ':'.charCodeAt()) {
         needself = true;
-        field(v);
+        this.field(v);
     }
     return needself;
 };
@@ -1712,8 +1713,8 @@ Syntax.prototype.field = function(v) { //throws IOException
     /* field -> ['.' | ':'] NAME */
     var key = new Expdesc() ;
     this._fs.kExp2anyreg(v);
-    xNext();  /* skip the dot or colon */
-    checkname(key);
+    this.xNext();  /* skip the dot or colon */
+    this.checkname(key);
     this._fs.kIndexed(v, key);
 };
 
@@ -1722,28 +1723,28 @@ Syntax.prototype.repeatstat = function(line) { //throws IOException
     var repeat_init = this._fs.kGetlabel();
     var bl1 = new BlockCnt();
     var bl2 = new BlockCnt();
-    enterblock(this._fs, bl1, true);  /* loop block */
-    enterblock(this._fs, bl2, false);  /* scope block */
-    xNext();  /* skip REPEAT */
-    chunk();
-    check_match(TK_UNTIL, TK_REPEAT, line);
-    var condexit = cond();  /* read condition (inside scope block) */
+    this.enterblock(this._fs, bl1, true);  /* loop block */
+    this.enterblock(this._fs, bl2, false);  /* scope block */
+    this.xNext();  /* skip REPEAT */
+    this.chunk();
+    this.check_match(Syntax.TK_UNTIL, Syntax.TK_REPEAT, line);
+    var condexit = this.cond();  /* read condition (inside scope block) */
     if (!bl2.upval) {   /* no upvalues? */
-        leaveblock(this._fs);  /* finish scope */
+        this.leaveblock(this._fs);  /* finish scope */
         this._fs.kPatchlist(condexit, repeat_init);  /* close the loop */
     } else {   /* complete semantics when there are upvalues */
-        breakstat();  /* if condition then break */
+        this.breakstat();  /* if condition then break */
         this._fs.kPatchtohere(condexit);  /* else... */
-        leaveblock(this._fs);  /* finish scope... */
+        this.leaveblock(this._fs);  /* finish scope... */
         this._fs.kPatchlist(this._fs.kJump(), repeat_init);  /* and repeat */
     }
-    leaveblock(this._fs);  /* finish loop */
+    this.leaveblock(this._fs);  /* finish loop */
 };
 
 Syntax.prototype.cond = function() { // throws IOException
     /* cond -> exp */
     var v = new Expdesc() ;
-    expr(v);  /* read condition */
+    this.expr(v);  /* read condition */
     if (v.k == Expdesc.VNIL)
         v.k = Expdesc.VFALSE;  /* `falses' are all equal here */
     this._fs.kGoiftrue(v);
@@ -1752,7 +1753,7 @@ Syntax.prototype.cond = function() { // throws IOException
 
 Syntax.prototype.open_func = function(funcstate) {
     var f = new Proto();  /* registers 0/1 are always valid */
-    f.init2(source, 2);
+    f.init2(this.getSource(), 2);
     funcstate.f = f;
     funcstate.ls = this;
     funcstate.L = this._L;
@@ -1767,64 +1768,64 @@ Syntax.prototype.localstat = function() {  // throws IOException
     var nexps;
     var e = new Expdesc();
     do {
-        new_localvar(str_checkname(), nvars++);
-    } while (testnext(','.charCodeAt()));
-    if (testnext('='.charCodeAt())) {
-        nexps = explist1(e);
+        this.new_localvar(this.str_checkname(), nvars++);
+    } while (this.testnext(','.charCodeAt()));
+    if (this.testnext('='.charCodeAt())) {
+        nexps = this.explist1(e);
     } else {
         e.k = Expdesc.VVOID;
         nexps = 0;
     }
-    adjust_assign(nvars, nexps, e);
-    adjustlocalvars(nvars);
+    this.adjust_assign(nvars, nexps, e);
+    this.adjustlocalvars(nvars);
 };
 
 Syntax.prototype.forstat = function(line) { // throws IOException
     /* forstat -> FOR (fornum | forlist) END */
     var bl = new BlockCnt() ;
-    enterblock(this._fs, bl, true);  /* scope for loop and control variables */
-    xNext();  /* skip `for' */
-    var varname = str_checkname();  /* first variable name */
+    this.enterblock(this._fs, bl, true);  /* scope for loop and control variables */
+    this.xNext();  /* skip `for' */
+    var varname = this.str_checkname();  /* first variable name */
     switch (String.fromCharCode(this._token)) {
     case '=':
-        fornum(varname, line);
+        this.fornum(varname, line);
         break;
 
     case ',':
-    case String.fromCharCode(TK_IN):
-        forlist(varname);
+    case String.fromCharCode(Syntax.TK_IN):
+        this.forlist(varname);
         break;
 
     default:
-        xSyntaxerror("\"=\" or \"in\" expected");
+        this.xSyntaxerror("\"=\" or \"in\" expected");
     }
-    check_match(TK_END, TK_FOR, line);
-    leaveblock(this._fs);  /* loop scope (`break' jumps to this point) */
+    this.check_match(Syntax.TK_END, Syntax.TK_FOR, line);
+    this.leaveblock(this._fs);  /* loop scope (`break' jumps to this point) */
 };
 
 Syntax.prototype.fornum = function(varname, line) { // throws IOException
     /* fornum -> NAME = exp1,exp1[,exp1] forbody */
     var base = this._fs.freereg;
-    new_localvarliteral("(for index)", 0);
-    new_localvarliteral("(for limit)", 1);
-    new_localvarliteral("(for step)", 2);
-    new_localvar(varname, 3);
-    checknext('='.charCodeAt());
-    exp1();  /* initial value */
-    checknext(','.charCodeAt());
-    exp1();  /* limit */
-    if (testnext(','.charCodeAt()))
-        exp1();  /* optional step */
+    this.new_localvarliteral("(for index)", 0);
+    this.new_localvarliteral("(for limit)", 1);
+    this.new_localvarliteral("(for step)", 2);
+    this.new_localvar(varname, 3);
+    this.checknext('='.charCodeAt());
+    this.exp1();  /* initial value */
+    this.checknext(','.charCodeAt());
+    this.exp1();  /* limit */
+    if (this.testnext(','.charCodeAt()))
+        this.exp1();  /* optional step */
     else {   /* default step = 1 */
         this._fs.kCodeABx(Lua.OP_LOADK, this._fs.freereg, this._fs.kNumberK(1));
         this._fs.kReserveregs(1);
     }
-    forbody(base, line, 1, true);
+    this.forbody(base, line, 1, true);
 };
 
 Syntax.prototype.exp1 = function() { // throws IOException
     var e = new Expdesc();
-    expr(e);
+    this.expr(e);
     var k = e.k;
     this._fs.kExp2nextreg(e);
     return k;
@@ -1836,31 +1837,31 @@ Syntax.prototype.forlist = function(indexname) { // throws IOException
     var nvars = 0;
     var base = this._fs.freereg;
     /* create control variables */
-    new_localvarliteral("(for generator)", nvars++);
-    new_localvarliteral("(for state)", nvars++);
-    new_localvarliteral("(for control)", nvars++);
+    this.new_localvarliteral("(for generator)", nvars++);
+    this.new_localvarliteral("(for state)", nvars++);
+    this.new_localvarliteral("(for control)", nvars++);
     /* create declared variables */
-    new_localvar(indexname, nvars++);
-    while (testnext(','.charCodeAt()))
-        new_localvar(str_checkname(), nvars++);
-    checknext(TK_IN);
+    this.new_localvar(indexname, nvars++);
+    while (this.testnext(','.charCodeAt()))
+        this.new_localvar(this.str_checkname(), nvars++);
+    this.checknext(Syntax.TK_IN);
     var line = this._linenumber;
-    adjust_assign(3, explist1(e), e);
+    this.adjust_assign(3, this.explist1(e), e);
     this._fs.kCheckstack(3);  /* extra space to call generator */
-    forbody(base, line, nvars - 3, false);
+    this.forbody(base, line, nvars - 3, false);
 };
 
 Syntax.prototype.forbody = function(base, line, nvars, isnum) { //throws IOException
     /* forbody -> DO block */
     var bl = new BlockCnt() ;
-    adjustlocalvars(3);  /* control variables */
-    checknext(TK_DO);
+    this.adjustlocalvars(3);  /* control variables */
+    this.checknext(Syntax.TK_DO);
     var prep = isnum ? this._fs.kCodeAsBx(Lua.OP_FORPREP, base, FuncState.NO_JUMP) : this._fs.kJump();
-    enterblock(this._fs, bl, false);  /* scope for declared variables */
-    adjustlocalvars(nvars);
+    this.enterblock(this._fs, bl, false);  /* scope for declared variables */
+    this.adjustlocalvars(nvars);
     this._fs.kReserveregs(nvars);
-    block();
-    leaveblock(this._fs);  /* end of scope for declared variables */
+    this.block();
+    this.leaveblock(this._fs);  /* end of scope for declared variables */
     this._fs.kPatchtohere(prep);
     var endfor = isnum ?
         this._fs.kCodeAsBx(Lua.OP_FORLOOP, base, FuncState.NO_JUMP) :
@@ -1872,45 +1873,45 @@ Syntax.prototype.forbody = function(base, line, nvars, isnum) { //throws IOExcep
 Syntax.prototype.ifstat = function(line) { // throws IOException
     /* ifstat -> IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END */
     var escapelist = FuncState.NO_JUMP;
-    var flist = test_then_block();  /* IF cond THEN block */
-    while (this._token == TK_ELSEIF) {
+    var flist = this.test_then_block();  /* IF cond THEN block */
+    while (this._token == Syntax.TK_ELSEIF) {
         escapelist = this._fs.kConcat(escapelist, this._fs.kJump());
         this._fs.kPatchtohere(flist);
-        flist = test_then_block();  /* ELSEIF cond THEN block */
+        flist = this.test_then_block();  /* ELSEIF cond THEN block */
     }
-    if (this._token == TK_ELSE) {
+    if (this._token == Syntax.TK_ELSE) {
         escapelist = this._fs.kConcat(escapelist, this._fs.kJump());
         this._fs.kPatchtohere(flist);
-        xNext();  /* skip ELSE (after patch, for correct line info) */
-        block();  /* `else' part */
+        this.xNext();  /* skip ELSE (after patch, for correct line info) */
+        this.block();  /* `else' part */
     } else
         escapelist = this._fs.kConcat(escapelist, flist);
 
     this._fs.kPatchtohere(escapelist);
-    check_match(TK_END, TK_IF, line);
+    this.check_match(Syntax.TK_END, Syntax.TK_IF, line);
 };
 
 Syntax.prototype.test_then_block = function() { // throws IOException
     /* test_then_block -> [IF | ELSEIF] cond THEN block */
-    xNext();  /* skip IF or ELSEIF */
-    var condexit = cond();
-    checknext(TK_THEN);
-    block();  /* `then' part */
+    this.xNext();  /* skip IF or ELSEIF */
+    var condexit = this.cond();
+    this.checknext(Syntax.TK_THEN);
+    this.block();  /* `then' part */
     return condexit;
 };
 
 Syntax.prototype.whilestat = function(line) { // throws IOException
     /* whilestat -> WHILE cond DO block END */
     var bl = new BlockCnt() ;
-    xNext();  /* skip WHILE */
+    this.xNext();  /* skip WHILE */
     var whileinit = this._fs.kGetlabel();
-    var condexit = cond();
-    enterblock(this._fs, bl, true);
-    checknext(TK_DO);
-    block();
+    var condexit = this.cond();
+    this.enterblock(this._fs, bl, true);
+    this.checknext(Syntax.TK_DO);
+    this.block();
     this._fs.kPatchlist(this._fs.kJump(), whileinit);
-    check_match(TK_END, TK_WHILE, line);
-    leaveblock(this._fs);
+    this.check_match(Syntax.TK_END, Syntax.TK_WHILE, line);
+    this.leaveblock(this._fs);
     this._fs.kPatchtohere(condexit);  /* false conditions finish the loop */
 };
 
@@ -1920,7 +1921,7 @@ Syntax.hasmultret = function(k) {
 
 Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
     var extra = nvars - nexps;
-    if (hasmultret(e.k)) {
+    if (this.hasmultret(e.k)) {
         extra++;  /* includes call itself */
         if (extra < 0)
             extra = 0;
@@ -1940,12 +1941,12 @@ Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
 
 Syntax.prototype.localfunc = function() { // throws IOException
     var b = new Expdesc();
-    new_localvar(str_checkname(), 0);
+    this.new_localvar(this.str_checkname(), 0);
     var v = new Expdesc();
     v.init(Expdesc.VLOCAL, this._fs.freereg);
     this._fs.kReserveregs(1);
-    adjustlocalvars(1);
-    body(b, false, this._linenumber);
+    this.adjustlocalvars(1);
+    this.body(b, false, this._linenumber);
     this._fs.kStorevar(v, b);
     /* debug information will only see the variable after this point! */
     this._fs.getlocvar(this._fs.nactvar - 1).startpc = this._fs.pc;
@@ -1953,22 +1954,22 @@ Syntax.prototype.localfunc = function() { // throws IOException
 
 Syntax.prototype.yindex = function(v) { // throws IOException
     /* index -> '[' expr ']' */
-    xNext();  /* skip the '[' */
-    expr(v);
+    this.xNext();  /* skip the '[' */
+    this.expr(v);
     this._fs.kExp2val(v);
-    checknext(']'.charCodeAt());
+    this.checknext(']'.charCodeAt());
 };
 
 Syntax.prototype.xLookahead = function() {  // throws IOException
     //# assert lookahead == TK_EOS
-    this._lookahead = llex();
+    this._lookahead = this.llex();
     this._lookaheadR = this._semR ;
     this._lookaheadS = this._semS ;
 };
 
 Syntax.prototype.listfield = function(cc) { // throws IOException
-    expr(cc.v);
-    yChecklimit(cc.na, Lua.MAXARG_Bx, "items in a constructor");
+    this.expr(cc.v);
+    this.yChecklimit(cc.na, Lua.MAXARG_Bx, "items in a constructor");
     cc.na++;
     cc.tostore++;
 };
@@ -1978,17 +1979,17 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     var oldsize = f.sizeupvalues;
     for (var i = 0; i < f.nups; i++) {
         var entry = funcstate.upvalues[i];
-        if (UPVAL_K(entry) == v.k && UPVAL_INFO(entry) == v.info) {
+        if (Syntax.UPVAL_K(entry) == v.k && Syntax.UPVAL_INFO(entry) == v.info) {
             //# assert name.equals(f.upvalues[i])
             return i;
         }
     }
     /* new one */
-    yChecklimit(f.nups + 1, Lua.MAXUPVALUES, "upvalues");
+    this.yChecklimit(f.nups + 1, Lua.MAXUPVALUES, "upvalues");
     f.ensureUpvals(this._L, f.nups);
     f.upvalues[f.nups] = name;
     //# assert v.k == Expdesc.VLOCAL || v.k == Expdesc.VUPVAL
-    funcstate.upvalues[f.nups] = UPVAL_ENCODE(v.k, v.info) ;
+    funcstate.upvalues[f.nups] = Syntax.UPVAL_ENCODE(v.k, v.info) ;
     return f.nups++;
 };
 

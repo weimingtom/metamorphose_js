@@ -1,5 +1,11 @@
 ;(function(metamorphose) {
-
+var ByteArrayOutputStream = metamorphose ? metamorphose.ByteArrayOutputStream : require('../java/ByteArrayOutputStream.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('./StringBuffer.js');
+var FormatItem = metamorphose ? metamorphose.FormatItem : require('./FormatItem.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+var LuaTable = metamorphose ? metamorphose.LuaTable : require('./LuaTable.js');
+var MatchState = metamorphose ? metamorphose.MatchState : require('./MatchState.js');
+    
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/StringLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -193,8 +199,8 @@ StringLib.charFunction = function(L) {
     var b = new StringBuffer();
     for (var i = 1; i <= n; ++i) {
         var c = L.checkInt(i);
-        L.argCheck(c as uint == c, i, "invalid value");
-        b.append(c as uint);
+        L.argCheck(c == c, i, "invalid value");
+        b.append(c);
     }
     L.pushString(b.toString());
     return 1;
@@ -211,12 +217,12 @@ StringLib.dump = function(L) {
         s = null;
         var b = new StringBuffer();
         for (var i = 0; i<a.length; ++i) {
-            b.append((uint)(a[i]&0xff));
+            b.append((a[i] & 0xff));
         }
         L.pushString(b.toString());
         return 1;
     } catch (e_) {
-        trace(e_.getStackTrace());
+        console.log(e_.getStackTrace());
         L.error("unabe to dump given function");
     }
     // NOTREACHED
@@ -229,16 +235,16 @@ StringLib.findAux = function(L, isFind) {
     var p = L.checkString(2);
     var l1 = s.length;
     var l2 = p.length;
-    var init = posrelat(L.optInt(3, 1), s) - 1;
+    var init = this.posrelat(L.optInt(3, 1), s) - 1;
     if (init < 0) {
         init = 0;
     } else if (init > l1) {
         init = l1;
     }
     if (isFind && (L.toBoolean(L.value(4)) ||   // explicit request
-        strpbrk(p, MatchState.SPECIALS) < 0)) { // or no special characters?   
+        this.strpbrk(p, MatchState.SPECIALS) < 0)) { // or no special characters?   
         // do a plain search
-        var off = lmemfind(s.substring(init), l1 - init, p, l2);
+        var off = this.lmemfind(s.substring(init), l1 - init, p, l2);
         if (off >= 0) {
             L.pushNumber(init+off+1);
             L.pushNumber(init+off+l2);
@@ -267,7 +273,7 @@ StringLib.findAux = function(L, isFind) {
 
 /** Implements string.find. */
 StringLib.find = function(L) {
-    return findAux(L, true);
+    return this.findAux(L, true);
 };
 
 /** Implement string.match.  Operates slightly differently from the
@@ -279,8 +285,8 @@ StringLib.gmatch = function(L) {
     var state = new Array(3); //Object[]
     state[0] = L.checkString(1);
     state[1] = L.checkString(2);
-    state[2] = new int(0);
-    L.pushObject(GMATCH_AUX_FUN);
+    state[2] = parseInt(0); //new int
+    L.pushObject(StringLib.GMATCH_AUX_FUN);
     L.pushObject(state);
     return 2;
 };
@@ -290,10 +296,10 @@ StringLib.gmatch = function(L) {
  * #gmatch}), to be first on the stack.
  */
 StringLib.gmatchaux = function(L) {
-    var state = L.value(1) as Array; //Object[] 
-    var s = state[0] as String;
-    var p = state[1] as String;
-    var i = state[2] as int;
+    var state = L.value(1); //Object[] 
+    var s = state[0];
+    var p = state[1];
+    var i = state[2];
     var ms = new MatchState(L, s, s.length);
     for ( ; i <= ms.end ; ++i) {
         ms.level = 0;
@@ -302,7 +308,7 @@ StringLib.gmatchaux = function(L) {
             var newstart = e;
             if (e == i)     // empty match?
                 ++newstart;   // go at least one position
-            state[2] = new int(newstart);
+            state[2] = parseInt(newstart); //new int
             return ms.push_captures(i, e);
         }
     }
@@ -392,14 +398,14 @@ StringLib.format = function(L) {
             i += item.length;
             switch (String.fromCharCode(item.type)) {
             case 'c':
-                item.formatChar(b, L.checkNumber(arg) as uint);
+                item.formatChar(b, L.checkNumber(arg));
                 break;
 
             case 'd': case 'i':
             case 'o': case 'u': case 'x': case 'X':
                 // :todo: should be unsigned conversions cope better with
                 // negative number?
-                item.formatInteger(b, L.checkNumber(arg) as int);
+                item.formatInteger(b, L.checkNumber(arg));
                 break;
 
             case 'e': case 'E': case 'f':
@@ -408,7 +414,7 @@ StringLib.format = function(L) {
                 break;
 
             case 'q':
-                addquoted(L, b, arg);
+                this.addquoted(L, b, arg);
                 break;
 
             case 's':
@@ -440,7 +446,7 @@ StringLib.lower = function(L) {
 
 /** Implements string.match. */
 StringLib.match = function(L) {
-    return findAux(L, false);
+    return StringLib.findAux(L, false);
 };
 
 /** Implements string.rep. */
@@ -479,8 +485,8 @@ StringLib.posrelat = function(pos, s) {
 /** Implements string.sub. */
 StringLib.sub = function(L) {
     var s = L.checkString(1);
-    var start = posrelat(L.checkInt(2), s);
-    var end = posrelat(L.optInt(3, -1), s);
+    var start = StringLib.posrelat(L.checkInt(2), s);
+    var end = StringLib.posrelat(L.optInt(3, -1), s);
     if (start < 1) {
         start = 1;
     }

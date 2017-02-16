@@ -1,4 +1,10 @@
 ;(function(metamorphose) {
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
+var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
+var IllegalArgumentException = metamorphose ? metamorphose.IllegalArgumentException : require('../java/IllegalArgumentException.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+var LocVar = metamorphose ? metamorphose.LocVar : require('./LocVar.js');
+var Slot = metamorphose ? metamorphose.Slot : require('./Slot.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Proto.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -339,7 +345,7 @@ Proto.prototype.constantAppend = function(idx, o) {
         this._k = newK;
     }
     this._k[idx] = new Slot();
-    (this._k[idx] as Slot).init2(o);
+    (this._k[idx]).init2(o);
 };
 
 /** Predicate for whether function uses ... in its parameter list. */
