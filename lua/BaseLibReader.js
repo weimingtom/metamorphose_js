@@ -1,5 +1,8 @@
 ;(function(metamorphose) {
 
+var IOException = metamorphose ? metamorphose.IOException : require('../java/IOException.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BaseLibReader.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -92,7 +95,7 @@ BaseLibReader.prototype.readMultiBytes = function(cbuf, off, len) {
                 return j;
             }
         }
-        cbuf[off + j] = c as uint;
+        cbuf[off + j] = c;
     }
     return j;
 };

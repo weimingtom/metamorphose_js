@@ -11,7 +11,7 @@ Runtime.getRuntime = function() {
 };
 
 Runtime.prototype.totalMemory = function() {
-    return flash.system.System.totalMemory;
+    return 0; //FIXME:
 };
 
 Runtime.prototype.freeMemory = function() {

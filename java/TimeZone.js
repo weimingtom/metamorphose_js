@@ -24,7 +24,7 @@ TimeZone.getTimeZone = function(ID) {
     if (ID != "GMT") {
         console.log("TimeZone.getTimeZone(): not support name");
         throw new Error("TimeZone.getTimeZone(): not support name");
-        return TimeZone.tz;
+        //return TimeZone.tz; //FIXME:
     }
     if (TimeZone.tzGMT._id == null)
         TimeZone.tzGMT._id = "GMT";

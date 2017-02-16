@@ -22,3 +22,9 @@ Metamorphose (original name jill, jillcode) Javascript port
 
 ## Status  
 WIP  
+
+## Develop tool  
+* Brackets  
+* JSHint  
+* Nodejs  
+* Chrome  

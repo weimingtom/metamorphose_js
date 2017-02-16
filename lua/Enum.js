@@ -1,5 +1,7 @@
 ;(function(metamorphose) {
 
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -52,7 +54,7 @@ Enum.prototype.nextElement = function() {
     var r;
     if (this._i < this._t.sizeArray) {
         ++this._i;      // array index i corresponds to key i+1
-        r = new Number(this._i);
+        r = Number(this._i); //FIXME:new Number
         this.inci();
     } else {
         r = this._e.nextElement();

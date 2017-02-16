@@ -1,4 +1,10 @@
 ;(function(metamorphose) {
+var Hashtable = metamorphose ? metamorphose.Hashtable : require('../java/Hashtable.js');
+
+var Proto = metamorphose ? metamorphose.Proto : require('./Proto.js');
+var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
+var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/FuncState.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -238,7 +244,7 @@ FuncState.prototype.kInfix = function(op, v) {
         break;
 
     default:
-        if (!isnumeral(v))
+        if (!this.isnumeral(v))
             this.kExp2RK(v);
         break;
     }
@@ -281,7 +287,7 @@ FuncState.prototype.kPosfix = function(op, e1, e2) {
     switch (op) {
     case Syntax.OPR_AND:
         /* list must be closed */
-        //# assert e1.t == NO_JUMP
+        //# assert e1.t == FuncState.NO_JUMP
         this.kDischargevars(e2);
         e2.f = this.kConcat(e2.f, e1.f);
         e1.copy(e2); //TODO:
@@ -289,7 +295,7 @@ FuncState.prototype.kPosfix = function(op, e1, e2) {
 
     case Syntax.OPR_OR:
         /* list must be closed */
-        //# assert e1.f == NO_JUMP
+        //# assert e1.f == FuncState.NO_JUMP
         this.kDischargevars(e2);
         e2.t = this.kConcat(e2.t, e1.t);
         e1.copy(e2); //TODO:
@@ -369,18 +375,18 @@ FuncState.prototype.kPrefix = function(op, e) {
     switch (op) {
     case Syntax.OPR_MINUS:
         if (e.kind == Expdesc.VK) {
-            kExp2anyreg(e);
+            this.kExp2anyreg(e);
         }
-        codearith(Lua.OP_UNM, e, e2);
+        this.codearith(Lua.OP_UNM, e, e2);
         break;
 
     case Syntax.OPR_NOT:
-        codenot(e);
+        this.codenot(e);
         break;
 
     case Syntax.OPR_LEN:
-        kExp2anyreg(e);
-        codearith(Lua.OP_LEN, e, e2);
+        this.kExp2anyreg(e);
+        this.codearith(Lua.OP_LEN, e, e2);
         break;
 
     default:
@@ -390,26 +396,26 @@ FuncState.prototype.kPrefix = function(op, e) {
 
 /** Equivalent to luaK_reserveregs. */
 FuncState.prototype.kReserveregs = function(n) {
-    kCheckstack(n);
+    this.kCheckstack(n);
     this._freereg += n;
 };
 
 /** Equivalent to luaK_ret. */
 FuncState.prototype.kRet = function(first, nret) {
-    kCodeABC(Lua.OP_RETURN, first, nret+1, 0);
+    this.kCodeABC(Lua.OP_RETURN, first, nret+1, 0);
 };
 
 /** Equivalent to luaK_setmultret (in lcode.h). */
 FuncState.prototype.kSetmultret = function(e) {
-    kSetreturns(e, Lua.MULTRET);
+    this.kSetreturns(e, Lua.MULTRET);
 };
 
 /** Equivalent to luaK_setoneret. */
 FuncState.prototype.kSetoneret = function(e) {
     if (e.kind == Expdesc.VCALL) {     // expression is an open function call?
-        e.nonreloc(Lua.ARGA(getcode(e)));
+        e.nonreloc(Lua.ARGA(this.getcode(e)));
     } else if (e.kind == Expdesc.VVARARG) {
-        setargb(e, 2);
+        this.setargb(e, 2);
         e.kind = Expdesc.VRELOCABLE;
     }
 };
@@ -417,48 +423,48 @@ FuncState.prototype.kSetoneret = function(e) {
 /** Equivalent to luaK_setreturns. */
 FuncState.prototype.kSetreturns = function(e, nresults) {
     if (e.kind == Expdesc.VCALL) {     // expression is an open function call?
-        setargc(e, nresults+1);
+        this.setargc(e, nresults+1);
     } else if (e.kind == Expdesc.VVARARG) {
-        setargb(e, nresults+1);
-        setarga(e, this._freereg);
-        kReserveregs(1);
+        this.setargb(e, nresults+1);
+        this.setarga(e, this._freereg);
+        this.kReserveregs(1);
     }
 };
 
 /** Equivalent to luaK_stringK. */
 FuncState.prototype.kStringK = function(s) {
-    return addk(s/*.intern()*/);
+    return this.addk(s/*.intern()*/);
 };
 
 FuncState.prototype.addk = function(o) {
     var hash = o;
-    var v = _h._get(hash); //TODO:get
+    var v = this._h._get(hash); //TODO:get
     if (v != null) {
         // :todo: assert
         return v; //TODO:
     }
     // constant not found; create a new entry
     this._f.constantAppend(this._nk, o);
-    this._h.put(hash, new int(this._nk)); //TODO:
+    this._h.put(hash, parseInt(this._nk)); //TODO:new int
     return this._nk++;
 };
 
 FuncState.prototype.codearith = function(op, e1, e2) {
-    if (constfolding(op, e1, e2))
+    if (this.constfolding(op, e1, e2))
         return;
     else {
-        var o1 = kExp2RK(e1);
-        var o2 = (op != Lua.OP_UNM && op != Lua.OP_LEN) ? kExp2RK(e2) : 0;
-        freeexp(e2);
-        freeexp(e1);
-        e1.info = kCodeABC(op, 0, o1, o2);
+        var o1 = this.kExp2RK(e1);
+        var o2 = (op != Lua.OP_UNM && op != Lua.OP_LEN) ? this.kExp2RK(e2) : 0;
+        this.freeexp(e2);
+        this.freeexp(e1);
+        e1.info = this.kCodeABC(op, 0, o1, o2);
         e1.k = Expdesc.VRELOCABLE;
     }
 };
 
 FuncState.prototype.constfolding = function(op, e1, e2) {
     var r = 0;
-    if (!isnumeral(e1) || !isnumeral(e2))
+    if (!this.isnumeral(e1) || !this.isnumeral(e2))
         return false;
 
     var v1 = e1.nval;
@@ -511,7 +517,7 @@ FuncState.prototype.constfolding = function(op, e1, e2) {
 };
 
 FuncState.prototype.codenot = function(e) {
-    kDischargevars(e);
+    this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VNIL:
     case Expdesc.VFALSE:
@@ -521,18 +527,18 @@ FuncState.prototype.codenot = function(e) {
     case Expdesc.VK:
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
-        e.k = Expdesc.VFALSE;
+        e.k = this.Expdesc.VFALSE;
         break;
 
     case Expdesc.VJMP:
-        invertjump(e);
+        this.invertjump(e);
         break;
 
     case Expdesc.VRELOCABLE:
     case Expdesc.VNONRELOC:
-        discharge2anyreg(e);
-        freeexp(e);
-        e.info = kCodeABC(Lua.OP_NOT, 0, e.info, 0);
+        this.discharge2anyreg(e);
+        this.freeexp(e);
+        e.info = this.kCodeABC(Lua.OP_NOT, 0, e.info, 0);
         e.k = Expdesc.VRELOCABLE;
         break;
 
@@ -546,48 +552,48 @@ FuncState.prototype.codenot = function(e) {
         e.f = e.t; 
         e.t = temp; 
     }
-    removevalues(e.f);
-    removevalues(e.t);
+    this.removevalues(e.f);
+    this.removevalues(e.t);
 };
 
 FuncState.prototype.removevalues = function(list) {
-    for (; list != NO_JUMP; list = getjump(list))
-        patchtestreg(list, Lua.NO_REG);
+    for (; list != FuncState.NO_JUMP; list = this.getjump(list))
+        this.patchtestreg(list, Lua.NO_REG);
 };
 
 FuncState.prototype.dischargejpc = function() {
-    patchlistaux(this._jpc, this._pc, Lua.NO_REG, this._pc);
-    this._jpc = NO_JUMP;
+    this.patchlistaux(this._jpc, this._pc, Lua.NO_REG, this._pc);
+    this._jpc = FuncState.NO_JUMP;
 };
 
 FuncState.prototype.discharge2reg = function(e, reg) {
-    kDischargevars(e);
+    this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VNIL:
-        kNil(reg, 1);
+        this.kNil(reg, 1);
         break;
 
     case Expdesc.VFALSE:
     case Expdesc.VTRUE:
-        kCodeABC(Lua.OP_LOADBOOL, reg, (e.k == Expdesc.VTRUE ? 1 : 0), 0);
+        this.kCodeABC(Lua.OP_LOADBOOL, reg, (e.k == Expdesc.VTRUE ? 1 : 0), 0);
         break;
 
     case Expdesc.VK:
-        kCodeABx(Lua.OP_LOADK, reg, e.info);
+        this.kCodeABx(Lua.OP_LOADK, reg, e.info);
         break;
 
     case Expdesc.VKNUM:
-        kCodeABx(Lua.OP_LOADK, reg, kNumberK(e.nval));
+        this.kCodeABx(Lua.OP_LOADK, reg, this.kNumberK(e.nval));
         break;
 
     case Expdesc.VRELOCABLE:
-        setarga(e, reg);
+        this.setarga(e, reg);
         break;
 
     case Expdesc.VNONRELOC:
         if (reg != e.info)
         {
-          kCodeABC(Lua.OP_MOVE, reg, e.info, 0);
+          this.kCodeABC(Lua.OP_MOVE, reg, e.info, 0);
         }
         break;
 
@@ -602,29 +608,29 @@ FuncState.prototype.discharge2reg = function(e, reg) {
 };
 
 FuncState.prototype.exp2reg = function(e, reg) {
-    discharge2reg(e, reg);
+    this.discharge2reg(e, reg);
     if (e.k == Expdesc.VJMP) {
-        e.t = kConcat(e.t, e.info);  /* put this jump in `t' list */
+        e.t = this.kConcat(e.t, e.info);  /* put this jump in `t' list */
     }
     if (e.hasjumps()) {
-        var p_f = NO_JUMP;  /* position of an eventual LOAD false */
-        var p_t = NO_JUMP;  /* position of an eventual LOAD true */
-        if (need_value(e.t) || need_value(e.f)) {
-            var fj = (e.k == Expdesc.VJMP) ? NO_JUMP : kJump();
-            p_f = code_label(reg, 0, 1);
-            p_t = code_label(reg, 1, 0);
-            kPatchtohere(fj);
+        var p_f = FuncState.NO_JUMP;  /* position of an eventual LOAD false */
+        var p_t = FuncState.NO_JUMP;  /* position of an eventual LOAD true */
+        if (this.need_value(e.t) || this.need_value(e.f)) {
+            var fj = (e.k == Expdesc.VJMP) ? FuncState.NO_JUMP : this.kJump();
+            p_f = this.code_label(reg, 0, 1);
+            p_t = this.code_label(reg, 1, 0);
+            this.kPatchtohere(fj);
         }
-        var finalpos = kGetlabel(); /* position after whole expression */
-        patchlistaux(e.f, finalpos, reg, p_f);
-        patchlistaux(e.t, finalpos, reg, p_t);
+        var finalpos = this.kGetlabel(); /* position after whole expression */
+        this.patchlistaux(e.f, finalpos, reg, p_f);
+        this.patchlistaux(e.t, finalpos, reg, p_t);
     }
     e.init(Expdesc.VNONRELOC, reg);
 };
 
 FuncState.prototype.code_label = function(a, b, jump) {
-    kGetlabel();  /* those instructions may be jump targets */
-    return kCodeABC(Lua.OP_LOADBOOL, a, b, jump);
+    this.kGetlabel();  /* those instructions may be jump targets */
+    return this.kCodeABC(Lua.OP_LOADBOOL, a, b, jump);
 };
 
 /**
@@ -632,8 +638,8 @@ FuncState.prototype.code_label = function(a, b, jump) {
  * (or produce an inverted value)
  */
 FuncState.prototype.need_value = function(list) {
-    for (; list != NO_JUMP; list = getjump(list)) {
-        var i = getjumpcontrol(list);
+    for (; list != FuncState.NO_JUMP; list = this.getjump(list)) {
+        var i = this.getjumpcontrol(list);
         var instr = this._f.code[i] ;
         if (Lua.OPCODE(instr) != Lua.OP_TESTSET)
             return true;
@@ -643,7 +649,7 @@ FuncState.prototype.need_value = function(list) {
 
 FuncState.prototype.freeexp = function(e) {
     if (e.kind == Expdesc.VNONRELOC) {
-        __freereg(e.info);
+        this.__freereg(e.info);
     }
 };
 
@@ -674,7 +680,7 @@ FuncState.prototype.setcode = function(e, code) {
 FuncState.prototype.searchvar = function(n) {
     // caution: descending loop (in emulation of PUC-Rio).
     for (var i = this._nactvar - 1; i >= 0; i--) {
-        if (n == getlocvar(i).varname)
+        if (n == this.getlocvar(i).varname)
             return i;
     }
     return -1;  // not found
@@ -709,16 +715,16 @@ FuncState.prototype.kGetlabel = function() {
 * l1 was an int*, now passing back as result.
 */
 FuncState.prototype.kConcat = function(l1, l2) {
-    if (l2 == NO_JUMP)
+    if (l2 == FuncState.NO_JUMP)
         return l1;
-    else if (l1 == NO_JUMP)
+    else if (l1 == FuncState.NO_JUMP)
         return l2;
     else {
         var list = l1;
         var next;
-        while ((next = getjump(list)) != NO_JUMP)  /* find last element */
+        while ((next = this.getjump(list)) != FuncState.NO_JUMP)  /* find last element */
             list = next;
-        fixjump(list, l2);
+        this.fixjump(list, l2);
         return l1;
     }
 };
@@ -726,27 +732,27 @@ FuncState.prototype.kConcat = function(l1, l2) {
 /** Equivalent to <code>luaK_patchlist</code>. */
 FuncState.prototype.kPatchlist = function(list, target) {
     if (target == this._pc)
-        kPatchtohere(list);
+        this.kPatchtohere(list);
     else {
         //# assert target < pc
-        patchlistaux(list, target, Lua.NO_REG, target);
+        this.patchlistaux(list, target, Lua.NO_REG, target);
     }
 };
 
 FuncState.prototype.patchlistaux = function(list, vtarget, reg,
                         dtarget) {
-    while (list != NO_JUMP) {
-        var next = getjump(list);
-        if (patchtestreg(list, reg))
-            fixjump(list, vtarget);
+    while (list != FuncState.NO_JUMP) {
+        var next = this.getjump(list);
+        if (this.patchtestreg(list, reg))
+            this.fixjump(list, vtarget);
         else
-            fixjump(list, dtarget);  /* jump to default target */
+            this.fixjump(list, dtarget);  /* jump to default target */
         list = next;
     }
 };
 
 FuncState.prototype.patchtestreg = function(node, reg) {
-    var i = getjumpcontrol(node);
+    var i = this.getjumpcontrol(node);
     var code = this._f.code; //int [] 
     var instr = code[i] ;
     if (Lua.OPCODE(instr) != Lua.OP_TESTSET)
@@ -761,7 +767,7 @@ FuncState.prototype.patchtestreg = function(node, reg) {
 
 FuncState.prototype.getjumpcontrol = function(at) {
     var code = this._f.code; //int []
-    if (at >= 1 && testTMode(Lua.OPCODE(code[at-1])))
+    if (at >= 1 && this.testTMode(Lua.OPCODE(code[at-1])))
         return at - 1;
     else
         return at;
@@ -793,68 +799,68 @@ FuncState.opmode = function(t, a, b, c, m) {
 
 FuncState.OPMODE = [ //new byte []
     /*      T  A  B         C         mode                opcode  */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iABC),            /* OP_MOVE */
-    opmode(0, 1, OP_ARG_K, OP_ARG_N, iABx),            /* OP_LOADK */
-    opmode(0, 1, OP_ARG_U, OP_ARG_U, iABC),            /* OP_LOADBOOL */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iABC),            /* OP_LOADNIL */
-    opmode(0, 1, OP_ARG_U, OP_ARG_N, iABC),            /* OP_GETUPVAL */
-    opmode(0, 1, OP_ARG_K, OP_ARG_N, iABx),            /* OP_GETGLOBAL */
-    opmode(0, 1, OP_ARG_R, OP_ARG_K, iABC),            /* OP_GETTABLE */
-    opmode(0, 0, OP_ARG_K, OP_ARG_N, iABx),            /* OP_SETGLOBAL */
-    opmode(0, 0, OP_ARG_U, OP_ARG_N, iABC),            /* OP_SETUPVAL */
-    opmode(0, 0, OP_ARG_K, OP_ARG_K, iABC),            /* OP_SETTABLE */
-    opmode(0, 1, OP_ARG_U, OP_ARG_U, iABC),            /* OP_NEWTABLE */
-    opmode(0, 1, OP_ARG_R, OP_ARG_K, iABC),            /* OP_SELF */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_ADD */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_SUB */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_MUL */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_DIV */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_MOD */
-    opmode(0, 1, OP_ARG_K, OP_ARG_K, iABC),            /* OP_POW */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iABC),            /* OP_UNM */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iABC),            /* OP_NOT */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iABC),            /* OP_LEN */
-    opmode(0, 1, OP_ARG_R, OP_ARG_R, iABC),            /* OP_CONCAT */
-    opmode(0, 0, OP_ARG_R, OP_ARG_N, iAsBx),           /* OP_JMP */
-    opmode(1, 0, OP_ARG_K, OP_ARG_K, iABC),            /* OP_EQ */
-    opmode(1, 0, OP_ARG_K, OP_ARG_K, iABC),            /* OP_LT */
-    opmode(1, 0, OP_ARG_K, OP_ARG_K, iABC),            /* OP_LE */
-    opmode(1, 1, OP_ARG_R, OP_ARG_U, iABC),            /* OP_TEST */
-    opmode(1, 1, OP_ARG_R, OP_ARG_U, iABC),            /* OP_TESTSET */
-    opmode(0, 1, OP_ARG_U, OP_ARG_U, iABC),            /* OP_CALL */
-    opmode(0, 1, OP_ARG_U, OP_ARG_U, iABC),            /* OP_TAILCALL */
-    opmode(0, 0, OP_ARG_U, OP_ARG_N, iABC),            /* OP_RETURN */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iAsBx),           /* OP_FORLOOP */
-    opmode(0, 1, OP_ARG_R, OP_ARG_N, iAsBx),           /* OP_FORPREP */
-    opmode(1, 0, OP_ARG_N, OP_ARG_U, iABC),            /* OP_TFORLOOP */
-    opmode(0, 0, OP_ARG_U, OP_ARG_U, iABC),            /* OP_SETLIST */
-    opmode(0, 0, OP_ARG_N, OP_ARG_N, iABC),            /* OP_CLOSE */
-    opmode(0, 1, OP_ARG_U, OP_ARG_N, iABx),            /* OP_CLOSURE */
-    opmode(0, 1, OP_ARG_U, OP_ARG_N, iABC)            /* OP_VARARG */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_MOVE */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_N, FuncState.iABx),            /* OP_LOADK */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_LOADBOOL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_LOADNIL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_GETUPVAL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_N, FuncState.iABx),            /* OP_GETGLOBAL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_GETTABLE */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_K, FuncState.OP_ARG_N, FuncState.iABx),            /* OP_SETGLOBAL */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_U, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_SETUPVAL */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_SETTABLE */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_NEWTABLE */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_SELF */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_ADD */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_SUB */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_MUL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_DIV */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_MOD */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_POW */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_UNM */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_NOT */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_LEN */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_R, FuncState.iABC),            /* OP_CONCAT */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iAsBx),           /* OP_JMP */
+    FuncState.opmode(1, 0, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_EQ */
+    FuncState.opmode(1, 0, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_LT */
+    FuncState.opmode(1, 0, FuncState.OP_ARG_K, FuncState.OP_ARG_K, FuncState.iABC),            /* OP_LE */
+    FuncState.opmode(1, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_TEST */
+    FuncState.opmode(1, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_TESTSET */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_CALL */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_TAILCALL */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_U, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_RETURN */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iAsBx),           /* OP_FORLOOP */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_R, FuncState.OP_ARG_N, FuncState.iAsBx),           /* OP_FORPREP */
+    FuncState.opmode(1, 0, FuncState.OP_ARG_N, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_TFORLOOP */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_U, FuncState.OP_ARG_U, FuncState.iABC),            /* OP_SETLIST */
+    FuncState.opmode(0, 0, FuncState.OP_ARG_N, FuncState.OP_ARG_N, FuncState.iABC),            /* OP_CLOSE */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_N, FuncState.iABx),            /* OP_CLOSURE */
+    FuncState.opmode(0, 1, FuncState.OP_ARG_U, FuncState.OP_ARG_N, FuncState.iABC)            /* OP_VARARG */
 ];
 
 FuncState.prototype.getOpMode = function(m) {
-    return OPMODE[m] & 3 ;
+    return FuncState.OPMODE[m] & 3 ;
 };
 
 FuncState.prototype.testAMode = function(m) {
-    return (OPMODE[m] & (1<<6)) != 0 ;
+    return (FuncState.OPMODE[m] & (1<<6)) != 0 ;
 };
 
 FuncState.prototype.testTMode = function(m) {
-    return (OPMODE[m] & (1<<7)) != 0 ;
+    return (FuncState.OPMODE[m] & (1<<7)) != 0 ;
 };
 
 /** Equivalent to <code>luaK_patchtohere</code>. */
 FuncState.prototype.kPatchtohere = function(list) {
-    kGetlabel();
-    this._jpc = kConcat(this._jpc, list);
+    this.kGetlabel();
+    this._jpc = this.kConcat(this._jpc, list);
 };
 
 FuncState.prototype.fixjump = function(at, dest) {
     var jmp = this._f.code[at];
     var offset = dest - (at + 1);
-    //# assert dest != NO_JUMP
+    //# assert dest != FuncState.NO_JUMP
     if (Math.abs(offset) > Lua.MAXARG_sBx)
         this._ls.xSyntaxerror("control structure too long");
     this._f.code[at] = Lua.SETARG_sBx(jmp, offset);
@@ -862,8 +868,8 @@ FuncState.prototype.fixjump = function(at, dest) {
 
 FuncState.prototype.getjump = function(at) {
     var offset = Lua.ARGsBx(this._f.code[at]);
-    if (offset == NO_JUMP)  /* point to itself represents end of list */
-        return NO_JUMP;  /* end of list */
+    if (offset == FuncState.NO_JUMP)  /* point to itself represents end of list */
+        return FuncState.NO_JUMP;  /* end of list */
     else
         return (at+1)+offset;  /* turn offset into absolute position */
 };
@@ -871,9 +877,9 @@ FuncState.prototype.getjump = function(at) {
 /** Equivalent to <code>luaK_jump</code>. */
 FuncState.prototype.kJump = function() {
     var old_jpc = this._jpc;  /* save list of jumps to here */
-    this._jpc = NO_JUMP;
-    var j = kCodeAsBx(Lua.OP_JMP, 0, NO_JUMP);
-    j = kConcat(j, old_jpc);  /* keep them on hold */
+    this._jpc = FuncState.NO_JUMP;
+    var j = this.kCodeAsBx(Lua.OP_JMP, 0, FuncState.NO_JUMP);
+    j = this.kConcat(j, old_jpc);  /* keep them on hold */
     return j;
 };
 
@@ -882,29 +888,29 @@ FuncState.prototype.kStorevar = function(_var, ex) {
     switch (_var.k) {
     case Expdesc.VLOCAL:
         {
-            freeexp(ex);
-            exp2reg(ex, _var.info);
+            this.freeexp(ex);
+            this.exp2reg(ex, _var.info);
             return;
         }
 
     case Expdesc.VUPVAL:
         {
-            var e = kExp2anyreg(ex);
-            kCodeABC(Lua.OP_SETUPVAL, e, _var.info, 0);
+            var e = this.kExp2anyreg(ex);
+            this.kCodeABC(Lua.OP_SETUPVAL, e, _var.info, 0);
             break;
         }
 
     case Expdesc.VGLOBAL:
         {
-            var e2 = kExp2anyreg(ex);
-            kCodeABx(Lua.OP_SETGLOBAL, e2, _var.info);
+            var e2 = this.kExp2anyreg(ex);
+            this.kCodeABx(Lua.OP_SETGLOBAL, e2, _var.info);
             break;
         }
 
     case Expdesc.VINDEXED:
         {
-            var e3 = kExp2RK(ex);
-            kCodeABC(Lua.OP_SETTABLE, _var.info, _var.aux, e3);
+            var e3 = this.kExp2RK(ex);
+            this.kCodeABC(Lua.OP_SETTABLE, _var.info, _var.aux, e3);
             break;
         }
 
@@ -915,27 +921,27 @@ FuncState.prototype.kStorevar = function(_var, ex) {
             break;
         }
     }
-    freeexp(ex);
+    this.freeexp(ex);
 };
 
 /** Equivalent to <code>luaK_indexed</code>. */
 FuncState.prototype.kIndexed = function(t, k) {
-    t.aux = kExp2RK(k);
+    t.aux = this.kExp2RK(k);
     t.k = Expdesc.VINDEXED;
 };
 
 /** Equivalent to <code>luaK_exp2RK</code>. */
 FuncState.prototype.kExp2RK = function(e) {
-    kExp2val(e);
+    this.kExp2val(e);
     switch (e.k) {
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
     case Expdesc.VFALSE:
     case Expdesc.VNIL:
         if (this._nk <= Lua.MAXINDEXRK) {   /* constant fit in RK operand? */
-            e.info = (e.k == Expdesc.VNIL)  ? nilK() :
-                (e.k == Expdesc.VKNUM) ? kNumberK(e.nval) :
-                boolK(e.k == Expdesc.VTRUE);
+            e.info = (e.k == Expdesc.VNIL)  ? this.nilK() :
+                (e.k == Expdesc.VKNUM) ? this.kNumberK(e.nval) :
+                this.boolK(e.k == Expdesc.VTRUE);
             e.k = Expdesc.VK;
             return e.info | Lua.BITRK;
         } else 
@@ -951,37 +957,37 @@ FuncState.prototype.kExp2RK = function(e) {
         break;
     }
     /* not a constant in the right range: put it in a register */
-    return kExp2anyreg(e);
+    return this.kExp2anyreg(e);
 };
 
 /** Equivalent to <code>luaK_exp2val</code>. */
 FuncState.prototype.kExp2val = function(e) {
     if (e.hasjumps())
-        kExp2anyreg(e);
+        this.kExp2anyreg(e);
     else
-        kDischargevars(e);
+        this.kDischargevars(e);
 };
 
 FuncState.prototype.boolK = function(b) {
-    return addk(Lua.valueOfBoolean(b));
+    return this.addk(Lua.valueOfBoolean(b));
 };
 
 FuncState.prototype.nilK = function() {
-    return addk(Lua.NIL);
+    return this.addk(Lua.NIL);
 };
 
 /** Equivalent to <code>luaK_goiffalse</code>. */
 FuncState.prototype.kGoiffalse = function(e) {
     var lj;  /* pc of last jump */
-    kDischargevars(e);
+    this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VNIL:
     case Expdesc.VFALSE:
-        lj = NO_JUMP;  /* always false; do nothing */
+        lj = FuncState.NO_JUMP;  /* always false; do nothing */
         break;
 
     case Expdesc.VTRUE:
-        lj = kJump();  /* always jump */
+        lj = this.kJump();  /* always jump */
         break;
 
     case Expdesc.VJMP:
@@ -989,45 +995,45 @@ FuncState.prototype.kGoiffalse = function(e) {
         break;
 
     default:
-        lj = jumponcond(e, true);
+        lj = this.jumponcond(e, true);
         break;
     }
-    e.t = kConcat(e.t, lj);  /* insert last jump in `t' list */
-    kPatchtohere(e.f);
-    e.f = NO_JUMP;
+    e.t = this.kConcat(e.t, lj);  /* insert last jump in `t' list */
+    this.kPatchtohere(e.f);
+    e.f = FuncState.NO_JUMP;
 };
 
 /** Equivalent to <code>luaK_goiftrue</code>. */
 FuncState.prototype.kGoiftrue = function(e) {
     var lj;  /* pc of last jump */
-    kDischargevars(e);
+    this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VK:
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
-        lj = NO_JUMP;  /* always true; do nothing */
+        lj = FuncState.NO_JUMP;  /* always true; do nothing */
         break;
 
     case Expdesc.VFALSE:
-        lj = kJump();  /* always jump */
+        lj = this.kJump();  /* always jump */
         break;
 
     case Expdesc.VJMP:
-        invertjump(e);
+        this.invertjump(e);
         lj = e.info;
         break;
 
     default:
-        lj = jumponcond(e, false);
+        lj = this.jumponcond(e, false);
         break;
     }
-    e.f = kConcat(e.f, lj);  /* insert last jump in `f' list */
-    kPatchtohere(e.t);
-    e.t = NO_JUMP;
+    e.f = this.kConcat(e.f, lj);  /* insert last jump in `f' list */
+    this.kPatchtohere(e.t);
+    e.t = FuncState.NO_JUMP;
 };
 
 FuncState.prototype.invertjump = function(e) {
-    var at = getjumpcontrol(e.info);
+    var at = this.getjumpcontrol(e.info);
     var code = this._f.code; //int []
     var instr = code[at] ;
     //# assert testTMode(Lua.OPCODE(instr)) && Lua.OPCODE(instr) != Lua.OP_TESTSET && Lua.OPCODE(instr) != Lua.OP_TEST
@@ -1036,37 +1042,37 @@ FuncState.prototype.invertjump = function(e) {
 
 FuncState.prototype.jumponcond = function(e, cond) {
     if (e.k == Expdesc.VRELOCABLE) {
-        var ie = getcode(e);
+        var ie = this.getcode(e);
         if (Lua.OPCODE(ie) == Lua.OP_NOT) {
             this._pc--;  /* remove previous OP_NOT */
-            return condjump(Lua.OP_TEST, Lua.ARGB(ie), 0, cond ? 0 : 1);
+            return this.condjump(Lua.OP_TEST, Lua.ARGB(ie), 0, cond ? 0 : 1);
       }
       /* else go through */
     }
-    discharge2anyreg(e);
-    freeexp(e);
-    return condjump(Lua.OP_TESTSET, Lua.NO_REG, e.info, cond ? 1 : 0);
+    this.discharge2anyreg(e);
+    this.freeexp(e);
+    return this.condjump(Lua.OP_TESTSET, Lua.NO_REG, e.info, cond ? 1 : 0);
 };
 
 FuncState.prototype.condjump = function(op, a, b, c) {
-    kCodeABC(op, a, b, c);
-    return kJump();
+    this.kCodeABC(op, a, b, c);
+    return this.kJump();
 };
 
 FuncState.prototype.discharge2anyreg = function(e) {
     if (e.k != Expdesc.VNONRELOC) {
-        kReserveregs(1);
-        discharge2reg(e, this._freereg - 1);
+        this.kReserveregs(1);
+        this.discharge2reg(e, this._freereg - 1);
     }
 };
 
 FuncState.prototype.kSelf = function(e, key) {
-    kExp2anyreg(e);
-    freeexp(e);
+    this.kExp2anyreg(e);
+    this.freeexp(e);
     var func = this._freereg;
-    kReserveregs(2);
-    kCodeABC(Lua.OP_SELF, func, e.info, kExp2RK(key));
-    freeexp(key);
+    this.kReserveregs(2);
+    this.kCodeABC(Lua.OP_SELF, func, e.info, this.kExp2RK(key));
+    this.freeexp(key);
     e.info = func;
     e.k = Expdesc.VNONRELOC;
 };
@@ -1076,19 +1082,19 @@ FuncState.prototype.kSetlist = function(base, nelems, tostore) {
     var b = (tostore == Lua.MULTRET) ? 0 : tostore;
     //# assert tostore != 0
     if (c <= Lua.MAXARG_C)
-        kCodeABC(Lua.OP_SETLIST, base, b, c);
+        this.kCodeABC(Lua.OP_SETLIST, base, b, c);
     else {
-        kCodeABC(Lua.OP_SETLIST, base, b, 0);
-        kCode(c, this._ls.lastline);
+        this.kCodeABC(Lua.OP_SETLIST, base, b, 0);
+        this.kCode(c, this._ls.lastline);
     }
     this._freereg = base + 1;  /* free registers with list values */
 };
 
 FuncState.prototype.codecomp = function(op, cond, e1, e2) {
-    var o1 = kExp2RK(e1);
-    var o2 = kExp2RK(e2);
-    freeexp(e2);
-    freeexp(e1);
+    var o1 = this.kExp2RK(e1);
+    var o2 = this.kExp2RK(e2);
+    this.freeexp(e2);
+    this.freeexp(e1);
     if ((!cond) && op != Lua.OP_EQ) {
         /* exchange args to replace by `<' or `<=' */
         var temp = o1; 
@@ -1096,7 +1102,7 @@ FuncState.prototype.codecomp = function(op, cond, e1, e2) {
         o2 = temp;  /* o1 <==> o2 */
         cond = true;
     }
-    e1.info = condjump(op, (cond ? 1 : 0), o1, o2);
+    e1.info = this.condjump(op, (cond ? 1 : 0), o1, o2);
     e1.k = Expdesc.VJMP;
 };
 

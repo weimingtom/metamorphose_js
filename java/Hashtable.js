@@ -1,11 +1,13 @@
 ;(function(metamorphose) {
 
+var HashtableEnum = metamorphose ? metamorphose.HashtableEnum : require("./HashtableEnum.js");
+    
 var Hashtable = function(initialCapacity) {
     if (initialCapacity === undefined) {
         initialCapacity = 11;
     }
     //Dictionary支持用Object作为键，而Array会对键进行toString的转换
-    this._dic = new Dictionary();
+    this._dic = new Object();
 };
 
 Hashtable.prototype.rehash = function() {

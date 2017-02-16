@@ -1,5 +1,12 @@
 ;(function(metamorphose) {
 
+var BaseLibReader = metamorphose ? metamorphose.BaseLibReader : require('../java/BaseLibReader.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
+    
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+var DumpedInput = metamorphose ? metamorphose.DumpedInput : require('./DumpedInput.js');
+    
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BaseLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -602,7 +609,7 @@ BaseLib.select = function(L) {
 /** Implements setfenv. */
 BaseLib.setfenv = function(L) {
     L.checkType(2, Lua.TTABLE);
-    var o = getfunc(L);
+    var o = BaseLib.getfunc(L);
     var first = L.value(1);
     if (Lua.isNumber(first) && L.toNumber(first) == 0) {
         // :todo: change environment of current thread.
@@ -644,11 +651,11 @@ BaseLib.tonumber = function(L) {
         // :todo: consider stripping space and sharing some code with
         // Lua.vmTostring
         try {
-            var i = int(s);//Integer.parseInt(s, base); //TODO:
+            var i = parseInt(s);//Integer.parseInt(s, base); //TODO:
             L.pushNumber(i);
             return 1;
         } catch (e_) {
-            trace(e_.getStackTrace());
+            console.log(e_.getStackTrace());
         }
     }
     L.pushObject(Lua.NIL);
@@ -741,7 +748,7 @@ BaseLib.create = function(L) {
 BaseLib.resume = function(L) {
     var co = L.toThread(L.value(1));
     L.argCheck(co != null, 1, "coroutine expected");
-    var r = auxresume(L, co, L.getTop() - 1);
+    var r = BaseLib.auxresume(L, co, L.getTop() - 1);
     if (r < 0) {
         L.insert(Lua.valueOfBoolean(false), -1);
         return 2; // return false + error message
@@ -793,8 +800,8 @@ BaseLib.status = function(L) {
 
 /** Implements coroutine.wrap. */
 BaseLib.wrap = function(L) {
-    create(L);
-    L.pushObject(wrapit(L.toThread(L.value(-1))));
+    BaseLib.create(L);
+    L.pushObject(BaseLib.wrapit(L.toThread(L.value(-1))));
     return 1;
 };
 
@@ -810,8 +817,8 @@ BaseLib.wrapit = function(L) {
 
 /** Helper for wrap.  This implements the function returned by wrap. */
 BaseLib.prototype.wrapaux = function(L) {
-    var co = thread;
-    var r = auxresume(L, co, L.getTop());
+    var co = this.thread;
+    var r = BaseLib.auxresume(L, co, L.getTop());
     if (r < 0) {
         if (Lua.isString(L.value(-1))) {     // error object is a string? {
             var w = L.where(1);

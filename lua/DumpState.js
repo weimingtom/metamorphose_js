@@ -1,4 +1,7 @@
 ;(function(metamorphose) {
+var ByteArray = metamorphose ? metamorphose.ByteArray : require('../java/ByteArray.js');
+var Loader = metamorphose ? metamorphose.Loader : require('./Loader.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -97,13 +100,13 @@ DumpState.prototype.DumpConstants = function(f) {
             this._writer.writeByte(Lua.TNIL);
         } else if (o instanceof Boolean) {
             this._writer.writeByte(Lua.TBOOLEAN);
-            this._writer.writeBoolean(o as Boolean);
+            this._writer.writeBoolean(o);
         } else if (o == Lua.NUMBER) {
             this._writer.writeByte(Lua.TNUMBER);
             this.DumpNumber(k[i].d);
         } else if (o instanceof String) {
             this._writer.writeByte(Lua.TSTRING);
-            this.DumpString(o as String);
+            this.DumpString(o);
         } else {
             //# assert false
         }

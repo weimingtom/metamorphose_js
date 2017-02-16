@@ -1,5 +1,7 @@
 ;(function(metamorphose) {
 
+var PrintStream = metamorphose ? metamorphose.PrintStream : require('./PrintStream.js');
+
 var SystemUtil = function(){
 };
 

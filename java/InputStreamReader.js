@@ -1,5 +1,7 @@
 ;(function(metamorphose) {
 
+var Reader = metamorphose ? metamorphose.Reader : require('./Reader.js');    
+
 /**
  *	用于读取字符流的抽象类。
  *	子类必须实现的方法只有 read(char[], int, int) 和 close()。

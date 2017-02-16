@@ -1,5 +1,9 @@
 ;(function(metamorphose) {
-
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+var Character = metamorphose ? metamorphose.Character : require('../java/Character.js');
+var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+    
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/StringLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -91,7 +95,7 @@ flag:
     }
     if (widths < i) {
         try {
-            this._width = int(s.substring(widths, i)); //TODO:
+            this._width = parseInt(s.substring(widths, i)); //TODO:
         } catch (e_) {
             console.log(e_.getStackTrace());
         }
@@ -110,7 +114,7 @@ flag:
         }
         if (precisions < i) {
             try {
-                this._precision = int(s.substring(precisions, i)); //TODO:
+                this._precision = parseInt(s.substring(precisions, i)); //TODO:
             } catch (e_) {
                 console.log(e_.getStackTrace());
             }
@@ -124,7 +128,7 @@ flag:
     case 'q':
     case 's':
         this._type = s.charCodeAt(i);
-        length = i + 1;
+        this.length = i + 1;
         return;
     }
     this._L.error("invalid option to 'format'");
@@ -201,7 +205,7 @@ FormatItem.prototype.formatInteger = function(b, i) {
         this._zero = false;
 
     var radix = 10;
-    switch (String.fromCharCode(type)) {
+    switch (String.fromCharCode(this.getType())) {
     case 'o':
         radix = 8;
         break;
@@ -302,14 +306,14 @@ FormatItem.prototype.formatFloatRawE = function(d) {
         e = 0;
     } else {
         var ei = s.indexOf('E');
-        e = int(s.substring(ei+1));
-        t._delete(ei, int.MAX_VALUE); //TODO:
+        e = parseInt(s.substring(ei+1));
+        t._delete(ei, Number.MAX_SAFE_INTEGER); //TODO:
     }
 
     this.precisionTrim(t);
 
     e -= offset;
-    if (Character.isLowerCase(type)) {
+    if (Character.isLowerCase(this.getType())) {
         t.append(FormatItem.E_LOWER);
     } else {
         t.append(FormatItem.E_UPPER);
@@ -343,8 +347,8 @@ FormatItem.prototype.formatFloatRawF = function(d) {
     var di = s.indexOf('.');
     var ei = s.indexOf('E');
     if (ei >= 0) {
-        t._delete(ei, int.MAX_VALUE); //TODO:
-        var e = int(s.substring(ei+1));
+        t._delete(ei, Number.MAX_SAFE_INTEGER); //TODO:
+        var e = parseInt(s.substring(ei+1));
 
         var z = new StringBuffer();
         for (var i = 0; i < Math.abs(e); ++i) {
@@ -433,7 +437,7 @@ FormatItem.prototype.formatFloatG = function(b, d) {
         // (this will remove the decimal point when m >=
         // (10**(precision-1)).
         var a2 = new StringBuffer(s);
-        a2._delete(fsd+required, int.MAX_VALUE); //TODO:
+        a2._delete(fsd+required, Number.MAX_SAFE_INTEGER); //TODO:
         if (s.indexOf('.') < a2.length()) {
             // Trim trailing zeroes
             var i2 = a2.length() - 1;
@@ -468,9 +472,9 @@ FormatItem.prototype.precisionTrim = function(t) {
     var di = s.indexOf('.');
     var l = t.length();
     if (0 == this._precision) {
-        t._delete(di, int.MAX_VALUE); //TODO:
+        t._delete(di, Number.MAX_SAFE_INTEGER); //TODO:
     } else if (l > di + this._precision) {
-        t._delete(di + this._precision + 1, int.MAX_VALUE); //TODO:
+        t._delete(di + this._precision + 1, Number.MAX_SAFE_INTEGER); //TODO:
     } else {
         for(; l <= di + this._precision; ++l)
         {

@@ -1,6 +1,6 @@
 ------------------------
 
-Lua.as
+() Lua.as
 () Syntax.as
 () FuncState.as
 () BaseLib.as
@@ -69,3 +69,8 @@ Enumeration.as
 
 -----------------------
 
+int.MAX_VALUE -> Number.MAX_SAFE_INTEGER
+
+-----------------------
+
+FuncState (over)

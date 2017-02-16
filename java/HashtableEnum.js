@@ -1,5 +1,7 @@
 ;(function(metamorphose) {
 
+var Enumeration = metamorphose ? metamorphose.Enumeration : require('./Enumeration.js');
+
 //注意：这个类不应该由Hashtable以外的类创建
 var HashtableEnum = function() {
     this._arr = null;
@@ -7,6 +9,8 @@ var HashtableEnum = function() {
     this._len = 0;
 };
 
+HashtableEnum.prototype = new Enumeration();  
+    
 HashtableEnum.prototype.hasMoreElements = function() {
     return this._idx < this._len;
 };

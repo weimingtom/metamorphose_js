@@ -1,5 +1,7 @@
 ;(function(metamorphose) {
 
+var Lua = metamorphose ? metamorphose.Lua : require('./lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Debug.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
