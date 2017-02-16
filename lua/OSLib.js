@@ -1,5 +1,13 @@
 ;(function(metamorphose) {
 
+var TimeZone = metamorphose ? metamorphose.TimeZone : require('../java/TimeZone.js');
+var Calendar = metamorphose ? metamorphose.Calendar : require('../java/Calendar.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./SystemUtil.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/OSLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -130,7 +138,7 @@ OSLib.date = function(L) {
     if (L.isNoneOrNil(2)) {
         t = SystemUtil.currentTimeMillis();
     } else {
-        t = L.checkNumber(2) as int;
+        t = L.checkNumber(2);
     }
 
     var s = L.optString(1, "%c");
@@ -265,7 +273,7 @@ OSLib.date = function(L) {
                     break;
 
                 case 'y':
-                    b.appendString(format(c._get(Calendar.YEAR) % 100, 2));
+                    b.appendString(this.format(c._get(Calendar.YEAR) % 100, 2));
                     break;
 
                 case 'Y':
@@ -332,12 +340,12 @@ OSLib.time = function(L) {
     L.checkType(1, Lua.TTABLE);
     L.setTop(1);        // make sure table is at the top
     var c = Calendar.getInstance();
-    c._set(Calendar.SECOND, getfield(L, "sec", 0));
-    c._set(Calendar.MINUTE, getfield(L, "min", 0));
-    c._set(Calendar.HOUR, getfield(L, "hour", 12));
-    c._set(Calendar.DAY_OF_MONTH, getfield(L, "day", -1));
-    c._set(Calendar.MONTH, MONTH[getfield(L, "month", -1) - 1]);
-    c._set(Calendar.YEAR, getfield(L, "year", -1));
+    c._set(Calendar.SECOND, this.getfield(L, "sec", 0));
+    c._set(Calendar.MINUTE, this.getfield(L, "min", 0));
+    c._set(Calendar.HOUR, this.getfield(L, "hour", 12));
+    c._set(Calendar.DAY_OF_MONTH, this.getfield(L, "day", -1));
+    c._set(Calendar.MONTH, OSLib.MONTH[this.getfield(L, "month", -1) - 1]);
+    c._set(Calendar.YEAR, this.getfield(L, "year", -1));
     // ignore isdst field
     L.pushNumber(c.getTime().getTime());
     return 1;
@@ -346,7 +354,7 @@ OSLib.time = function(L) {
 OSLib.getfield = function(L, key, d) {
     var o = L.getField(L.value(-1), key);
     if (Lua.isNumber(o))
-        return L.toNumber(o) as int;
+        return L.toNumber(o);
     if (d < 0)
         return L.error("field '" + key + "' missing in date table");
     return d;
@@ -385,8 +393,8 @@ OSLib.monthname = function(c) {
  * @return a month in the range 1-12, or the original value.
  */
 OSLib.canonicalmonth = function(m) {
-    for (var i = 0; i < MONTH.length; ++i) {
-        if (m == MONTH[i]) {
+    for (var i = 0; i < OSLib.MONTH.length; ++i) {
+        if (m == OSLib.MONTH[i]) {
             return i+1;
         }
     }
@@ -411,7 +419,7 @@ OSLib.WEEKDAY = [
  * @return a weekday in the range 0-6, or the original value.
  */
 OSLib.canonicalweekday = function(w) {
-    for (var i = 0; i < WEEKDAY.length; ++i) {
+    for (var i = 0; i < OSLib.WEEKDAY.length; ++i) {
         if (w == OSLib.WEEKDAY[i]) {
             return i;
         }

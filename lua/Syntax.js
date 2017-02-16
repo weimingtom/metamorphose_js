@@ -1,5 +1,17 @@
 ;(function(metamorphose) {
 
+var Hashtable =  metamorphose ? metamorphose.Hashtable : require('./Hashtable.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./SystemUtil.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('./StringBuffer.js');
+var Character = metamorphose ? metamorphose.Character : require('./Character.js');
+var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
+
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
+var ConsControl = metamorphose ? metamorphose.ConsControl : require('./ConsControl.js');
+//var Syntax = metamorphose ? metamorphose.Syntax : require('./Excepton/Syntax.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -147,7 +159,7 @@ Syntax.init = function() {
 
         for (var i = 0; i < Syntax.NUM_RESERVED; ++i) {
             //TODO:
-            Syntax._reserved.put(Syntax._tokens[i], new int(Syntax.FIRST_RESERVED+i));
+            Syntax._reserved.put(Syntax._tokens[i], parseInt(Syntax.FIRST_RESERVED+i)); //new int
         }
     }
 };
@@ -424,14 +436,14 @@ Syntax.prototype.llex = function() { // throws IOException
                 } else {
                     return Syntax.TK_CONCAT ;
                 }
-            } else if (!isdigit(this._current)) {
+            } else if (!this.isdigit(this._current)) {
                 return '.'.charCodeAt();
             } else {
                 this.read_numeral();
                 return Syntax.TK_NUMBER;
             }
 
-        case String.fromCharCode(EOZ): //TODO:
+        case String.fromCharCode(Syntax.EOZ): //TODO:
             if (Lua.D) {
                 console.log("case EOZ");
             }
@@ -481,7 +493,7 @@ Syntax.prototype.llex = function() { // throws IOException
 Syntax.prototype.next = function() { //throws IOException
     this._current = this._z.read();
     if (Lua.D) {
-        trace("Syntax.next(), current:" + this._current + "(" + String.fromCharCode(this._current) +")");
+        console.log("Syntax.next(), current:" + this._current + "(" + String.fromCharCode(this._current) +")");
     }
 };
 
@@ -489,42 +501,42 @@ Syntax.prototype.next = function() { //throws IOException
 Syntax.prototype.read_numeral = function() { // throws IOException
     // assert isdigit(current);
     do {
-        save_and_next();
-    } while (isdigit(this._current) || this._current == '.'.charCodeAt());
-    if (check_next("Ee")) {      // 'E' ?
-        check_next("+-"); // optional exponent sign
+        this.save_and_next();
+    } while (this.isdigit(this._current) || this._current == '.'.charCodeAt());
+    if (this.check_next("Ee")) {      // 'E' ?
+        this.check_next("+-"); // optional exponent sign
     }
-    while (isalnum(this._current) || this._current == '_'.charCodeAt()) {
-        save_and_next();
+    while (this.isalnum(this._current) || this._current == '_'.charCodeAt()) {
+        this.save_and_next();
     }
     // :todo: consider doing PUC-Rio's decimal point tricks.
     try {
         this._semR = Number(this._buff.toString());
         return;
     } catch (e) {
-        trace(e.getStackTrace());
-        xLexerror("malformed number", TK_NUMBER);
+        console.log(e.getStackTrace());
+        this.xLexerror("malformed number", Syntax.TK_NUMBER);
     }
 };
 
 /** Reads string.  Writes to semS. */
 Syntax.prototype.read_string = function(del) { // throws IOException
-    save_and_next();
+    this.save_and_next();
     while (this._current != del) {
         switch (String.fromCharCode(this._current)) {
-        case String.fromCharCode(EOZ): //TODO:
-            xLexerror("unfinished string", TK_EOS);
+        case String.fromCharCode(Syntax.EOZ): //TODO:
+            this.xLexerror("unfinished string", Syntax.TK_EOS);
             continue;     // avoid compiler warning
 
         case '\n':
         case '\r':
-            xLexerror("unfinished string", TK_STRING);
+            this.xLexerror("unfinished string", Syntax.TK_STRING);
             continue;     // avoid compiler warning
 
         case '\\':
             {
                 var c;
-                next();       // do not save the '\'
+                this.next();       // do not save the '\'
                 switch (String.fromCharCode(this._current)) {
                 case 'a': 
                     c = 7; 
@@ -555,38 +567,38 @@ Syntax.prototype.read_string = function(del) { // throws IOException
                     break;    // no '\v' in Java.
 
                 case '\n': case '\r':
-                    __save('\n'.charCodeAt());
-                    inclinenumber();
+                    this.__save('\n'.charCodeAt());
+                    this.inclinenumber();
                     continue;
 
-                case String.fromCharCode(EOZ):
+                case String.fromCharCode(Syntax.EOZ):
                     continue; // will raise an error next loop
 
                 default:
-                    if (!isdigit(this._current)) {
-                        save_and_next();        // handles \\, \", \', \?
+                    if (!this.isdigit(this._current)) {
+                        this.save_and_next();        // handles \\, \", \', \?
                     } else {   // \xxx
                         var i = 0;
                         c = 0;
                         do {
                             c = 10*c + (this._current - '0'.charCodeAt());
-                            next();
-                        } while (++i<3 && isdigit(this._current));
+                            this.next();
+                        } while (++i<3 && this.isdigit(this._current));
                         // In unicode, there are no bounds on a 3-digit decimal.
-                        __save(c);
+                        this.__save(c);
                     }
                     continue;
                 }
-                __save(c);
-                next();
+                this.__save(c);
+                this.next();
                 continue;
             }
 
         default:
-            save_and_next();
+            this.save_and_next();
         }
     }
-    save_and_next();    // skip delimiter
+    this.save_and_next();    // skip delimiter
     var rawtoken = this._buff.toString();
     this._semS = rawtoken.substring(1, rawtoken.length - 1) ;
 };
@@ -600,8 +612,8 @@ Syntax.prototype.__save = function(c) {
 };
 
 Syntax.prototype.save_and_next = function() {  // throws IOException
-    save();
-    next();
+    this.save();
+    this.next();
 };
 
 /** Getter for source. */
@@ -611,21 +623,21 @@ Syntax.prototype.getSource = function() {
 
 Syntax.prototype.txtToken = function(tok) {
     switch (tok) {
-    case TK_NAME:
-    case TK_STRING:
-    case TK_NUMBER:
+    case this.TK_NAME:
+    case this.TK_STRING:
+    case this.TK_NUMBER:
         return this._buff.toString();
 
     default:
-        return xToken2str(tok);
+        return this.xToken2str(tok);
     }
 };
 
 /** Equivalent to <code>luaX_lexerror</code>. */
 Syntax.prototype.xLexerror = function(msg, tok) {
-    msg = source + ":" + this._linenumber + ": " + msg;
+    msg = this.source + ":" + this._linenumber + ": " + msg;
     if (tok != 0) {
-        msg = msg + " near '" + txtToken(tok) + "'";
+        msg = msg + " near '" + this.txtToken(tok) + "'";
     }
     this._L.pushString(msg);
     this._L.dThrow(Lua.ERRSYNTAX);
@@ -634,13 +646,13 @@ Syntax.prototype.xLexerror = function(msg, tok) {
 /** Equivalent to <code>luaX_next</code>. */
 Syntax.prototype.xNext = function() { // throws IOException
     this._lastline = this._linenumber;
-    if (this._lookahead != TK_EOS) {     // is there a look-ahead token?
+    if (this._lookahead != Syntax.TK_EOS) {     // is there a look-ahead token?
         this._token = this._lookahead;        // Use this one,
         this._tokenR = this._lookaheadR;
         this._tokenS = this._lookaheadS;
-        this._lookahead = TK_EOS;       // and discharge it.
+        this._lookahead = Syntax.TK_EOS;       // and discharge it.
     } else {
-        this._token = llex();
+        this._token = this.llex();
         this._tokenR = this._semR;
         this._tokenS = this._semS;
     }
@@ -648,13 +660,13 @@ Syntax.prototype.xNext = function() { // throws IOException
 
 /** Equivalent to <code>luaX_syntaxerror</code>. */
 Syntax.prototype.xSyntaxerror = function(msg) {
-    xLexerror(msg, this._token);
+    this.xLexerror(msg, this._token);
 };
 
 Syntax.xToken2str = function(token) {
     if (token < Syntax.FIRST_RESERVED) {
         // assert token == (char)token;
-        if (iscntrl(token)) {
+        if (this.iscntrl(token)) {
             return "char(" + token + ")";
         }
         return String.fromCharCode(token);
@@ -666,8 +678,8 @@ Syntax.xToken2str = function(token) {
 
 Syntax.block_follow = function(token) {
     switch (token) {
-    case TK_ELSE: case TK_ELSEIF: case TK_END:
-    case TK_UNTIL: case TK_EOS:
+    case Syntax.TK_ELSE: case Syntax.TK_ELSEIF: case Syntax.TK_END:
+    case Syntax.TK_UNTIL: case Syntax.TK_EOS:
         return true;
 
     default:
@@ -677,7 +689,7 @@ Syntax.block_follow = function(token) {
 
 Syntax.prototype.check = function(c) {
     if (this._token != c) {
-        error_expected(c);
+        this.error_expected(c);
     }
 };
 
@@ -687,18 +699,18 @@ Syntax.prototype.check = function(c) {
  * @param where  the line number of <var>what</var>.
  */
 Syntax.prototype.check_match = function(what, who, where) { //throws IOException
-    if (!testnext(what)) {
+    if (!this.testnext(what)) {
         if (where == this._linenumber) {
-            error_expected(what);
+            this.error_expected(what);
         } else {
-            xSyntaxerror("'" + xToken2str(what) + "' expected (to close '" +
-                xToken2str(who) + "' at line " + where + ")");
+            this.xSyntaxerror("'" + this.xToken2str(what) + "' expected (to close '" +
+                this.xToken2str(who) + "' at line " + where + ")");
         }
     }
 };
 
 Syntax.prototype.close_func = function() {
-    removevars(0);
+    this.removevars(0);
     this._fs.kRet(0, 0);  // final return;
     this._fs.close();
     // :todo: check this is a valid assertion to make
@@ -832,7 +844,7 @@ Syntax.prototype.codestring = function(e, s) {
 };
 
 Syntax.prototype.checkname = function(e) { // throws IOException
-    codestring(e, str_checkname());
+    this.codestring(e, this.str_checkname());
 };
 
 Syntax.prototype.enterlevel = function() {
@@ -840,7 +852,7 @@ Syntax.prototype.enterlevel = function() {
 };
 
 Syntax.prototype.error_expected = function(tok) {
-    xSyntaxerror("'" + xToken2str(tok) + "' expected");
+    this.xSyntaxerror("'" + this.xToken2str(tok) + "' expected");
 };
 
 Syntax.prototype.leavelevel = function() {
@@ -855,7 +867,7 @@ Syntax.parser = function(L, _in, name) { //throws IOException
     fs.f.isVararg = true;
     ls.xNext();
     ls.chunk();
-    ls.check(TK_EOS);
+    ls.check(Syntax.TK_EOS);
     ls.close_func();
     //# assert fs.prev == null
     //# assert fs.f.nups == 0
@@ -871,8 +883,8 @@ Syntax.prototype.removevars = function(tolevel) {
 };
 
 Syntax.prototype.singlevar = function(_var) { // throws IOException 
-    var varname = str_checkname();
-    if (singlevaraux(this._fs, varname, _var, true) == Expdesc.VGLOBAL) {
+    var varname = this.str_checkname();
+    if (this.singlevaraux(this._fs, varname, _var, true) == Expdesc.VGLOBAL) {
         _var.info = this._fs.kStringK(varname);
     }
 };
@@ -893,25 +905,25 @@ Syntax.prototype.singlevaraux = function(f,
             }
             return Expdesc.VLOCAL;
         } else {   // not found at current level; try upper one
-            if (singlevaraux(f.prev, n, _var, false) == Expdesc.VGLOBAL) {
+            if (this.singlevaraux(f.prev, n, _var, false) == Expdesc.VGLOBAL) {
                 return Expdesc.VGLOBAL;
             }
-            _var.upval(indexupvalue(f, n, _var));     // else was LOCAL or UPVAL
+            _var.upval(this.indexupvalue(f, n, _var));     // else was LOCAL or UPVAL
             return Expdesc.VUPVAL;
         }
     }
 };
 
 Syntax.prototype.str_checkname = function() { // throws IOException
-    check(TK_NAME);
+    this.check(Syntax.TK_NAME);
     var s = this._tokenS;
-    xNext();
+    this.xNext();
     return s;
 };
 
 Syntax.prototype.testnext = function(c) { // throws IOException
     if (this._token == c) {
-        xNext();
+        this.xNext();
         return true;
     }
     return false;
@@ -922,14 +934,14 @@ Syntax.prototype.testnext = function(c) { // throws IOException
 Syntax.prototype.chunk = function() { // throws IOException
     // chunk -> { stat [';'] }
     var islast = false;
-    enterlevel();
-    while (!islast && !block_follow(this._token)) {
-        islast = statement();
-        testnext(';'.charCodeAt());
+    this.enterlevel();
+    while (!islast && !this.block_follow(this._token)) {
+        this.islast = this.statement();
+        this.testnext(';'.charCodeAt());
         //# assert fs.f.maxstacksize >= fs.freereg && fs.freereg >= fs.nactvar
         this._fs.freereg = this._fs.nactvar;
     }
-    leavelevel();
+    this.leavelevel();
 };
 
 Syntax.prototype.constructor = function(t) { // throws IOException
@@ -940,35 +952,35 @@ Syntax.prototype.constructor = function(t) { // throws IOException
     t.init(Expdesc.VRELOCABLE, pc);
     cc.v.init(Expdesc.VVOID, 0);        /* no value (yet) */
     this._fs.kExp2nextreg(t);  /* fix it at stack top (for gc) */
-    checknext('{'.charCodeAt());
+    this.checknext('{'.charCodeAt());
     do {
         //# assert cc.v.k == Expdesc.VVOID || cc.tostore > 0
         if (this._token == '}'.charCodeAt())
             break;
-        closelistfield(cc);
+        this.closelistfield(cc);
         switch(String.fromCharCode(this._token)) {
-        case String.fromCharCode(TK_NAME):  /* may be listfields or recfields */
-            xLookahead();
+        case String.fromCharCode(Syntax.TK_NAME):  /* may be listfields or recfields */
+            this.xLookahead();
             if (this._lookahead != '='.charCodeAt())  /* expression? */
-                listfield(cc);
+                this.listfield(cc);
             else
-                recfield(cc);
+                this.recfield(cc);
             break;
 
         case '[':  /* constructor_item -> recfield */
-            recfield(cc);
+            this.recfield(cc);
             break;
 
         default:  /* constructor_part -> listfield */
-            listfield(cc);
+            this.listfield(cc);
             break;
         }
-    } while (testnext(','.charCodeAt()) || testnext(';'.charCodeAt()));
-    check_match('}'.charCodeAt(), '{'.charCodeAt(), line);
-    lastlistfield(cc);
+    } while (this.testnext(','.charCodeAt()) || this.testnext(';'.charCodeAt()));
+    this.check_match('}'.charCodeAt(), '{'.charCodeAt(), line);
+    this.lastlistfield(cc);
     var code = this._fs.f.code; //int [] 
-    code[pc] = Lua.SETARG_B(code[pc], oInt2fb(cc.na)); /* set initial array size */
-    code[pc] = Lua.SETARG_C(code[pc], oInt2fb(cc.nh)); /* set initial table size */
+    code[pc] = Lua.SETARG_B(code[pc], this.oInt2fb(cc.na)); /* set initial array size */
+    code[pc] = Lua.SETARG_C(code[pc], this.oInt2fb(cc.nh)); /* set initial table size */
 };
 
 Syntax.oInt2fb = function(x) {
@@ -985,16 +997,16 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
     var reg = this._fs.freereg;
     var key = new Expdesc();
     var val = new Expdesc();
-    if (this._token == TK_NAME) {
+    if (this._token == Syntax.TK_NAME) {
         // yChecklimit(fs, cc.nh, MAX_INT, "items in a constructor");
-        checkname(key);
+        this.checkname(key);
     }
     else  /* token == '[' */
-        yindex(key);
+        this.yindex(key);
     cc.nh++;
-    checknext('='.charCodeAt());
+    this.checknext('='.charCodeAt());
     this._fs.kExp2RK(key);
-    expr(val);
+    this.expr(val);
     this._fs.kCodeABC(Lua.OP_SETTABLE, cc.t.info, this._fs.kExp2RK(key), this._fs.kExp2RK(val));
     this._fs.freereg = reg;  /* free registers */
 };
@@ -1002,7 +1014,7 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
 Syntax.prototype.lastlistfield = function(cc) {
     if (cc.tostore == 0)
         return;
-    if (hasmultret(cc.v.k)) {
+    if (this.hasmultret(cc.v.k)) {
         this._fs.kSetmultret(cc.v);
         this._fs.kSetlist(cc.t.info, cc.na, Lua.MULTRET);
         cc.na--;  /* do not count last expression (unknown number of elements) */
@@ -1025,17 +1037,17 @@ Syntax.prototype.closelistfield = function(cc) {
 };
 
 Syntax.prototype.expr = function(v) { // throws IOException
-    subexpr(v, 0);
+    this.subexpr(v, 0);
 };
 
 /** @return number of expressions in expression list. */
 Syntax.prototype.explist1 = function(v) { // throws IOException
     // explist1 -> expr { ',' expr }
     var n = 1;  // at least one expression
-    expr(v);
-    while (testnext(','.charCodeAt())) {
+    this.expr(v);
+    while (this.testnext(','.charCodeAt())) {
         this._fs.kExp2nextreg(v);
-        expr(v);
+        this.expr(v);
         ++n;
     }
     return n;
@@ -1133,7 +1145,7 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
         break;
 
     case String.fromCharCode(TK_STRING):   // funcargs -> STRING
-        codestring(args, this._tokenS);
+        this.codestring(args, this._tokenS);
         xNext();        // must use tokenS before 'next'
         break;
 
@@ -1541,7 +1553,7 @@ Syntax.prototype.breakstat = function() {
     var upval = false;
     while (bl != null && !bl.isbreakable) {
         //TODO:||=
-        upval ||= bl.upval;
+        upval = upval || bl.upval;
         bl = bl.previous;
     }
     if (bl == null)

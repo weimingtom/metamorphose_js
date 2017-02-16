@@ -1,5 +1,10 @@
 ;(function(metamorphose) {
 
+var Character = metamorphose ? metamorphose.Character : require('../java/Character.js');
+
+var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/StringLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.

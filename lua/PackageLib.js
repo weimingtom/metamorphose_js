@@ -1,5 +1,12 @@
 ;(function(metamorphose) {
 
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
+var StringBuffer = metamorphose ? metamorphose.SystemUtil : require('./StringBuffer.js');
+    
+    
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/PackageLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.

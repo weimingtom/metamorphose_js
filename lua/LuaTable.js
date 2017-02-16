@@ -1,5 +1,12 @@
 ;(function(metamorphose) {
 
+var Hashtable = metamorphose ? metamorphose.Hashtable : require('../java/Hashtable.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
+
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+var Enum = metamorphose ? metamorphose.Enum : require('./Enum.js');
+
+    
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaTable.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -223,7 +230,7 @@ LuaTable.prototype.resize = function(nasize) {
         // :todo: consider using second algorithm, possibly dynamically.
         SystemUtil.arraycopy(this._array, 0, newarray, 0, this._array.length);
         for (i = this._array.length; i < nasize; ++i) {
-            key = new Number(i+1);
+            key = Number(i + 1); /*new Number*/
             var v = super.remove(key);
             if (v == null) {
                 v = Lua.NIL;
@@ -236,7 +243,7 @@ LuaTable.prototype.resize = function(nasize) {
       // hash part.
         for (i = nasize; i < this._sizeArray; ++i) {
             if (this._array[i] != Lua.NIL) {
-                key = new Number(i+1);
+                key = Number(i + 1); //new Number
                 super.put(key, this._array[i]); //TODO:
             }
         }
@@ -383,7 +390,7 @@ LuaTable.prototype.getnum = function(k) {
     if (k <= this._sizeArray && k >= 1) {
         return this._array[k-1];
     }
-    var r = super._get(new Number(k)); //TODO:get
+    var r = super._get(Number(k)); //TODO:get //new Number
     if (r == null) {
         return Lua.NIL;
     }
@@ -403,7 +410,7 @@ LuaTable.prototype.getnum = function(k) {
  */
 LuaTable.prototype.putluaObj = function(L, key, value) {
     var d = 0.0;
-    var i = int.MAX_VALUE; //TODO:
+    var i = Number.MAX_SAFE_INTEGER; //TODO:
 
     if (key == Lua.NIL) {
         L.gRunerror("table index is nil");
@@ -441,7 +448,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
 };
 
 LuaTable.prototype.putluaSlot = function(L, key, value) {
-    var i = int.MAX_VALUE; //TODO:
+    var i = Number.MAX_SAFE_INTEGER; //TODO:
 
     if (key.r == Lua.NUMBER) {
         var j = key.d;
@@ -480,7 +487,7 @@ LuaTable.prototype.putnum = function(k, v) {
     // The key can never be NIL so putlua will never notice that its L
     // argument is null.
     // :todo: optimisation to avoid putlua checking for array part again
-    this.putluaObj(null, new Number(k), v);
+    this.putluaObj(null, Number(k), v); //new Number
 };
 
 /**
@@ -530,11 +537,11 @@ LuaTable.oLog2 = function(x) {
         l += 8;
         x >>>= 8;
     }
-    return l + LOG2[x];
+    return l + LuaTable.LOG2[x];
 };
 
 LuaTable.ceillog2 = function(x) {
-    return oLog2(x - 1) + 1;
+    return LuaTable.oLog2(x - 1) + 1;
 };
 
 //新增

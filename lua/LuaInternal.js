@@ -1,4 +1,11 @@
 ;(function(metamorphose) {
+var InputStreamReader = metamorphose ? metamorphose.InputStreamReader : require('../java/InputStreamReader.js');
+
+var Loader = metamorphose ? metamorphose.Loader : require('./Loader.js');
+var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
+var FromReader = metamorphose ? metamorphose.FromReader : require('./FromReader.js');
+var LuaFunction = metamorphose ? metamorphose.LuaFunction : require('./LuaFunction.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaInternal.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).

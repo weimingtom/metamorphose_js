@@ -1,5 +1,13 @@
 ;(function(metamorphose) {
 
+var ByteArray = metamorphose ? metamorphose.ByteArray : require('../java/ByteArray.js');
+var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
+
+var Slot = metamorphose ? metamorphose.Slot : require('./Slot.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+var LocVar = metamorphose ? metamorphose.LocVar : require('./LocVar.js');
+var Proto = metamorphose ? metamorphose.Proto : require('./Proto.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Loader.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.

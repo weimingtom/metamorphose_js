@@ -1,5 +1,8 @@
 ;(function(metamorphose) {
 
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/TableLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
@@ -155,7 +158,7 @@ TableLib.insert = function(L) {
 TableLib.maxn = function(L) {
     var max = 0;
     L.checkType(1, Lua.TTABLE);
-    var t = L.value(1) as LuaTable;
+    var t = L.value(1);
     var e = t.keys();
     while (e.hasMoreElements()) {
         var o = e.nextElement();
