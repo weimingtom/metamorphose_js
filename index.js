@@ -13,8 +13,8 @@ var canlendar = new Calendar();
 var character = new Character();
 var dataOutputStream = new DataOutputStream();
     
-//var upVal = new UpVal(123, new Slot());
-var upVal = new UpVal(123, null);
+var upVal = new UpVal(123, new Slot());
+//var upVal = new UpVal(123, null);
 console.log(upVal.getOffset());
 upVal.close();
 
