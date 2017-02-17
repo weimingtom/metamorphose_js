@@ -29,6 +29,8 @@ WIP
 * Nodejs  
 * Chrome  
 
-## 
-* PackageLib
-
+## JSHint  
+* "-W009": true, // [], new Array()  
+* "-W010": true, // {}, new Object()  
+* "-W041": true, // Use === to compare with null  
+* "-W086": true, // jshint throws a Expected a 'break' statement before case  
