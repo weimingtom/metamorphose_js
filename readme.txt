@@ -74,3 +74,10 @@ int.MAX_VALUE -> Number.MAX_SAFE_INTEGER
 -----------------------
 
 FuncState (over)
+
+-----------------------
+jscheck:
+(x) BlockCnt/ConsControl constructor ending is file end
+(x) Proto.->newProto.
+(X) LuaTable.remove->base class
+(x) getQualifiedClassName -> Object.getPrototypeOf

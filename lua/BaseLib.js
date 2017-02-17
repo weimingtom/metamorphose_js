@@ -230,7 +230,7 @@ BaseLib.prototype.luaFunction = function(L) {
         return BaseLib.yield(L);
 
     case BaseLib.WRAP_AUX:
-        return BaseLib.wrapaux(L);
+        return this.wrapaux(L);
     }
     return 0;
 };

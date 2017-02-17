@@ -437,7 +437,7 @@ Syntax.prototype.llex = function() { // throws IOException
                 } else {
                     return Syntax.TK_CONCAT ;
                 }
-            } else if (!this.isdigit(this._current)) {
+            } else if (!Syntax.isdigit(this._current)) {
                 return '.'.charCodeAt();
             } else {
                 this.read_numeral();
@@ -503,11 +503,11 @@ Syntax.prototype.read_numeral = function() { // throws IOException
     // assert isdigit(current);
     do {
         this.save_and_next();
-    } while (this.isdigit(this._current) || this._current == '.'.charCodeAt());
+    } while (Syntax.isdigit(this._current) || this._current == '.'.charCodeAt());
     if (this.check_next("Ee")) {      // 'E' ?
         this.check_next("+-"); // optional exponent sign
     }
-    while (this.isalnum(this._current) || this._current == '_'.charCodeAt()) {
+    while (Syntax.isalnum(this._current) || this._current == '_'.charCodeAt()) {
         this.save_and_next();
     }
     // :todo: consider doing PUC-Rio's decimal point tricks.
@@ -576,7 +576,7 @@ Syntax.prototype.read_string = function(del) { // throws IOException
                     continue; // will raise an error next loop
 
                 default:
-                    if (!this.isdigit(this._current)) {
+                    if (!Syntax.isdigit(this._current)) {
                         this.save_and_next();        // handles \\, \", \', \?
                     } else {   // \xxx
                         var i = 0;
@@ -584,7 +584,7 @@ Syntax.prototype.read_string = function(del) { // throws IOException
                         do {
                             c = 10*c + (this._current - '0'.charCodeAt());
                             this.next();
-                        } while (++i<3 && this.isdigit(this._current));
+                        } while (++i < 3 && Syntax.isdigit(this._current));
                         // In unicode, there are no bounds on a 3-digit decimal.
                         this.__save(c);
                     }
@@ -624,19 +624,19 @@ Syntax.prototype.getSource = function() {
 
 Syntax.prototype.txtToken = function(tok) {
     switch (tok) {
-    case this.TK_NAME:
-    case this.TK_STRING:
-    case this.TK_NUMBER:
+    case Syntax.TK_NAME:
+    case Syntax.TK_STRING:
+    case Syntax.TK_NUMBER:
         return this._buff.toString();
 
     default:
-        return this.xToken2str(tok);
+        return Syntax.xToken2str(tok);
     }
 };
 
 /** Equivalent to <code>luaX_lexerror</code>. */
 Syntax.prototype.xLexerror = function(msg, tok) {
-    msg = this.source + ":" + this._linenumber + ": " + msg;
+    msg = this.getSource() + ":" + this._linenumber + ": " + msg;
     if (tok != 0) {
         msg = msg + " near '" + this.txtToken(tok) + "'";
     }
@@ -667,7 +667,7 @@ Syntax.prototype.xSyntaxerror = function(msg) {
 Syntax.xToken2str = function(token) {
     if (token < Syntax.FIRST_RESERVED) {
         // assert token == (char)token;
-        if (this.iscntrl(token)) {
+        if (Syntax.iscntrl(token)) {
             return "char(" + token + ")";
         }
         return String.fromCharCode(token);
@@ -704,8 +704,8 @@ Syntax.prototype.check_match = function(what, who, where) { //throws IOException
         if (where == this._linenumber) {
             this.error_expected(what);
         } else {
-            this.xSyntaxerror("'" + this.xToken2str(what) + "' expected (to close '" +
-                this.xToken2str(who) + "' at line " + where + ")");
+            this.xSyntaxerror("'" + Syntax.xToken2str(what) + "' expected (to close '" +
+                Syntax.xToken2str(who) + "' at line " + where + ")");
         }
     }
 };
@@ -853,7 +853,7 @@ Syntax.prototype.enterlevel = function() {
 };
 
 Syntax.prototype.error_expected = function(tok) {
-    this.xSyntaxerror("'" + this.xToken2str(tok) + "' expected");
+    this.xSyntaxerror("'" + Syntax.xToken2str(tok) + "' expected");
 };
 
 Syntax.prototype.leavelevel = function() {
@@ -936,8 +936,8 @@ Syntax.prototype.chunk = function() { // throws IOException
     // chunk -> { stat [';'] }
     var islast = false;
     this.enterlevel();
-    while (!islast && !this.block_follow(this._token)) {
-        this.islast = this.statement();
+    while (!islast && !Syntax.block_follow(this._token)) {
+        islast = this.statement();
         this.testnext(';'.charCodeAt());
         //# assert fs.f.maxstacksize >= fs.freereg && fs.freereg >= fs.nactvar
         this._fs.freereg = this._fs.nactvar;
@@ -980,8 +980,8 @@ Syntax.prototype.constructor = function(t) { // throws IOException
     this.check_match('}'.charCodeAt(), '{'.charCodeAt(), line);
     this.lastlistfield(cc);
     var code = this._fs.f.code; //int [] 
-    code[pc] = Lua.SETARG_B(code[pc], this.oInt2fb(cc.na)); /* set initial array size */
-    code[pc] = Lua.SETARG_C(code[pc], this.oInt2fb(cc.nh)); /* set initial table size */
+    code[pc] = Lua.SETARG_B(code[pc], Syntax.oInt2fb(cc.na)); /* set initial array size */
+    code[pc] = Lua.SETARG_C(code[pc], Syntax.oInt2fb(cc.nh)); /* set initial table size */
 };
 
 Syntax.oInt2fb = function(x) {
@@ -1015,7 +1015,7 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
 Syntax.prototype.lastlistfield = function(cc) {
     if (cc.tostore == 0)
         return;
-    if (this.hasmultret(cc.v.k)) {
+    if (Syntax.hasmultret(cc.v.k)) {
         this._fs.kSetmultret(cc.v);
         this._fs.kSetlist(cc.t.info, cc.na, Lua.MULTRET);
         cc.na--;  /* do not count last expression (unknown number of elements) */
@@ -1128,7 +1128,7 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
     var line = this._linenumber;
     switch (String.fromCharCode(this._token)) {
     case '(':         // funcargs -> '(' [ explist1 ] ')'
-        if (line != this.lastline) {
+        if (line != this.getLastline()) {
             this.xSyntaxerror("ambiguous syntax (function call x new statement)");
         }
         this.xNext();
@@ -1242,14 +1242,14 @@ Syntax.prototype.retstat = function() { // throws IOException
     // registers with returned values (first, nret)
     var first = 0;
     var nret;
-    if (this.block_follow(this._token) || this._token == ';'.charCodeAt()) {
+    if (Syntax.block_follow(this._token) || this._token == ';'.charCodeAt()) {
         // return no values
         first = 0;
         nret = 0;
     } else {
         var e = new Expdesc();
         nret = this.explist1(e);
-        if (this.hasmultret(e.k)) {
+        if (Syntax.hasmultret(e.k)) {
             this._fs.kSetmultret(e);
             if (e.k == Expdesc.VCALL && nret == 1) {   /* tail call? */
                 this._fs.setcode(e, Lua.SET_OPCODE(this._fs.getcode(e), Lua.OP_TAILCALL));
@@ -1488,7 +1488,7 @@ Syntax.UNARY_PRIORITY = 8;
  */
 Syntax.prototype.subexpr = function(v, limit) { // throws IOException
     this.enterlevel();
-    var uop = this.getunopr(this._token);
+    var uop = Syntax.getunopr(this._token);
     if (uop != Syntax.OPR_NOUNOPR) {
         this.xNext();
         this.subexpr(v, Syntax.UNARY_PRIORITY);
@@ -1497,7 +1497,7 @@ Syntax.prototype.subexpr = function(v, limit) { // throws IOException
         this.simpleexp(v);
     }
     // expand while operators have priorities higher than 'limit'
-    var op = this.getbinopr(this._token);
+    var op = Syntax.getbinopr(this._token);
     while (op != Syntax.OPR_NOBINOPR && Syntax.PRIORITY[op][0] > limit) {
         var v2 = new Expdesc();
         this.xNext();
@@ -1690,9 +1690,9 @@ Syntax.prototype.pushclosure = function(func, v) {
     v.init(Expdesc.VRELOCABLE, this._fs.kCodeABx(Lua.OP_CLOSURE, 0, this._fs.np - 1));
     for (var i = 0; i < ff.nups; i++) {
         var upvalue = func.upvalues[i] ;
-        var o = (Syntax.UPVAL_K(upvalue) == Expdesc.VLOCAL) ? Lua.OP_MOVE :
+        var o = (this.UPVAL_K(upvalue) == Expdesc.VLOCAL) ? Lua.OP_MOVE :
                                                      Lua.OP_GETUPVAL;
-        this._fs.kCodeABC(o, 0, Syntax.UPVAL_INFO(upvalue), 0);
+        this._fs.kCodeABC(o, 0, this.UPVAL_INFO(upvalue), 0);
     }
 };
 
@@ -1921,7 +1921,7 @@ Syntax.hasmultret = function(k) {
 
 Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
     var extra = nvars - nexps;
-    if (this.hasmultret(e.k)) {
+    if (Syntax.hasmultret(e.k)) {
         extra++;  /* includes call itself */
         if (extra < 0)
             extra = 0;
@@ -1979,7 +1979,7 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     var oldsize = f.sizeupvalues;
     for (var i = 0; i < f.nups; i++) {
         var entry = funcstate.upvalues[i];
-        if (Syntax.UPVAL_K(entry) == v.k && Syntax.UPVAL_INFO(entry) == v.info) {
+        if (this.UPVAL_K(entry) == v.k && this.UPVAL_INFO(entry) == v.info) {
             //# assert name.equals(f.upvalues[i])
             return i;
         }
@@ -1989,7 +1989,7 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     f.ensureUpvals(this._L, f.nups);
     f.upvalues[f.nups] = name;
     //# assert v.k == Expdesc.VLOCAL || v.k == Expdesc.VUPVAL
-    funcstate.upvalues[f.nups] = Syntax.UPVAL_ENCODE(v.k, v.info) ;
+    funcstate.upvalues[f.nups] = this.UPVAL_ENCODE(v.k, v.info) ;
     return f.nups++;
 };
 

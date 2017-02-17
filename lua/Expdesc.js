@@ -132,17 +132,17 @@ Expdesc.prototype.hasjumps = function() {
 };
 
 Expdesc.prototype.nonreloc = function(i) {
-    this._k = this.VNONRELOC;
+    this._k = Expdesc.VNONRELOC;
     this._info = i;
 };
 
 Expdesc.prototype.reloc = function(i) {
-    this._k = this.VRELOCABLE;
+    this._k = Expdesc.VRELOCABLE;
     this._info = i;
 };
 
 Expdesc.prototype.upval = function(i) {
-    this._k = this.VUPVAL;
+    this._k = Expdesc.VUPVAL;
     this._info = i;
 };
 

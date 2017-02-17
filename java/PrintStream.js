@@ -1,7 +1,7 @@
 ;(function(metamorphose) {
 
 var PrintStream = function() {
-    this.init();
+    PrintStream.init();
 };
 
 PrintStream.OutputArr = null;

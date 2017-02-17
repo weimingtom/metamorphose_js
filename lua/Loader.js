@@ -368,7 +368,7 @@ Loader.prototype.header = function() { // throws IOException
     // poke the HEADER's endianness byte and compare.
     Loader.HEADER[6] = arrBuf[6];
 
-    if (buf[6] < 0 || buf[6] > 1 || !this.arrayEquals(Loader.HEADER, arrBuf)) {
+    if (buf[6] < 0 || buf[6] > 1 || !Loader.arrayEquals(Loader.HEADER, arrBuf)) {
         throw new Error("IOException");
     }
     this._bigendian = (buf[6] == 0);

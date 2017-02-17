@@ -273,7 +273,7 @@ OSLib.date = function(L) {
                     break;
 
                 case 'y':
-                    b.appendString(this.format(c._get(Calendar.YEAR) % 100, 2));
+                    b.appendString(OSLib.format(c._get(Calendar.YEAR) % 100, 2));
                     break;
 
                 case 'Y':
@@ -340,12 +340,12 @@ OSLib.time = function(L) {
     L.checkType(1, Lua.TTABLE);
     L.setTop(1);        // make sure table is at the top
     var c = Calendar.getInstance();
-    c._set(Calendar.SECOND, this.getfield(L, "sec", 0));
-    c._set(Calendar.MINUTE, this.getfield(L, "min", 0));
-    c._set(Calendar.HOUR, this.getfield(L, "hour", 12));
-    c._set(Calendar.DAY_OF_MONTH, this.getfield(L, "day", -1));
-    c._set(Calendar.MONTH, OSLib.MONTH[this.getfield(L, "month", -1) - 1]);
-    c._set(Calendar.YEAR, this.getfield(L, "year", -1));
+    c._set(Calendar.SECOND, OSLib.getfield(L, "sec", 0));
+    c._set(Calendar.MINUTE, OSLib.getfield(L, "min", 0));
+    c._set(Calendar.HOUR, OSLib.getfield(L, "hour", 12));
+    c._set(Calendar.DAY_OF_MONTH, OSLib.getfield(L, "day", -1));
+    c._set(Calendar.MONTH, OSLib.MONTH[OSLib.getfield(L, "month", -1) - 1]);
+    c._set(Calendar.YEAR, OSLib.getfield(L, "year", -1));
     // ignore isdst field
     L.pushNumber(c.getTime().getTime());
     return 1;

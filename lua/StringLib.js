@@ -235,16 +235,16 @@ StringLib.findAux = function(L, isFind) {
     var p = L.checkString(2);
     var l1 = s.length;
     var l2 = p.length;
-    var init = this.posrelat(L.optInt(3, 1), s) - 1;
+    var init = StringLib.posrelat(L.optInt(3, 1), s) - 1;
     if (init < 0) {
         init = 0;
     } else if (init > l1) {
         init = l1;
     }
     if (isFind && (L.toBoolean(L.value(4)) ||   // explicit request
-        this.strpbrk(p, MatchState.SPECIALS) < 0)) { // or no special characters?   
+        StringLib.strpbrk(p, MatchState.SPECIALS) < 0)) { // or no special characters?   
         // do a plain search
-        var off = this.lmemfind(s.substring(init), l1 - init, p, l2);
+        var off = StringLib.lmemfind(s.substring(init), l1 - init, p, l2);
         if (off >= 0) {
             L.pushNumber(init+off+1);
             L.pushNumber(init+off+l2);
@@ -273,7 +273,7 @@ StringLib.findAux = function(L, isFind) {
 
 /** Implements string.find. */
 StringLib.find = function(L) {
-    return this.findAux(L, true);
+    return StringLib.findAux(L, true);
 };
 
 /** Implement string.match.  Operates slightly differently from the
@@ -414,7 +414,7 @@ StringLib.format = function(L) {
                 break;
 
             case 'q':
-                this.addquoted(L, b, arg);
+                StringLib.addquoted(L, b, arg);
                 break;
 
             case 's':

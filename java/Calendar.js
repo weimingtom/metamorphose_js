@@ -89,7 +89,7 @@ Calendar.prototype._set = function(field, value) {
     console.log("Calendar._set(): field not implement");
 };
 
-Calendar.prototype.getInstance = function(t) {
+Calendar.getInstance = function(t) {
     return Calendar._instance;
 };
 

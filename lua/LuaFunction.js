@@ -90,7 +90,7 @@ LuaFunction.prototype.setEnv = function(env) {
     if (null == env) {
         throw new NullPointerException();
     }
-    this.env = env;
+    this._env = env;
 };
 
 if (typeof module !== 'undefined') {

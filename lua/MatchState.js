@@ -204,7 +204,7 @@ MatchState.matchbracketclass = function(c, p, pi, ec) {
     while (++pi < ec) {
         if (p.charCodeAt(pi) == MatchState.L_ESC) {
             ++pi;
-            if (this.match_class(c, p.charCodeAt(pi)))
+            if (MatchState.match_class(c, p.charCodeAt(pi)))
                 return sig;
         } else if ((p.charAt(pi+1) == '-') && (pi+2 < ec)) {
             pi += 2;
@@ -259,7 +259,7 @@ MatchState.prototype.matchbalance = function(si, p, pi) {
 
 MatchState.prototype.max_expand = function(si, p, pi, ep) {
     var i = 0;  // counts maximum expand for item
-    while (si + i < this._end && this.singlematch(this._src.charCodeAt(si+i), p, pi, ep)) {
+    while (si + i < this._end && MatchState.singlematch(this._src.charCodeAt(si + i), p, pi, ep)) {
         ++i;
     }
     // keeps trying to match with the maximum repetitions
@@ -277,7 +277,7 @@ MatchState.prototype.min_expand = function(si, p, pi, ep) {
         var res = this.match(si, p, ep+1);
         if (res >= 0)
             return res;
-        else if (si < this._end && this.singlematch(this._src.charCodeAt(si), p, pi, ep))
+        else if (si < this._end && MatchState.singlematch(this._src.charCodeAt(si), p, pi, ep))
             ++si;   // try with one more repetition
         else
             return -1;

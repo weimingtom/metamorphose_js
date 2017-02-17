@@ -527,7 +527,7 @@ FuncState.prototype.codenot = function(e) {
     case Expdesc.VK:
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
-        e.k = this.Expdesc.VFALSE;
+        e.k = Expdesc.VFALSE;
         break;
 
     case Expdesc.VJMP:
@@ -1107,7 +1107,7 @@ FuncState.prototype.codecomp = function(op, cond, e1, e2) {
 };
 
 FuncState.prototype.markupval = function(level) {
-    var b = this.bl;
+    var b = this.getBl();
     while (b != null && b.nactvar > level)
         b = b.previous;
     if (b != null)

@@ -87,19 +87,19 @@ PackageLib.LOADER_LUA = 5;
 PackageLib.prototype.luaFunction = function(L) {
     switch (this._which) {
     case PackageLib.MODULE:
-        return PackageLib.module(L);
+        return this.module(L);
 
     case PackageLib.REQUIRE:
-        return PackageLib.require(L);
+        return this.require(L);
 
     case PackageLib.SEEALL:
         return PackageLib.seeall(L);
 
     case PackageLib.LOADER_LUA:
-        return PackageLib.loaderLua(L);
+        return this.loaderLua(L);
 
     case PackageLib.LOADER_PRELOAD:
-        return PackageLib.loaderPreload(L);
+        return this.loaderPreload(L);
     }
     return 0;
 };
