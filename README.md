@@ -33,5 +33,5 @@ WIP
 * "-W009": true, // [], new Array()  
 * "-W010": true, // {}, new Object()  
 * "-W041": true, // Use === to compare with null  
-* "-W060": true, //document.write can be a form of eval  
+* "-W060": true, // document.write can be a form of eval  
 * "-W086": true, // Expected a 'break' statement before case  
