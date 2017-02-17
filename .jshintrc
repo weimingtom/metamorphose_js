@@ -2,6 +2,7 @@
     "-W009": true,
     "-W010": true,
     "-W041": true,
+    "-W060": true,
     "-W086": true,
     "globals": {
         "$": false,
@@ -9,6 +10,7 @@
         "module": false,
         "window": false,
         "require": false,
-        "console": false
+        "console": false,
+        "document": false
     }
 }

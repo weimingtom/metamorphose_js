@@ -14,8 +14,10 @@ var character = new Character();
 var dataOutputStream = new DataOutputStream();
 
 function trace(s) {
-    document.write(s);
-    document.write('<br>');
+    if (typeof document !== 'undefined' && document) {
+        document.write(s);
+        document.write('<br>');
+    }
     console.log(s);
 }
 
