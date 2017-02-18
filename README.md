@@ -35,3 +35,11 @@ WIP
 * "-W041": true, // Use === to compare with null  
 * "-W060": true, // document.write can be a form of eval  
 * "-W086": true, // Expected a 'break' statement before case  
+
+## Console  
+* https://github.com/adamchuan/console.js  
+* http://stackoverflow.com/questions/138157/java-console-like-web-applet  
+* http://stackoverflow.com/questions/6006010/adding-japplet-into-jframe  
+* http://stackoverflow.com/questions/2434483/how-to-open-new-applet-window-from-a-applet  
+* https://github.com/B1naryStudio/js-mobile-console  
+* https://github.com/amio/console.js  
