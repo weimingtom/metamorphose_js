@@ -6,7 +6,7 @@ var Character = metamorphose ? metamorphose.Character : require('../java/Charact
     
 var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
 var ConsControl = metamorphose ? metamorphose.ConsControl : require('./ConsControl.js');
 var LHSAssign = metamorphose ? metamorphose.LHSAssign : require('./LHSAssign.js');
@@ -319,6 +319,7 @@ loop:
  * appropriate.
  */
 Syntax.prototype.llex = function() { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (Lua.D) {
         console.log("llex() enter, current:" + this._current);
     }
@@ -492,6 +493,7 @@ Syntax.prototype.llex = function() { // throws IOException
 };
 
 Syntax.prototype.next = function() { //throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this._current = this._z.read();
     if (Lua.D) {
         console.log("Syntax.next(), current:" + this._current + "(" + String.fromCharCode(this._current) +")");
@@ -636,6 +638,7 @@ Syntax.prototype.txtToken = function(tok) {
 
 /** Equivalent to <code>luaX_lexerror</code>. */
 Syntax.prototype.xLexerror = function(msg, tok) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     msg = this.getSource() + ":" + this._linenumber + ": " + msg;
     if (tok != 0) {
         msg = msg + " near '" + this.txtToken(tok) + "'";
@@ -720,6 +723,7 @@ Syntax.prototype.close_func = function() {
 };
 
 Syntax.opcode_name = function(op) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     switch (op) {
     case Lua.OP_MOVE: 
         return "MOVE";
@@ -894,6 +898,7 @@ Syntax.prototype.singlevaraux = function(f,
     n,
     _var,
     base) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (f == null) {     // no more levels?
         _var.init(Expdesc.VGLOBAL, Lua.NO_REG);    // default is global variable
         return Expdesc.VGLOBAL;
@@ -946,6 +951,7 @@ Syntax.prototype.chunk = function() { // throws IOException
 };
 
 Syntax.prototype.constructor = function(t) { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // constructor -> ??
     var line = this._linenumber;
     var pc = this._fs.kCodeABC(Lua.OP_NEWTABLE, 0, 0, 0);
@@ -994,6 +1000,7 @@ Syntax.oInt2fb = function(x) {
 };
 
 Syntax.prototype.recfield = function(cc) {  //throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* recfield -> (NAME | `['exp1`]') = exp1 */
     var reg = this._fs.freereg;
     var key = new Expdesc();
@@ -1013,6 +1020,7 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
 };
 
 Syntax.prototype.lastlistfield = function(cc) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (cc.tostore == 0)
         return;
     if (Syntax.hasmultret(cc.v.k)) {
@@ -1027,6 +1035,7 @@ Syntax.prototype.lastlistfield = function(cc) {
 };
 
 Syntax.prototype.closelistfield = function(cc) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (cc.v.k == Expdesc.VVOID)
         return;  /* there is no list item */
     this._fs.kExp2nextreg(cc.v);
@@ -1073,6 +1082,7 @@ Syntax.prototype.exprstat = function() { // throws IOException
 ** assignment.
 */
 Syntax.prototype.check_conflict = function(lh, v) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var extra = this._fs.freereg;  /* eventual position to save local variable */
     var conflict = false ;
     for (; lh != null; lh = lh.prev) {
@@ -1124,6 +1134,7 @@ Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
 };
 
 Syntax.prototype.funcargs = function(f) { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var args = new Expdesc();
     var line = this._linenumber;
     switch (String.fromCharCode(this._token)) {
@@ -1237,6 +1248,7 @@ Syntax.prototype.primaryexp = function(v) { // throws IOException
 };
 
 Syntax.prototype.retstat = function() { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // stat -> RETURN explist
     this.xNext();    // skip RETURN
     // registers with returned values (first, nret)
@@ -1271,6 +1283,7 @@ Syntax.prototype.retstat = function() { // throws IOException
 };
 
 Syntax.prototype.simpleexp = function(v) { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // simpleexp -> NUMBER | STRING | NIL | true | false | ... |
     //              constructor | FUNCTION body | primaryexp
     switch (this._token) {
@@ -1522,6 +1535,7 @@ Syntax.prototype.enterblock = function(f, bl, isbreakable) {
 };
 
 Syntax.prototype.leaveblock = function(f) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var bl = f.bl;
     f.bl = bl.previous;
     this.removevars(bl.nactvar);
@@ -1550,6 +1564,7 @@ Syntax.prototype.block = function() { // throws IOException
 };
 
 Syntax.prototype.breakstat = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var bl = this._fs.bl;
     var upval = false;
     while (bl != null && !bl.isbreakable) {
@@ -1639,6 +1654,7 @@ Syntax.prototype.yChecklimit = function(v, l, m) {
 };
 
 Syntax.prototype.new_localvar = function(name, n) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.yChecklimit(this._fs.nactvar + n + 1, Lua.MAXVARS, "local variables");
     this._fs.actvar[this._fs.nactvar + n] = this.registerlocalvar(name);
 };
@@ -1683,6 +1699,7 @@ Syntax.prototype.UPVAL_ENCODE = function(k, info) {
 };
 
 Syntax.prototype.pushclosure = function(func, v) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var f = this._fs.f;
     f.ensureProtos(this._L, this._fs.np) ;
     var ff = func.f;
@@ -1804,6 +1821,7 @@ Syntax.prototype.forstat = function(line) { // throws IOException
 };
 
 Syntax.prototype.fornum = function(varname, line) { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* fornum -> NAME = exp1,exp1[,exp1] forbody */
     var base = this._fs.freereg;
     this.new_localvarliteral("(for index)", 0);
@@ -1852,6 +1870,7 @@ Syntax.prototype.forlist = function(indexname) { // throws IOException
 };
 
 Syntax.prototype.forbody = function(base, line, nvars, isnum) { //throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* forbody -> DO block */
     var bl = new BlockCnt() ;
     this.adjustlocalvars(3);  /* control variables */
@@ -1968,6 +1987,7 @@ Syntax.prototype.xLookahead = function() {  // throws IOException
 };
 
 Syntax.prototype.listfield = function(cc) { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.expr(cc.v);
     this.yChecklimit(cc.na, Lua.MAXARG_Bx, "items in a constructor");
     cc.na++;
@@ -1975,6 +1995,7 @@ Syntax.prototype.listfield = function(cc) { // throws IOException
 };
 
 Syntax.prototype.indexupvalue = function(funcstate, name, v) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var f = funcstate.f;
     var oldsize = f.sizeupvalues;
     for (var i = 0; i < f.nups; i++) {

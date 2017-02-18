@@ -1,6 +1,6 @@
 ;(function(metamorphose) {
 
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -38,6 +38,7 @@ var Enum = function(t, e) {
 };
 
 Enum.prototype.inci = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     while (this._i < this._t.sizeArray && this._t.array[this._i] == Lua.NIL) {
         ++this._i;
     }

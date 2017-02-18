@@ -4,7 +4,7 @@ var ByteArray = metamorphose ? metamorphose.ByteArray : require('../java/ByteArr
 var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
 
 var Slot = metamorphose ? metamorphose.Slot : require('./Slot.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var LocVar = metamorphose ? metamorphose.LocVar : require('./LocVar.js');
 var Proto = metamorphose ? metamorphose.Proto : require('./Proto.js');
 
@@ -150,6 +150,7 @@ Loader.prototype.code = function() { // int[]  throws IOException
  * <code>LoadConstants</code>.
  */
 Loader.prototype.constant = function() { //Slot[] throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var n = this.intLoad();
     var k = new Array(n); //Slot[] 
 
@@ -431,6 +432,7 @@ Loader.prototype.intLoad = function() { // throws IOException
  * Undumps a Lua number.  Which is assumed to be a 64-bit IEEE double.
  */
 Loader.prototype.number = function() { // throws IOException
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // :lua_Number:size  Here we assume that the size is 8.
     this.block(this._longbuf);
     // Big-endian architectures store doubles with the sign bit first;

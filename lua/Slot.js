@@ -1,5 +1,5 @@
 ;(function(metamorphose) {
-var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -45,6 +45,7 @@ Slot.prototype.init2 = function(o) {
 };
 		
 Slot.prototype.asObject = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
     if (this._r == Lua.NUMBER) {
         return Number(this._d); //new Number
     }
@@ -52,6 +53,7 @@ Slot.prototype.asObject = function() {
 };
 
 Slot.prototype.setObject = function(o) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
     //trace("setObject:", o.toString());
     this._r = o;
     if (typeof(o) === "number") {

@@ -3,7 +3,7 @@
 var Hashtable = metamorphose ? metamorphose.Hashtable : require('../java/Hashtable.js');
 var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
 
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var Enum = metamorphose ? metamorphose.Enum : require('./Enum.js');
 
     
@@ -85,6 +85,7 @@ LuaTable.ZERO = new Array(0); //final Object[]
  * @param nhash   number of hash slots to preallocate.
  */
 LuaTable.prototype.init = function(narray, nhash) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // :todo: super(nhash) isn't clearly correct as adding nhash hash
     // table entries will causes a rehash with the usual implementation
     // (which rehashes when ratio of entries to capacity exceeds the
@@ -169,6 +170,7 @@ LuaTable.prototype.countint = function(key, nums/*int[] */) {
 };
 
 LuaTable.prototype.numusearray = function(nums/*int[] */) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var ause = 0;       // summation of 'nums'
     var i = 1;  // count to traverse all array keys
     var ttlg = 1;       // 2^lg
@@ -212,6 +214,7 @@ LuaTable.prototype.numusehash = function(nums/*int[] */, pnasize/*int[] */) {
  * @param nasize  (new) size of array part
  */
 LuaTable.prototype.resize = function(nasize) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (nasize == this._sizeArray) {
         return;
     }
@@ -296,6 +299,7 @@ LuaTable.prototype.setMetatable = function(metatable) {
  * luaH_getn and unbound_search in ltable.c.
  */
 LuaTable.prototype.getn = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var j = this._sizeArray;
     if (j > 0 && this._array[j - 1] == Lua.NIL) {
         // there is a boundary in the array part: (binary) search for it
@@ -347,6 +351,7 @@ LuaTable.prototype.getn = function() {
  * is non-<code>null</code>.
  */
 LuaTable.prototype.getlua = function(key) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (key instanceof Number) {
         var d = key;
         if (d <= this._sizeArray && d >=1) {
@@ -368,6 +373,7 @@ LuaTable.prototype.getlua = function(key) {
  * the <var>value</var> {@link Slot}.
  */
 LuaTable.prototype.__getlua = function(key, value) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (key.r == Lua.NUMBER) {
         var d = key.d;
         if (d <= this._sizeArray && d >= 1) {
@@ -387,6 +393,7 @@ LuaTable.prototype.__getlua = function(key, value) {
 
 /** Like get for numeric (integer) keys. */
 LuaTable.prototype.getnum = function(k) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (k <= this._sizeArray && k >= 1) {
         return this._array[k-1];
     }
@@ -409,6 +416,7 @@ LuaTable.prototype.getnum = function(k) {
  * @param value value.
  */
 LuaTable.prototype.putluaObj = function(L, key, value) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var d = 0.0;
     var i = Number.MAX_SAFE_INTEGER; //TODO:
 
@@ -448,6 +456,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
 };
 
 LuaTable.prototype.putluaSlot = function(L, key, value) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var i = Number.MAX_SAFE_INTEGER; //TODO:
 
     if (key.r == Lua.NUMBER) {

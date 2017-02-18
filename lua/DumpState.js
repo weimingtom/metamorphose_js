@@ -1,7 +1,7 @@
 ;(function(metamorphose) {
 var ByteArray = metamorphose ? metamorphose.ByteArray : require('../java/ByteArray.js');
 var Loader = metamorphose ? metamorphose.Loader : require('./Loader.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/BlockCnt.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -91,6 +91,7 @@ DumpState.prototype.DumpCode = function(f) {
 
 // throws IOException
 DumpState.prototype.DumpConstants = function(f) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var n = f.sizek;
     var k = f.k; //Slot[]
     this.DumpInt(n);

@@ -2,7 +2,7 @@
 var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
 var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
 var IllegalArgumentException = metamorphose ? metamorphose.IllegalArgumentException : require('../java/IllegalArgumentException.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var LocVar = metamorphose ? metamorphose.LocVar : require('./LocVar.js');
 var Slot = metamorphose ? metamorphose.Slot : require('./Slot.js');
 
@@ -277,6 +277,7 @@ Proto.prototype.ensureLocvars = function(L, atleast, limit) {
 };
 
 Proto.prototype.ensureProtos = function(L, atleast) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (atleast + 1 > this._sizep) {
         var newsize = atleast * 2 + 1 ;
         if (newsize > Lua.MAXARG_Bx)

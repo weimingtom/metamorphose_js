@@ -4,7 +4,7 @@ var Hashtable = metamorphose ? metamorphose.Hashtable : require('../java/Hashtab
 var Proto = metamorphose ? metamorphose.Proto : require('./Proto.js');
 var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
 var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/FuncState.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -46,6 +46,8 @@ var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
  * <code>lparser.c</code>.
  */
 var FuncState = function(ls) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+
     /** Proto object for this function. */
     this._f = null;
 
@@ -131,6 +133,7 @@ FuncState.prototype.getlocvar = function(idx) {
 
 /** Equivalent to luaK_checkstack. */
 FuncState.prototype.kCheckstack = function(n) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var newstack = this._freereg + n;
     if (newstack > this._f.maxstacksize) {
         if (newstack >= Lua.MAXSTACK) {
@@ -150,6 +153,7 @@ FuncState.prototype.kCode = function(i, line) {
 
 /** Equivalent to luaK_codeABC. */
 FuncState.prototype.kCodeABC = function(o, a, b, c) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // assert getOpMode(o) == iABC;
     // assert getBMode(o) != OP_ARG_N || b == 0;
     // assert getCMode(o) != OP_ARG_N || c == 0;
@@ -158,6 +162,7 @@ FuncState.prototype.kCodeABC = function(o, a, b, c) {
 
 /** Equivalent to luaK_codeABx. */
 FuncState.prototype.kCodeABx = function(o, a, bc) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // assert getOpMode(o) == iABx || getOpMode(o) == iAsBx);
     // assert getCMode(o) == OP_ARG_N);
     return this.kCode(Lua.CREATE_ABx(o, a, bc), this._ls.lastline);
@@ -165,11 +170,13 @@ FuncState.prototype.kCodeABx = function(o, a, bc) {
 
 /** Equivalent to luaK_codeAsBx. */
 FuncState.prototype.kCodeAsBx = function(o, a, bc) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     return this.kCodeABx(o, a, bc+Lua.MAXARG_sBx);
 };
 
 /** Equivalent to luaK_dischargevars. */
 FuncState.prototype.kDischargevars = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     switch (e.kind) {
     case Expdesc.VLOCAL:
         e.kind = Expdesc.VNONRELOC;
@@ -258,6 +265,7 @@ FuncState.prototype.isnumeral = function(e) {
 
 /** Equivalent to luaK_nil. */
 FuncState.prototype.kNil = function(from, n) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var previous;
     if (this._pc > this._lasttarget) {  /* no jumps to current position? */
         if (this._pc == 0)  /* function start? */
@@ -279,11 +287,13 @@ FuncState.prototype.kNil = function(from, n) {
 
 /** Equivalent to luaK_numberK. */
 FuncState.prototype.kNumberK = function(r) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     return this.addk(Lua.valueOfNumber(r)); //TODO:L->Lua
 };
 
 /** Equivalent to luaK_posfix. */
 FuncState.prototype.kPosfix = function(op, e1, e2) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     switch (op) {
     case Syntax.OPR_AND:
         /* list must be closed */
@@ -370,6 +380,7 @@ FuncState.prototype.kPosfix = function(op, e1, e2) {
 
 /** Equivalent to luaK_prefix. */
 FuncState.prototype.kPrefix = function(op, e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var e2 = new Expdesc();// TODO:
     e2.init(Expdesc.VKNUM, 0);
     switch (op) {
@@ -402,16 +413,19 @@ FuncState.prototype.kReserveregs = function(n) {
 
 /** Equivalent to luaK_ret. */
 FuncState.prototype.kRet = function(first, nret) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kCodeABC(Lua.OP_RETURN, first, nret+1, 0);
 };
 
 /** Equivalent to luaK_setmultret (in lcode.h). */
 FuncState.prototype.kSetmultret = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kSetreturns(e, Lua.MULTRET);
 };
 
 /** Equivalent to luaK_setoneret. */
 FuncState.prototype.kSetoneret = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (e.kind == Expdesc.VCALL) {     // expression is an open function call?
         e.nonreloc(Lua.ARGA(this.getcode(e)));
     } else if (e.kind == Expdesc.VVARARG) {
@@ -450,6 +464,7 @@ FuncState.prototype.addk = function(o) {
 };
 
 FuncState.prototype.codearith = function(op, e1, e2) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (this.constfolding(op, e1, e2))
         return;
     else {
@@ -463,6 +478,7 @@ FuncState.prototype.codearith = function(op, e1, e2) {
 };
 
 FuncState.prototype.constfolding = function(op, e1, e2) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var r = 0;
     if (!this.isnumeral(e1) || !this.isnumeral(e2))
         return false;
@@ -517,6 +533,7 @@ FuncState.prototype.constfolding = function(op, e1, e2) {
 };
 
 FuncState.prototype.codenot = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VNIL:
@@ -557,16 +574,19 @@ FuncState.prototype.codenot = function(e) {
 };
 
 FuncState.prototype.removevalues = function(list) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     for (; list != FuncState.NO_JUMP; list = this.getjump(list))
         this.patchtestreg(list, Lua.NO_REG);
 };
 
 FuncState.prototype.dischargejpc = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.patchlistaux(this._jpc, this._pc, Lua.NO_REG, this._pc);
     this._jpc = FuncState.NO_JUMP;
 };
 
 FuncState.prototype.discharge2reg = function(e, reg) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kDischargevars(e);
     switch (e.k) {
     case Expdesc.VNIL:
@@ -629,6 +649,7 @@ FuncState.prototype.exp2reg = function(e, reg) {
 };
 
 FuncState.prototype.code_label = function(a, b, jump) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kGetlabel();  /* those instructions may be jump targets */
     return this.kCodeABC(Lua.OP_LOADBOOL, a, b, jump);
 };
@@ -638,6 +659,7 @@ FuncState.prototype.code_label = function(a, b, jump) {
  * (or produce an inverted value)
  */
 FuncState.prototype.need_value = function(list) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     for (; list != FuncState.NO_JUMP; list = this.getjump(list)) {
         var i = this.getjumpcontrol(list);
         var instr = this._f.code[i] ;
@@ -662,6 +684,7 @@ FuncState.prototype.getFreereg = function() {
 };
 
 FuncState.prototype.__freereg = function(reg) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (!Lua.ISK(reg) && reg >= this._nactvar) {
         --this._freereg;
         // assert reg == freereg;
@@ -687,18 +710,21 @@ FuncState.prototype.searchvar = function(n) {
 };
 
 FuncState.prototype.setarga = function(e, a) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.info;
     var code = this._f.code; //int[] 
     code[at] = Lua.SETARG_A(code[at], a);
 };
 
 FuncState.prototype.setargb = function(e, b) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.info;
     var code = this._f.code; //int[] 
     code[at] = Lua.SETARG_B(code[at], b);
 };
 
 FuncState.prototype.setargc = function(e, c) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.info;
     var code = this._f.code; //int[]
     code[at] = Lua.SETARG_C(code[at], c);
@@ -731,6 +757,7 @@ FuncState.prototype.kConcat = function(l1, l2) {
 
 /** Equivalent to <code>luaK_patchlist</code>. */
 FuncState.prototype.kPatchlist = function(list, target) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (target == this._pc)
         this.kPatchtohere(list);
     else {
@@ -752,6 +779,7 @@ FuncState.prototype.patchlistaux = function(list, vtarget, reg,
 };
 
 FuncState.prototype.patchtestreg = function(node, reg) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var i = this.getjumpcontrol(node);
     var code = this._f.code; //int [] 
     var instr = code[i] ;
@@ -766,6 +794,7 @@ FuncState.prototype.patchtestreg = function(node, reg) {
 };
 
 FuncState.prototype.getjumpcontrol = function(at) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var code = this._f.code; //int []
     if (at >= 1 && this.testTMode(Lua.OPCODE(code[at-1])))
         return at - 1;
@@ -858,6 +887,7 @@ FuncState.prototype.kPatchtohere = function(list) {
 };
 
 FuncState.prototype.fixjump = function(at, dest) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var jmp = this._f.code[at];
     var offset = dest - (at + 1);
     //# assert dest != FuncState.NO_JUMP
@@ -867,6 +897,7 @@ FuncState.prototype.fixjump = function(at, dest) {
 };
 
 FuncState.prototype.getjump = function(at) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var offset = Lua.ARGsBx(this._f.code[at]);
     if (offset == FuncState.NO_JUMP)  /* point to itself represents end of list */
         return FuncState.NO_JUMP;  /* end of list */
@@ -876,6 +907,7 @@ FuncState.prototype.getjump = function(at) {
 
 /** Equivalent to <code>luaK_jump</code>. */
 FuncState.prototype.kJump = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var old_jpc = this._jpc;  /* save list of jumps to here */
     this._jpc = FuncState.NO_JUMP;
     var j = this.kCodeAsBx(Lua.OP_JMP, 0, FuncState.NO_JUMP);
@@ -885,6 +917,7 @@ FuncState.prototype.kJump = function() {
 
 /** Equivalent to <code>luaK_storevar</code>. */
 FuncState.prototype.kStorevar = function(_var, ex) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     switch (_var.k) {
     case Expdesc.VLOCAL:
         {
@@ -932,6 +965,7 @@ FuncState.prototype.kIndexed = function(t, k) {
 
 /** Equivalent to <code>luaK_exp2RK</code>. */
 FuncState.prototype.kExp2RK = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kExp2val(e);
     switch (e.k) {
     case Expdesc.VKNUM:
@@ -969,10 +1003,12 @@ FuncState.prototype.kExp2val = function(e) {
 };
 
 FuncState.prototype.boolK = function(b) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     return this.addk(Lua.valueOfBoolean(b));
 };
 
 FuncState.prototype.nilK = function() {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     return this.addk(Lua.NIL);
 };
 
@@ -1033,6 +1069,7 @@ FuncState.prototype.kGoiftrue = function(e) {
 };
 
 FuncState.prototype.invertjump = function(e) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = this.getjumpcontrol(e.info);
     var code = this._f.code; //int []
     var instr = code[at] ;
@@ -1041,6 +1078,7 @@ FuncState.prototype.invertjump = function(e) {
 };
 
 FuncState.prototype.jumponcond = function(e, cond) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (e.k == Expdesc.VRELOCABLE) {
         var ie = this.getcode(e);
         if (Lua.OPCODE(ie) == Lua.OP_NOT) {
@@ -1067,6 +1105,7 @@ FuncState.prototype.discharge2anyreg = function(e) {
 };
 
 FuncState.prototype.kSelf = function(e, key) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kExp2anyreg(e);
     this.freeexp(e);
     var func = this._freereg;
@@ -1078,6 +1117,7 @@ FuncState.prototype.kSelf = function(e, key) {
 };
 
 FuncState.prototype.kSetlist = function(base, nelems, tostore) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var c = (nelems - 1) / Lua.LFIELDS_PER_FLUSH + 1;
     var b = (tostore == Lua.MULTRET) ? 0 : tostore;
     //# assert tostore != 0
@@ -1091,6 +1131,7 @@ FuncState.prototype.kSetlist = function(base, nelems, tostore) {
 };
 
 FuncState.prototype.codecomp = function(op, cond, e1, e2) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var o1 = this.kExp2RK(e1);
     var o2 = this.kExp2RK(e2);
     this.freeexp(e2);

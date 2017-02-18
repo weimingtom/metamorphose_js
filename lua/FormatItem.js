@@ -2,7 +2,7 @@
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 var Character = metamorphose ? metamorphose.Character : require('../java/Character.js');
 var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/StringLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -374,6 +374,7 @@ FormatItem.prototype.formatFloatRawF = function(d) {
 };
 
 FormatItem.prototype.formatFloatG = function(b, d) {
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (this._precision == 0) {
         this._precision = 1;
     }

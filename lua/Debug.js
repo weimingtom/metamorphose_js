@@ -1,6 +1,6 @@
 ;(function(metamorphose) {
 
-var Lua = metamorphose ? metamorphose.Lua : require('./lua.js');
+//var Lua = metamorphose ? metamorphose.Lua : require('./lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Debug.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -83,6 +83,7 @@ Debug.prototype.setWhat = function(what) {
  */
 Debug.prototype.setSource = function(source) {
     this._source = source;
+    var Lua = metamorphose ? metamorphose.Lua : require('./lua.js');
     this._shortsrc = Lua.oChunkid(source);
 };
 
