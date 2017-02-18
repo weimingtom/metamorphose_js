@@ -1,5 +1,5 @@
 ;(function(metamorphose) {
-var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
 var Runtime = metamorphose ? metamorphose.Runtime : require('../java/Runtime.js');
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
