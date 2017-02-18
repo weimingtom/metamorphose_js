@@ -44,7 +44,8 @@
  */
 
 var LuaJavaCallback = function(L) {
-    throw new Error("abstract class error");
+    //FIXME:
+    //throw new Error("abstract class error");
     //return 0; //FIXME:
 };
 

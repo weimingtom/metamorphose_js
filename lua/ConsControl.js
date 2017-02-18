@@ -1,4 +1,5 @@
 ;(function(metamorphose) {
+var Expdesc = metamorphose ? metamorphose.Expdesc : require("./Expdesc.js");
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/Syntax.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -28,8 +29,6 @@
 //	http://code.google.com/p/jillcode/
 //这里的代码移植自jillcode(Lua的Java实现，Jill):
 //	http://code.google.com/p/jillcode/	
-
-var Expdesc = require("./Expdesc.js");
 
 var ConsControl = function(t) {
     this.v = new Expdesc() ;  /* last list item read */

@@ -69,7 +69,8 @@ var LuaTable = function() {
     this._metatable = null;   // = null;
 
     //TODO:暂时屏蔽
-    super(1);
+    //super(1);
+    Hashtable.call(this, 1);
 };
 
 LuaTable.prototype = new Hashtable();
@@ -200,7 +201,7 @@ LuaTable.prototype.numusehash = function(nums/*int[] */, pnasize/*int[] */) {
     var totaluse = 0;   // total number of elements
     var ause = 0;       // summation of nums
     var e;
-    e = super.keys();
+    e = Hashtable.prototype.keys.call(this);//super.keys();
     while (e.hasMoreElements()) {
         var o = e.nextElement();
         ause += this.countint(o, nums);
@@ -234,7 +235,7 @@ LuaTable.prototype.resize = function(nasize) {
         SystemUtil.arraycopy(this._array, 0, newarray, 0, this._array.length);
         for (i = this._array.length; i < nasize; ++i) {
             key = Number(i + 1); /*new Number*/
-            var v = super.remove(key);
+            var v = Hashtable.prototype.remove.call(this, key);//super.remove(key);
             if (v == null) {
                 v = Lua.NIL;
             }
@@ -247,7 +248,7 @@ LuaTable.prototype.resize = function(nasize) {
         for (i = nasize; i < this._sizeArray; ++i) {
             if (this._array[i] != Lua.NIL) {
                 key = Number(i + 1); //new Number
-                super.put(key, this._array[i]); //TODO:
+                Hashtable.prototype.put(this, key, this._array[i]);//super.put(key, this._array[i]); //TODO:
             }
         }
         SystemUtil.arraycopy(this._array, 0, newarray, 0, newarray.length);
@@ -269,7 +270,7 @@ LuaTable.prototype.rehash = function() {
 
         this.resize(nasize[0]);
     }
-    super.rehash();
+    Hashtable.prototype.rehash.call(this);//super.rehash();
     this._inrehash = oldinrehash;
 };
 
@@ -361,7 +362,7 @@ LuaTable.prototype.getlua = function(key) {
             }
         }
     }
-    var r = super._get(key); //TODO:get
+    var r = Hashtable.prototype._get.call(this, key); //super._get(key); //TODO:get
     if (r == null) {
         r = Lua.NIL;
     }
@@ -384,7 +385,7 @@ LuaTable.prototype.__getlua = function(key, value) {
             }
         }
     }
-    var r = super._get(key.asObject()); //TODO:
+    var r = Hashtable.prototype._get.call(this, key.asObject());//super._get(key.asObject()); //TODO:
     if (r == null) {
         r = Lua.NIL;
     }
@@ -397,7 +398,7 @@ LuaTable.prototype.getnum = function(k) {
     if (k <= this._sizeArray && k >= 1) {
         return this._array[k-1];
     }
-    var r = super._get(Number(k)); //TODO:get //new Number
+    var r = Hashtable.prototype._get(this, Number(k));//super._get(Number(k)); //TODO:get //new Number
     if (r == null) {
         return Lua.NIL;
     }
@@ -445,7 +446,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
         this.remove(key);
         return;
     }
-    super.put(key, value); //TODO:
+    Hashtable.prototype.put(this, key, value);//super.put(key, value); //TODO:
     // This check is necessary because sometimes the call to super.put
     // can rehash and the new (k,v) pair should be in the array part
     // after the rehash, but is still in the hash part.
@@ -478,7 +479,7 @@ LuaTable.prototype.putluaSlot = function(L, key, value) {
         this.remove(k);
         return;
     }
-    super.put(k, value); //TODO:
+    Hashtable.prototype.put.call(this, k, value);//super.put(k, value); //TODO:
     if (i <= this._sizeArray) {
         this.remove(k);
         this._array[i - 1] = value;
@@ -509,7 +510,7 @@ LuaTable.prototype._get = function(key) {
 };
 
 LuaTable.prototype.keys = function() {
-    return new Enum(this, super.keys());
+    return new Enum(this, Hashtable.prototype.keys.call(this));//super.keys());
 };
 
 /**

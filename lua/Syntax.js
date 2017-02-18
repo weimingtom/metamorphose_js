@@ -4,7 +4,7 @@ var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/Syste
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 var Character = metamorphose ? metamorphose.Character : require('../java/Character.js');
     
-var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
+//var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 //var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var Expdesc = metamorphose ? metamorphose.Expdesc : require('./Expdesc.js');
@@ -866,6 +866,7 @@ Syntax.prototype.leavelevel = function() {
 
 /** Equivalent to luaY_parser. */
 Syntax.parser = function(L, _in, name) { //throws IOException
+    var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
     var ls = new Syntax(L, _in, name);
     var fs = new FuncState(ls);
     ls.open_func(fs);
@@ -1525,6 +1526,7 @@ Syntax.prototype.subexpr = function(v, limit) { // throws IOException
 };
 
 Syntax.prototype.enterblock = function(f, bl, isbreakable) {
+    var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
     bl.breaklist = FuncState.NO_JUMP;
     bl.isbreakable = isbreakable;
     bl.nactvar = f.nactvar;
@@ -1667,6 +1669,7 @@ Syntax.prototype.registerlocalvar = function(varname) {
 };
 
 Syntax.prototype.body = function(e, needself, line) { // throws IOException
+    var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
     /* body ->  `(' parlist `)' chunk END */
     var new_fs = new FuncState(this);
     this.open_func(new_fs);
@@ -1870,6 +1873,7 @@ Syntax.prototype.forlist = function(indexname) { // throws IOException
 };
 
 Syntax.prototype.forbody = function(base, line, nvars, isnum) { //throws IOException
+    var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* forbody -> DO block */
     var bl = new BlockCnt() ;
@@ -1890,6 +1894,7 @@ Syntax.prototype.forbody = function(base, line, nvars, isnum) { //throws IOExcep
 };
 
 Syntax.prototype.ifstat = function(line) { // throws IOException
+    var FuncState = metamorphose ? metamorphose.FuncState : require('./FuncState.js');
     /* ifstat -> IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END */
     var escapelist = FuncState.NO_JUMP;
     var flist = this.test_then_block();  /* IF cond THEN block */
