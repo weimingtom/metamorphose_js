@@ -549,7 +549,7 @@ Lua.prototype.getFenv = function(o) {
     }
     if (o instanceof Lua) {
         var l = o;
-        return l.global;
+        return l.getGlobal2();
     }
     return null;
 };
@@ -699,7 +699,7 @@ Lua.isNil = function(o) {
  */
 Lua.isNumber = function(o) {
     Lua.SPARE_SLOT.setObject(o);
-    return this.tonumber(Lua.SPARE_SLOT, Lua.NUMOP);
+    return Lua.tonumber(Lua.SPARE_SLOT, Lua.NUMOP);
 };
 
 /**
@@ -1212,7 +1212,7 @@ Lua.prototype.setFenv = function(o, table) {
     }
     if (o instanceof Lua) {
         var l = o;
-        l.global = t;
+        l.setGlobal2(t);
         return true;
     }
     return false;
@@ -3865,9 +3865,9 @@ Lua.prototype.tonumber = function(idx) {
  * @return true if and only if both values converted to number.
  */
 Lua.toNumberPair = function(x, y, out /*double[] */) {
-    if (this.tonumber(y, out)) {
+    if (Lua.tonumber(y, out)) {
         out[1] = out[0];
-        if (this.tonumber(x, out)) {
+        if (Lua.tonumber(x, out)) {
             return true;
         }
     }
@@ -3979,11 +3979,11 @@ Lua.uDump = function(f, writer, strip) { //throws IOException
     return 0;   // Any errors result in thrown exceptions.
 };
 
-Lua.prototype.getGlobal = function() {
+Lua.prototype.getGlobal2 = function() {
     return this._global;
 };
 
-Lua.prototype.setGlobal = function(global) {
+Lua.prototype.setGlobal2 = function(global) {
     this._global = global;
 };
 
