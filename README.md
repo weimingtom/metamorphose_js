@@ -1,6 +1,22 @@
 # metamorphose_js
 Metamorphose (original name jill, jillcode) Javascript port  
 
+## Status  
+WIP  
+
+## Develop tools  
+* Brackets  
+* JSHint  
+* Nodejs  
+* Chrome / FireFox / IE / Opera  
+
+## JSHint Config   
+* "-W009": true, // [], new Array()  
+* "-W010": true, // {}, new Object()  
+* "-W041": true, // Use === to compare with null  
+* "-W060": true, // document.write can be a form of eval  
+* "-W086": true, // Expected a 'break' statement before case  
+
 ## Ref  
 * http://code.google.com/p/jillcode/  
 * https://github.com/weimingtom/metamorphose  
@@ -19,27 +35,20 @@ Metamorphose (original name jill, jillcode) Javascript port
 * https://github.com/luchiniatwork/moonshine-tst  
 * https://github.com/brendanfh/love-web  
 * https://github.com/samuelwbaird/letter-moonshine  
+* https://github.com/agladysh/browser-lua  
+* https://github.com/TeaEntityLab/teaEntityJavascript  
 
-## Status  
-WIP  
-
-## Develop tool  
-* Brackets  
-* JSHint  
-* Nodejs  
-* Chrome  
-
-## JSHint  
-* "-W009": true, // [], new Array()  
-* "-W010": true, // {}, new Object()  
-* "-W041": true, // Use === to compare with null  
-* "-W060": true, // document.write can be a form of eval  
-* "-W086": true, // Expected a 'break' statement before case  
-
-## Console  
+## Console / Terminal    
 * https://github.com/adamchuan/console.js  
 * http://stackoverflow.com/questions/138157/java-console-like-web-applet  
 * http://stackoverflow.com/questions/6006010/adding-japplet-into-jframe  
 * http://stackoverflow.com/questions/2434483/how-to-open-new-applet-window-from-a-applet  
 * https://github.com/B1naryStudio/js-mobile-console  
 * https://github.com/amio/console.js  
+* https://github.com/evilmarty/consolejs  
+* https://github.com/Gottox/node-webterm  
+* https://github.com/Gottox/terminal.js  
+* https://github.com/cs01/gdbgui  
+* https://github.com/vfalconi/web-terminal  
+* https://github.com/at1as/browser-terminal  
+* https://github.com/decfd15/TerminalSimulator  
