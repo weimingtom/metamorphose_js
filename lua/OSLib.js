@@ -3,9 +3,9 @@
 var TimeZone = metamorphose ? metamorphose.TimeZone : require('../java/TimeZone.js');
 var Calendar = metamorphose ? metamorphose.Calendar : require('../java/Calendar.js');
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
 
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
-var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./SystemUtil.js');
 var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/OSLib.java#1 $

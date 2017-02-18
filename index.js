@@ -1,30 +1,60 @@
 ;(function(metamorphose) {
 
-var ByteArrayOutputStream = metamorphose ? metamorphose.ByteArrayOutputStream : require('./java/ByteArrayOutputStream.js');
-var Calendar = metamorphose ? metamorphose.Calendar : require('./java/Calendar.js');
-var Character = metamorphose ? metamorphose.Character : require('./java/Character.js');
-var DataOutputStream = metamorphose ? metamorphose.DataOutputStream : require('./java/DataOutputStream.js');
-    
-var Slot = metamorphose ? metamorphose.Slot : require('./lua/Slot.js');
-var UpVal = metamorphose ? metamorphose.UpVal : require('./lua/UpVal.js');
-
-var byteArrayOutputStream = new ByteArrayOutputStream();
-var canlendar = new Calendar();
-var character = new Character();
-var dataOutputStream = new DataOutputStream();
+var Lua = metamorphose ? metamorphose.Lua : require("./lua/Lua.js");
+var PackageLib = metamorphose ? metamorphose.PackageLib : require("./lua/PackageLib.js");
+var MathLib = metamorphose ? metamorphose.MathLib : require("./lua/MathLib.js");
+var BaseLib = metamorphose ? metamorphose.BaseLib : require("./lua/BaseLib.js");
+var OSLib = metamorphose ? metamorphose.OSLib : require("./lua/OSLib.js");
+var TableLib = metamorphose ? metamorphose.TableLib : require("./lua/TableLib.js");
+var StringLib = metamorphose ? metamorphose.StringLib : require("./lua/StringLib.js");
 
 function trace(s) {
     if (typeof document !== 'undefined' && document) {
-        document.write(s);
+        document.write(s.replace(/\n/g, '<br>'));
         document.write('<br>');
     }
     console.log(s);
 }
 
-var upVal = new UpVal(123, new Slot());
-//var upVal = new UpVal(123, null);
-trace(upVal.getOffset());
-upVal.close();
+var test001 = "n = 99 + (1 * 10) / 2 - 0.5;\n" +
+    "if n > 10 then return 'Oh, 真的比10还大哦:'..n end\n" +
+    "return n\n";
+var test002 = "return _VERSION";
+var test003 = "return nil";
 
-//console.log("upVal instanceof UpVal = " + (upVal instanceof UpVal));
+var isLoadLib = true;
+try
+{
+    trace("Start test...");
+    var L = new Lua();
+    if (isLoadLib) {
+        BaseLib.open(L);
+        PackageLib.open(L);
+        MathLib.open(L);
+        OSLib.open(L);
+        StringLib.open(L);
+        TableLib.open(L);
+    }
+    var status = L.doString(test003);
+    if (status != 0) {
+        var errObj = L.value(1);
+        var tostring = L.getGlobal("tostring");
+        L.pushObject(tostring);
+        L.pushObject(errObj);
+        L.call(1, 1);
+        var errObjStr = L.toString(L.value(-1));
+        throw new Error("Error compiling : " + L.value(1));
+    } else {
+        var result = L.value(1);
+        var tostring_ = L.getGlobal("tostring");
+        L.pushObject(tostring_);
+        L.pushObject(result);
+        L.call(1, 1);
+        var resultStr = L.toString(L.value(-1));
+        trace("Result >>> " + resultStr);
+    }
+} catch (e) {
+    trace(e.getStackTrace());
+}
+
 })(typeof window !== 'undefined' && window.metamorphose);

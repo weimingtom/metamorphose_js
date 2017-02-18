@@ -5,9 +5,14 @@ var RuntimeException = function(str) {
         str = "";
     }
 	this.message = str;
+    this._stackTrace = new Error(str).stack;
 };
 
 RuntimeException.prototype = new Error();
+
+RuntimeException.prototype.getStackTrace = function() {
+    return this._stackTrace;
+};
 
 if (typeof module !== 'undefined') {
     module.exports = RuntimeException;

@@ -1,8 +1,7 @@
 ;(function(metamorphose) {
-
-var BaseLibReader = metamorphose ? metamorphose.BaseLibReader : require('../java/BaseLibReader.js');
 var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
     
+var BaseLibReader = metamorphose ? metamorphose.BaseLibReader : require('./BaseLibReader.js');
 var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var DumpedInput = metamorphose ? metamorphose.DumpedInput : require('./DumpedInput.js');

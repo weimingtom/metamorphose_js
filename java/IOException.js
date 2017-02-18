@@ -5,9 +5,15 @@ var IOException = function(str) {
         str = "";
     }
 	this.message = str;
+    this._stackTrace = new Error(this.message).stack;
 };
 
 IOException.prototype = new Error();
+
+IOException.prototype.getStackTrace = function() {
+    //this._stackTrace = new Error(this.message).stack;
+    return this._stackTrace;
+};
 
 if (typeof module !== 'undefined') {
     module.exports = IOException;

@@ -1,4 +1,5 @@
 ;(function(metamorphose) {
+var RuntimeException = metamorphose ? metamorphose.RuntimeException : require('../java/RuntimeException.js');
 
 /*  $Header$
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -32,10 +33,18 @@
 var LuaError = function(errorStatus) {
     this.message = "Lua error"; //super("Lua error");
 	this._errorStatus = errorStatus;
+    this._stackTrace = new Error(this.message).stack;
 };
+
+LuaError.prototype = new RuntimeException();    
 
 LuaError.prototype.getErrorStatus = function() {
     return this._errorStatus;
+};
+
+LuaError.prototype.getStackTrace = function() {
+    //this._stackTrace = new Error(this.message).stack;
+    return this._stackTrace;
 };
 
 if (typeof module !== 'undefined') {

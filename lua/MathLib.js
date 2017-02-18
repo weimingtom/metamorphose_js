@@ -1,10 +1,8 @@
 ;(function(metamorphose) {
-
 var Random = metamorphose ? metamorphose.Random : require('../java/Random.js');
 var MathUtil = metamorphose ? metamorphose.MathUtil : require('../java/MathUtil.js');
 
-var Lua = metamorphose ? metamorphose.Lua : require('../Lua.js');
-
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     
 // Each function in the library corresponds to an instance of
 // this class which is associated (the 'which' member) with an integer

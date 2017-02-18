@@ -1,6 +1,7 @@
 ;(function(metamorphose) {
 var ByteArrayOutputStream = metamorphose ? metamorphose.ByteArrayOutputStream : require('../java/ByteArrayOutputStream.js');
-var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('./StringBuffer.js');
+var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
+
 var FormatItem = metamorphose ? metamorphose.FormatItem : require('./FormatItem.js');
 var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
 var LuaTable = metamorphose ? metamorphose.LuaTable : require('./LuaTable.js');

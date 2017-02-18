@@ -5,9 +5,15 @@ var OutOfMemoryError = function(str) {
         str = "";
     }
 	this.message = str;
+    this._stackTrace = new Error(this.message).stack;
 };
 
 OutOfMemoryError.prototype = new Error();
+
+OutOfMemoryError.prototype.getStackTrace = function() {
+    //this._stackTrace = new Error(this.message).stack;
+    return this._stackTrace;
+};
 
 if (typeof module !== 'undefined') {
     module.exports = OutOfMemoryError;

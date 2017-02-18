@@ -5,9 +5,15 @@ var IllegalArgumentException = function(str) {
         str = "";
     }
 	this.message = str;
+    this._stackTrace = new Error(this.message).stack;
 };
 
 IllegalArgumentException.prototype = new Error();
+
+IllegalArgumentException.prototype.getStackTrace = function() {
+    //this._stackTrace = new Error(this.message).stack;
+    return this._stackTrace;
+};
 
 if (typeof module !== 'undefined') {
     module.exports = IllegalArgumentException;
