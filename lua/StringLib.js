@@ -256,7 +256,7 @@ StringLib.findAux = function(L, isFind) {
         var anchor = p.charAt(0) == '^';
         var si = init;
         do {
-            ms.level = 0;
+            ms.setLevel(0);
             var res = ms.match(si, p, anchor ? 1 : 0);
             if (res >= 0) {
                 if (isFind) {
@@ -303,7 +303,7 @@ StringLib.gmatchaux = function(L) {
     var i = state[2];
     var ms = new MatchState(L, s, s.length);
     for ( ; i <= ms.end ; ++i) {
-        ms.level = 0;
+        ms.setLevel(0);
         var e = ms.match(i, p, 0);
         if (e >= 0) {
             var newstart = e;
@@ -334,7 +334,7 @@ StringLib.gsub = function(L) {
     var n = 0;
     var si = 0;
     while (n < maxn) {
-        ms.level = 0;
+        ms.setLevel(0);
         var e = ms.match(si, p, 0);
         if (e >= 0) {
             ++n;

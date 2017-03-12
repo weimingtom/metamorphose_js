@@ -135,11 +135,11 @@ FuncState.prototype.getlocvar = function(idx) {
 FuncState.prototype.kCheckstack = function(n) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var newstack = this._freereg + n;
-    if (newstack > this._f.maxstacksize) {
+    if (newstack > this._f.getMaxstacksize()) {
         if (newstack >= Lua.MAXSTACK) {
             this._ls.xSyntaxerror("function or expression too complex");
         }
-        this._f.maxstacksize = newstack;
+        this._f.setMaxstacksize(newstack);
     }
 };
 

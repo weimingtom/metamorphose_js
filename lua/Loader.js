@@ -300,9 +300,9 @@ Loader.prototype._function = function(parentSource) { // throws IOException
     var newProto = new Proto();
     newProto.init1(constant, code, proto, nups,
         numparams, vararg, maxstacksize); //TODO:
-    newProto.source = source;
-    newProto.linedefined = linedefined;
-    newProto.lastlinedefined = lastlinedefined;
+    newProto.setSource(source);
+    newProto.setLinedefined(linedefined);
+    newProto.setLastlinedefined(lastlinedefined);
 
     this.debug(newProto);
     // :todo: call code verifier

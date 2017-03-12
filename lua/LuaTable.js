@@ -375,7 +375,7 @@ LuaTable.prototype.getlua = function(key) {
  */
 LuaTable.prototype.__getlua = function(key, value) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (key.r == Lua.NUMBER) {
+    if (key.getR() == Lua.NUMBER) {
         var d = key.d;
         if (d <= this._sizeArray && d >= 1) {
             var i = d;
@@ -460,7 +460,7 @@ LuaTable.prototype.putluaSlot = function(L, key, value) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var i = Number.MAX_SAFE_INTEGER; //TODO:
 
-    if (key.r == Lua.NUMBER) {
+    if (key.getR() == Lua.NUMBER) {
         var j = key.d;
         if (j == key.d && j >= 1) {
             i = j;

@@ -139,7 +139,7 @@ Proto.prototype.init1 = function(constant, //Slot[]
     this._sizep = proto.length ;
     this._nups = nups;
     this._numparams = numparams;
-    this._isVararg = isVararg;
+    this.setIsVararg(isVararg);
     this._maxstacksize = maxstacksize;
 };
 

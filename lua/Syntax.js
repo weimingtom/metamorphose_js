@@ -870,7 +870,7 @@ Syntax.parser = function(L, _in, name) { //throws IOException
     var ls = new Syntax(L, _in, name);
     var fs = new FuncState(ls);
     ls.open_func(fs);
-    fs.f.isVararg = true;
+    fs.f.setIsVararg(true);
     ls.xNext();
     ls.chunk();
     ls.check(Syntax.TK_EOS);
@@ -1613,17 +1613,17 @@ Syntax.prototype.parlist = function() { // throws IOException
             case Syntax.TK_DOTS:    /* param -> `...' */
                 {
                     this.xNext();
-                    f.isVararg = true;
+                    f.setIsVararg(true);
                     break;
                 }
 
             default: 
                 this.xSyntaxerror("<name> or '...' expected");
             }
-        } while ((!f.isVararg) && this.testnext(','.charCodeAt()));
+        } while ((!f.getIsVararg()) && this.testnext(','.charCodeAt()));
     }
     this.adjustlocalvars(nparams);
-    f.numparams = this._fs.nactvar ; /* VARARG_HASARG not now used */
+    f.setNumparams(this._fs.nactvar) ; /* VARARG_HASARG not now used */
     this._fs.kReserveregs(this._fs.nactvar);  /* reserve register for parameters */
 };
 
@@ -1673,7 +1673,7 @@ Syntax.prototype.body = function(e, needself, line) { // throws IOException
     /* body ->  `(' parlist `)' chunk END */
     var new_fs = new FuncState(this);
     this.open_func(new_fs);
-    new_fs.f.linedefined = line;
+    new_fs.f.setLinedefined(line);
     this.checknext('('.charCodeAt());
     if (needself) {
         this.new_localvarliteral("self", 0);
@@ -1682,7 +1682,7 @@ Syntax.prototype.body = function(e, needself, line) { // throws IOException
     this.parlist();
     this.checknext(')'.charCodeAt());
     this.chunk();
-    new_fs.f.lastlinedefined = this._linenumber;
+    new_fs.f.setLastlinedefined(this._linenumber);
     this.check_match(Syntax.TK_END, Syntax.TK_FUNCTION, line);
     this.close_func();
     this.pushclosure(new_fs, e);

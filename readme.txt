@@ -81,3 +81,13 @@ jscheck:
 (x) Proto.->newProto.
 (X) LuaTable.remove->base class
 (x) getQualifiedClassName -> Object.getPrototypeOf
+
+-----------------------
+getter, setter:
+(java search: function set )
+(x) MatchState
+(x) Proto
+(-) Slot
+(x)     set r
+(-)     set d
+(x) UpVal
