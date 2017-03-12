@@ -1197,7 +1197,7 @@ Lua.prototype.setFenv = function(o, table) {
 
     if (o instanceof LuaFunction) {
         var f1 = o;
-        f1.env = t;
+        f1.setEnv(t);
         return true;
     }
     if (o instanceof LuaJavaCallback) {
@@ -1207,7 +1207,7 @@ Lua.prototype.setFenv = function(o, table) {
     }
     if (o instanceof LuaUserdata) {
         var u = o;
-        u.env = t;
+        u.setEnv(t);
         return true;
     }
     if (o instanceof Lua) {
@@ -1247,7 +1247,7 @@ Lua.prototype.setMetatable = function(o, mt) {
         t.setMetatable(mtt);
     } else if (o instanceof LuaUserdata) {
         var u = o;
-        u.metatable = mtt;
+        u.setMetatable(mtt);
     } else {
         this._metatable[Lua.____type(o)] = mtt;
     }

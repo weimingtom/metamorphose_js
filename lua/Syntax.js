@@ -853,7 +853,7 @@ Syntax.prototype.checkname = function(e) { // throws IOException
 };
 
 Syntax.prototype.enterlevel = function() {
-    this._L.nCcalls++;
+    this._L.setNCcalls(this._L.getNCcalls() + 1);
 };
 
 Syntax.prototype.error_expected = function(tok) {
@@ -861,7 +861,7 @@ Syntax.prototype.error_expected = function(tok) {
 };
 
 Syntax.prototype.leavelevel = function() {
-    this._L.nCcalls--;
+    this._L.setNCcalls(this._L.getNCcalls() - 1);
 };
 
 /** Equivalent to luaY_parser. */
@@ -884,14 +884,14 @@ Syntax.parser = function(L, _in, name) { //throws IOException
 Syntax.prototype.removevars = function(tolevel) {
     // :todo: consider making a method in FuncState.
     while (this._fs.nactvar > tolevel) {
-        this._fs.getlocvar(--this._fs.nactvar).endpc = this._fs.pc;
+        this._fs.getlocvar(--this._fs.nactvar).setEndpc(this._fs.pc);
     }
 };
 
 Syntax.prototype.singlevar = function(_var) { // throws IOException 
     var varname = this.str_checkname();
     if (this.singlevaraux(this._fs, varname, _var, true) == Expdesc.VGLOBAL) {
-        _var.info = this._fs.kStringK(varname);
+        _var.setInfo(this._fs.kStringK(varname));
     }
 };
 
@@ -946,7 +946,7 @@ Syntax.prototype.chunk = function() { // throws IOException
         islast = this.statement();
         this.testnext(';'.charCodeAt());
         //# assert fs.f.maxstacksize >= fs.freereg && fs.freereg >= fs.nactvar
-        this._fs.freereg = this._fs.nactvar;
+        this._fs.setFreereg(this._fs.nactvar);
     }
     this.leavelevel();
 };
@@ -1003,7 +1003,7 @@ Syntax.oInt2fb = function(x) {
 Syntax.prototype.recfield = function(cc) {  //throws IOException
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* recfield -> (NAME | `['exp1`]') = exp1 */
-    var reg = this._fs.freereg;
+    var reg = this._fs.getFreereg();
     var key = new Expdesc();
     var val = new Expdesc();
     if (this._token == Syntax.TK_NAME) {
@@ -1017,7 +1017,7 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
     this._fs.kExp2RK(key);
     this.expr(val);
     this._fs.kCodeABC(Lua.OP_SETTABLE, cc.t.info, this._fs.kExp2RK(key), this._fs.kExp2RK(val));
-    this._fs.freereg = reg;  /* free registers */
+    this._fs.setFreereg(reg);  /* free registers */
 };
 
 Syntax.prototype.lastlistfield = function(cc) {
@@ -1037,12 +1037,12 @@ Syntax.prototype.lastlistfield = function(cc) {
 
 Syntax.prototype.closelistfield = function(cc) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (cc.v.k == Expdesc.VVOID)
+    if (cc.v.getK() == Expdesc.VVOID)
         return;  /* there is no list item */
     this._fs.kExp2nextreg(cc.v);
-    cc.v.k = Expdesc.VVOID;
+    cc.v.setK(Expdesc.VVOID);
     if (cc.tostore == Lua.LFIELDS_PER_FLUSH) {
-        this._fs.kSetlist(cc.t.info, cc.na, cc.tostore);  /* flush */
+        this._fs.kSetlist(cc.t.getInfo(), cc.na, cc.tostore);  /* flush */
         cc.tostore = 0;  /* no more items pending */
     }
 };
@@ -1071,7 +1071,7 @@ Syntax.prototype.exprstat = function() { // throws IOException
     if (v.v.k == Expdesc.VCALL) {     // stat -> func
         this._fs.setargc(v.v, 1); // call statement uses no results
     } else {     // stat -> assignment
-        v.prev = null;
+        v.setPrev(null);
         this.assignment(v, 1);
     }
 };
@@ -1084,22 +1084,22 @@ Syntax.prototype.exprstat = function() { // throws IOException
 */
 Syntax.prototype.check_conflict = function(lh, v) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var extra = this._fs.freereg;  /* eventual position to save local variable */
+    var extra = this._fs.getFreereg();  /* eventual position to save local variable */
     var conflict = false ;
     for (; lh != null; lh = lh.prev) {
         if (lh.v.k == Expdesc.VINDEXED) {
-            if (lh.v.info == v.info) {   /* conflict? */
+            if (lh.v.getInfo() == v.getInfo()) {   /* conflict? */
               conflict = true;
-              lh.v.info = extra;  /* previous assignment will use safe copy */
+              lh.v.setInfo(extra);  /* previous assignment will use safe copy */
             }
-            if (lh.v.aux == v.info) {   /* conflict? */
+            if (lh.v.getAux() == v.getInfo()) {   /* conflict? */
               conflict = true;
-              lh.v.aux = extra;  /* previous assignment will use safe copy */
+              lh.v.setAux(extra);  /* previous assignment will use safe copy */
             }
         }
     }
     if (conflict) {
-        this._fs.kCodeABC(Lua.OP_MOVE, this._fs.freereg, v.info, 0);  /* make copy */
+        this._fs.kCodeABC(Lua.OP_MOVE, this._fs.getFreereg(), v.info, 0);  /* make copy */
         this._fs.kReserveregs(1);
     }
 };
@@ -1115,7 +1115,7 @@ Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
         this.primaryexp(nv.v);
         if (nv.v.k == Expdesc.VLOCAL)
             this.check_conflict(lh, nv.v);
-        this.assignment(nv, nvars+1);
+        this.assignment(nv, nvars + 1);
     } else {   /* assignment -> `=' explist1 */
         var nexps;
         this.checknext('='.charCodeAt());
@@ -1123,14 +1123,14 @@ Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
         if (nexps != nvars) {
             this.adjust_assign(nvars, nexps, e);
             if (nexps > nvars)
-                this._fs.freereg -= nexps - nvars;  /* remove extra values */
+                this._fs.setFreereg(this._fs.getFreereg() - (nexps - nvars));  /* remove extra values */
         } else {
             this._fs.kSetoneret(e);  /* close last expression */
             this._fs.kStorevar(lh.v, e);
             return;  /* avoid default */
         }
     }
-    e.init(Expdesc.VNONRELOC, this._fs.freereg - 1);    /* default assignment */
+    e.init(Expdesc.VNONRELOC, this._fs.getFreereg() - 1);    /* default assignment */
     this._fs.kStorevar(lh.v, e);
 };
 
@@ -1145,7 +1145,7 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
         }
         this.xNext();
         if (this._token == ')'.charCodeAt()) { // arg list is empty? 
-            args.kind = Expdesc.VVOID;
+            args.setKind(Expdesc.VVOID);
         } else {
             this.explist1(args);
             this._fs.kSetmultret(args);
@@ -1175,11 +1175,11 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
         if (args.kind != Expdesc.VVOID) {
             this._fs.kExp2nextreg(args);  // close last argument
         }
-        nparams = this._fs.freereg - (base+1);
+        nparams = this._fs.getFreereg() - (base + 1);
     }
     f.init(Expdesc.VCALL, this._fs.kCodeABC(Lua.OP_CALL, base, nparams+1, 2));
     this._fs.kFixline(line);
-    this._fs.freereg = base+1;        // call removes functions and arguments
+    this._fs.setFreereg(base + 1);        // call removes functions and arguments
                 // and leaves (unless changed) one result.
 };
 
@@ -1290,7 +1290,7 @@ Syntax.prototype.simpleexp = function(v) { // throws IOException
     switch (this._token) {
     case Syntax.TK_NUMBER:
         v.init(Expdesc.VKNUM, 0);
-        v.nval = this._tokenR;
+        v.setNval(this._tokenR);
         break;
 
     case Syntax.TK_STRING:
@@ -1531,22 +1531,22 @@ Syntax.prototype.enterblock = function(f, bl, isbreakable) {
     bl.isbreakable = isbreakable;
     bl.nactvar = f.nactvar;
     bl.upval = false;
-    bl.previous = f.bl;
-    f.bl = bl;
+    bl.previous = f.getBl();
+    f.setBl(bl);
     //# assert f.freereg == f.nactvar
 };
 
 Syntax.prototype.leaveblock = function(f) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var bl = f.bl;
-    f.bl = bl.previous;
+    var bl = f.getBl();
+    f.setBl(bl.previous);
     this.removevars(bl.nactvar);
     if (bl.upval)
         f.kCodeABC(Lua.OP_CLOSE, bl.nactvar, 0, 0);
     /* loops have no body */
     //# assert (!bl.isbreakable) || (!bl.upval)
     //# assert bl.nactvar == f.nactvar
-    f.freereg = f.nactvar;  /* free registers */
+    f.setFreereg(f.nactvar);  /* free registers */
     f.kPatchtohere(bl.breaklist);
 };
 
@@ -1635,7 +1635,7 @@ Syntax.prototype.getlocvar = function(i) {
 Syntax.prototype.adjustlocalvars = function(nvars) {
     this._fs.nactvar += nvars;
     for (; nvars != 0; nvars--) {
-        this.getlocvar(this._fs.nactvar - nvars).startpc = this._fs.pc;
+        this.getlocvar(this._fs.nactvar - nvars).setStartpc(this._fs.pc);
     }
 };
 
@@ -1765,20 +1765,20 @@ Syntax.prototype.cond = function() { // throws IOException
     /* cond -> exp */
     var v = new Expdesc() ;
     this.expr(v);  /* read condition */
-    if (v.k == Expdesc.VNIL)
-        v.k = Expdesc.VFALSE;  /* `falses' are all equal here */
+    if (v.getK() == Expdesc.VNIL)
+        v.setK(Expdesc.VFALSE);  /* `falses' are all equal here */
     this._fs.kGoiftrue(v);
-    return v.f;
+    return v.getF();
 };
 
 Syntax.prototype.open_func = function(funcstate) {
     var f = new Proto();  /* registers 0/1 are always valid */
     f.init2(this.getSource(), 2);
-    funcstate.f = f;
-    funcstate.ls = this;
-    funcstate.L = this._L;
+    funcstate.setF(f);
+    funcstate.setLs(this);
+    funcstate.setL(this._L);
 
-    funcstate.prev = this._fs;   /* linked list of funcstates */
+    funcstate.setPrev(this._fs);   /* linked list of funcstates */
     this._fs = funcstate;
 };
 
@@ -1793,7 +1793,7 @@ Syntax.prototype.localstat = function() {  // throws IOException
     if (this.testnext('='.charCodeAt())) {
         nexps = this.explist1(e);
     } else {
-        e.k = Expdesc.VVOID;
+        e.setK(Expdesc.VVOID);
         nexps = 0;
     }
     this.adjust_assign(nvars, nexps, e);
@@ -1826,7 +1826,7 @@ Syntax.prototype.forstat = function(line) { // throws IOException
 Syntax.prototype.fornum = function(varname, line) { // throws IOException
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     /* fornum -> NAME = exp1,exp1[,exp1] forbody */
-    var base = this._fs.freereg;
+    var base = this._fs.getFreereg();
     this.new_localvarliteral("(for index)", 0);
     this.new_localvarliteral("(for limit)", 1);
     this.new_localvarliteral("(for step)", 2);
@@ -1838,7 +1838,7 @@ Syntax.prototype.fornum = function(varname, line) { // throws IOException
     if (this.testnext(','.charCodeAt()))
         this.exp1();  /* optional step */
     else {   /* default step = 1 */
-        this._fs.kCodeABx(Lua.OP_LOADK, this._fs.freereg, this._fs.kNumberK(1));
+        this._fs.kCodeABx(Lua.OP_LOADK, this._fs.getFreereg(), this._fs.kNumberK(1));
         this._fs.kReserveregs(1);
     }
     this.forbody(base, line, 1, true);
@@ -1856,7 +1856,7 @@ Syntax.prototype.forlist = function(indexname) { // throws IOException
     /* forlist -> NAME {,NAME} IN explist1 forbody */
     var e = new Expdesc() ;
     var nvars = 0;
-    var base = this._fs.freereg;
+    var base = this._fs.getFreereg();
     /* create control variables */
     this.new_localvarliteral("(for generator)", nvars++);
     this.new_localvarliteral("(for state)", nvars++);
@@ -1951,12 +1951,12 @@ Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
             extra = 0;
         this._fs.kSetreturns(e, extra);  /* last exp. provides the difference */
         if (extra > 1)
-            this._fs.kReserveregs(extra-1);
+            this._fs.kReserveregs(extra - 1);
     } else {
         if (e.k != Expdesc.VVOID)
             this._fs.kExp2nextreg(e);  /* close last expression */
         if (extra > 0) {
-            var reg = this._fs.freereg;
+            var reg = this._fs.getFreereg();
             this._fs.kReserveregs(extra);
             this._fs.kNil(reg, extra);
         }
@@ -1967,13 +1967,13 @@ Syntax.prototype.localfunc = function() { // throws IOException
     var b = new Expdesc();
     this.new_localvar(this.str_checkname(), 0);
     var v = new Expdesc();
-    v.init(Expdesc.VLOCAL, this._fs.freereg);
+    v.init(Expdesc.VLOCAL, this._fs.getFreereg());
     this._fs.kReserveregs(1);
     this.adjustlocalvars(1);
     this.body(b, false, this._linenumber);
     this._fs.kStorevar(v, b);
     /* debug information will only see the variable after this point! */
-    this._fs.getlocvar(this._fs.nactvar - 1).startpc = this._fs.pc;
+    this._fs.getlocvar(this._fs.nactvar - 1).setStartpc(this._fs.pc);
 };
 
 Syntax.prototype.yindex = function(v) { // throws IOException

@@ -85,9 +85,16 @@ jscheck:
 -----------------------
 getter, setter:
 (java search: function set )
+(x) Expdesc
+...
 (x) MatchState
 (x) Proto
 (-) Slot
 (x)     set r
 (-)     set d
 (x) UpVal
+
+-----------------------
+
+todo:
+e.getStackTrace()->e.stack

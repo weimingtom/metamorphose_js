@@ -128,7 +128,7 @@ flag:
     case 'q':
     case 's':
         this._type = s.charCodeAt(i);
-        this.length = i + 1;
+        this.setLength(i + 1);
         return;
     }
     this._L.error("invalid option to 'format'");

@@ -54,7 +54,8 @@ try
         trace("Result >>> " + resultStr);
     }
 } catch (e) {
-    trace(e.getStackTrace());
+    //trace(e.getStackTrace()); //FIXME:
+    trace(e.stack);
 }
 
 })(typeof window !== 'undefined' && window.metamorphose);

@@ -177,23 +177,23 @@ FuncState.prototype.kCodeAsBx = function(o, a, bc) {
 /** Equivalent to luaK_dischargevars. */
 FuncState.prototype.kDischargevars = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    switch (e.kind) {
+    switch (e.getKind()) {
     case Expdesc.VLOCAL:
-        e.kind = Expdesc.VNONRELOC;
+        e.setKind(Expdesc.VNONRELOC);
         break;
 
     case Expdesc.VUPVAL:
-        e.reloc(this.kCodeABC(Lua.OP_GETUPVAL, 0, e.info, 0));
+        e.reloc(this.kCodeABC(Lua.OP_GETUPVAL, 0, e.getInfo(), 0));
         break;
 
     case Expdesc.VGLOBAL:
-        e.reloc(this.kCodeABx(Lua.OP_GETGLOBAL, 0, e.info));
+        e.reloc(this.kCodeABx(Lua.OP_GETGLOBAL, 0, e.getInfo()));
         break;
 
     case Expdesc.VINDEXED:
-        this.__freereg(e.aux); //TODO:
-        this.__freereg(e.info); //TODO:
-        e.reloc(this.kCodeABC(Lua.OP_GETTABLE, 0, e.info, e.aux));
+        this.__freereg(e.getAux()); //TODO:
+        this.__freereg(e.getInfo()); //TODO:
+        e.reloc(this.kCodeABC(Lua.OP_GETTABLE, 0, e.getInfo(), e.getAux()));
         break;
 
     case Expdesc.VVARARG:
@@ -299,7 +299,7 @@ FuncState.prototype.kPosfix = function(op, e1, e2) {
         /* list must be closed */
         //# assert e1.t == FuncState.NO_JUMP
         this.kDischargevars(e2);
-        e2.f = this.kConcat(e2.f, e1.f);
+        e2.setF(this.kConcat(e2.getF(), e1.getF()));
         e1.copy(e2); //TODO:
         break;
 
@@ -307,18 +307,18 @@ FuncState.prototype.kPosfix = function(op, e1, e2) {
         /* list must be closed */
         //# assert e1.f == FuncState.NO_JUMP
         this.kDischargevars(e2);
-        e2.t = this.kConcat(e2.t, e1.t);
+        e2.setT(this.kConcat(e2.getT(), e1.getT()));
         e1.copy(e2); //TODO:
         break;
 
     case Syntax.OPR_CONCAT:
         this.kExp2val(e2);
-        if (e2.k == Expdesc.VRELOCABLE && Lua.OPCODE(this.getcode(e2)) == Lua.OP_CONCAT) {
+        if (e2.getK() == Expdesc.VRELOCABLE && Lua.OPCODE(this.getcode(e2)) == Lua.OP_CONCAT) {
             //# assert e1.info == Lua.ARGB(getcode(e2))-1
             this.freeexp(e1);
-            this.setcode(e2, Lua.SETARG_B(this.getcode(e2), e1.info));
-            e1.k = e2.k;
-            e1.info = e2.info;
+            this.setcode(e2, Lua.SETARG_B(this.getcode(e2), e1.getInfo()));
+            e1.setK(e2.getK());
+            e1.setInfo(e2.getInfo());
         } else {
             this.kExp2nextreg(e2);  /* operand must be on the 'stack' */
             this.codearith(Lua.OP_CONCAT, e1, e2);
@@ -426,11 +426,11 @@ FuncState.prototype.kSetmultret = function(e) {
 /** Equivalent to luaK_setoneret. */
 FuncState.prototype.kSetoneret = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (e.kind == Expdesc.VCALL) {     // expression is an open function call?
+    if (e.getKind() == Expdesc.VCALL) {     // expression is an open function call?
         e.nonreloc(Lua.ARGA(this.getcode(e)));
-    } else if (e.kind == Expdesc.VVARARG) {
+    } else if (e.getKind() == Expdesc.VVARARG) {
         this.setargb(e, 2);
-        e.kind = Expdesc.VRELOCABLE;
+        e.setKind(Expdesc.VRELOCABLE);
     }
 };
 
@@ -465,15 +465,15 @@ FuncState.prototype.addk = function(o) {
 
 FuncState.prototype.codearith = function(op, e1, e2) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (this.constfolding(op, e1, e2))
+    if (this.constfolding(op, e1, e2)) {
         return;
-    else {
+    } else {
         var o1 = this.kExp2RK(e1);
         var o2 = (op != Lua.OP_UNM && op != Lua.OP_LEN) ? this.kExp2RK(e2) : 0;
         this.freeexp(e2);
         this.freeexp(e1);
-        e1.info = this.kCodeABC(op, 0, o1, o2);
-        e1.k = Expdesc.VRELOCABLE;
+        e1.setInfo(this.kCodeABC(op, 0, o1, o2));
+        e1.setK(Expdesc.VRELOCABLE);
     }
 };
 
@@ -528,23 +528,23 @@ FuncState.prototype.constfolding = function(op, e1, e2) {
     }
     if (isNaN(r))
         return false;  /* do not attempt to produce NaN */
-    e1.nval = r;
+    e1.setNval(r);
     return true;
 };
 
 FuncState.prototype.codenot = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kDischargevars(e);
-    switch (e.k) {
+    switch (e.getK()) {
     case Expdesc.VNIL:
     case Expdesc.VFALSE:
-        e.k = Expdesc.VTRUE;
+        e.setK(Expdesc.VTRUE);
         break;
 
     case Expdesc.VK:
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
-        e.k = Expdesc.VFALSE;
+        e.setK(Expdesc.VFALSE);
         break;
 
     case Expdesc.VJMP:
@@ -555,8 +555,8 @@ FuncState.prototype.codenot = function(e) {
     case Expdesc.VNONRELOC:
         this.discharge2anyreg(e);
         this.freeexp(e);
-        e.info = this.kCodeABC(Lua.OP_NOT, 0, e.info, 0);
-        e.k = Expdesc.VRELOCABLE;
+        e.setInfo(this.kCodeABC(Lua.OP_NOT, 0, e.getInfo(), 0));
+        e.setK(Expdesc.VRELOCABLE);
         break;
 
     default:
@@ -565,12 +565,12 @@ FuncState.prototype.codenot = function(e) {
     }
     /* interchange true and false lists */
     { 
-        var temp = e.f; 
-        e.f = e.t; 
-        e.t = temp; 
+        var temp = e.getF(); 
+        e.setF(e.getT()); 
+        e.setT(temp); 
     }
-    this.removevalues(e.f);
-    this.removevalues(e.t);
+    this.removevalues(e.getF());
+    this.removevalues(e.getT());
 };
 
 FuncState.prototype.removevalues = function(list) {
@@ -611,9 +611,9 @@ FuncState.prototype.discharge2reg = function(e, reg) {
         break;
 
     case Expdesc.VNONRELOC:
-        if (reg != e.info)
+        if (reg != e.getInfo())
         {
-          this.kCodeABC(Lua.OP_MOVE, reg, e.info, 0);
+          this.kCodeABC(Lua.OP_MOVE, reg, e.getInfo(), 0);
         }
         break;
 
@@ -629,21 +629,21 @@ FuncState.prototype.discharge2reg = function(e, reg) {
 
 FuncState.prototype.exp2reg = function(e, reg) {
     this.discharge2reg(e, reg);
-    if (e.k == Expdesc.VJMP) {
-        e.t = this.kConcat(e.t, e.info);  /* put this jump in `t' list */
+    if (e.getK() == Expdesc.VJMP) {
+        e.setT(this.kConcat(e.getT(), e.getInfo()));  /* put this jump in `t' list */
     }
     if (e.hasjumps()) {
         var p_f = FuncState.NO_JUMP;  /* position of an eventual LOAD false */
         var p_t = FuncState.NO_JUMP;  /* position of an eventual LOAD true */
-        if (this.need_value(e.t) || this.need_value(e.f)) {
-            var fj = (e.k == Expdesc.VJMP) ? FuncState.NO_JUMP : this.kJump();
+        if (this.need_value(e.getT()) || this.need_value(e.getF())) {
+            var fj = (e.getK() == Expdesc.VJMP) ? FuncState.NO_JUMP : this.kJump();
             p_f = this.code_label(reg, 0, 1);
             p_t = this.code_label(reg, 1, 0);
             this.kPatchtohere(fj);
         }
         var finalpos = this.kGetlabel(); /* position after whole expression */
-        this.patchlistaux(e.f, finalpos, reg, p_f);
-        this.patchlistaux(e.t, finalpos, reg, p_t);
+        this.patchlistaux(e.getF(), finalpos, reg, p_f);
+        this.patchlistaux(e.getT(), finalpos, reg, p_t);
     }
     e.init(Expdesc.VNONRELOC, reg);
 };
@@ -959,33 +959,35 @@ FuncState.prototype.kStorevar = function(_var, ex) {
 
 /** Equivalent to <code>luaK_indexed</code>. */
 FuncState.prototype.kIndexed = function(t, k) {
-    t.aux = this.kExp2RK(k);
-    t.k = Expdesc.VINDEXED;
+    t.setAux(this.kExp2RK(k));
+    t.setK(Expdesc.VINDEXED);
 };
 
 /** Equivalent to <code>luaK_exp2RK</code>. */
 FuncState.prototype.kExp2RK = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kExp2val(e);
-    switch (e.k) {
+    switch (e.getK()) {
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
     case Expdesc.VFALSE:
     case Expdesc.VNIL:
         if (this._nk <= Lua.MAXINDEXRK) {   /* constant fit in RK operand? */
-            e.info = (e.k == Expdesc.VNIL)  ? this.nilK() :
-                (e.k == Expdesc.VKNUM) ? this.kNumberK(e.nval) :
-                this.boolK(e.k == Expdesc.VTRUE);
-            e.k = Expdesc.VK;
-            return e.info | Lua.BITRK;
-        } else 
+            e.setInfo((e.getK() == Expdesc.VNIL)  ? this.nilK() :
+                (e.getK() == Expdesc.VKNUM) ? this.kNumberK(e.getNval()) :
+                this.boolK(e.getK() == Expdesc.VTRUE));
+            e.setK(Expdesc.VK);
+            return e.getInfo() | Lua.BITRK;
+        } else { 
             break;
+        }
 
     case Expdesc.VK:
-        if (e.info <= Lua.MAXINDEXRK)  /* constant fit in argC? */
-            return e.info | Lua.BITRK;
-        else 
+        if (e.getInfo() <= Lua.MAXINDEXRK) { /* constant fit in argC? */
+            return e.getInfo() | Lua.BITRK;
+        } else {
             break;
+        }
 
     default: 
         break;
@@ -1016,7 +1018,7 @@ FuncState.prototype.nilK = function() {
 FuncState.prototype.kGoiffalse = function(e) {
     var lj;  /* pc of last jump */
     this.kDischargevars(e);
-    switch (e.k) {
+    switch (e.getK()) {
     case Expdesc.VNIL:
     case Expdesc.VFALSE:
         lj = FuncState.NO_JUMP;  /* always false; do nothing */
@@ -1027,23 +1029,23 @@ FuncState.prototype.kGoiffalse = function(e) {
         break;
 
     case Expdesc.VJMP:
-        lj = e.info;
+        lj = e.getInfo();
         break;
 
     default:
         lj = this.jumponcond(e, true);
         break;
     }
-    e.t = this.kConcat(e.t, lj);  /* insert last jump in `t' list */
-    this.kPatchtohere(e.f);
-    e.f = FuncState.NO_JUMP;
+    e.setT(this.kConcat(e.getT(), lj));  /* insert last jump in `t' list */
+    this.kPatchtohere(e.getF());
+    e.setF(FuncState.NO_JUMP);
 };
 
 /** Equivalent to <code>luaK_goiftrue</code>. */
 FuncState.prototype.kGoiftrue = function(e) {
     var lj;  /* pc of last jump */
     this.kDischargevars(e);
-    switch (e.k) {
+    switch (e.getK()) {
     case Expdesc.VK:
     case Expdesc.VKNUM:
     case Expdesc.VTRUE:
@@ -1056,16 +1058,16 @@ FuncState.prototype.kGoiftrue = function(e) {
 
     case Expdesc.VJMP:
         this.invertjump(e);
-        lj = e.info;
+        lj = e.getInfo();
         break;
 
     default:
         lj = this.jumponcond(e, false);
         break;
     }
-    e.f = this.kConcat(e.f, lj);  /* insert last jump in `f' list */
-    this.kPatchtohere(e.t);
-    e.t = FuncState.NO_JUMP;
+    e.setF(this.kConcat(e.getF(), lj));  /* insert last jump in `f' list */
+    this.kPatchtohere(e.getT());
+    e.setT(FuncState.NO_JUMP);
 };
 
 FuncState.prototype.invertjump = function(e) {
@@ -1110,10 +1112,10 @@ FuncState.prototype.kSelf = function(e, key) {
     this.freeexp(e);
     var func = this._freereg;
     this.kReserveregs(2);
-    this.kCodeABC(Lua.OP_SELF, func, e.info, this.kExp2RK(key));
+    this.kCodeABC(Lua.OP_SELF, func, e.getInfo(), this.kExp2RK(key));
     this.freeexp(key);
-    e.info = func;
-    e.k = Expdesc.VNONRELOC;
+    e.setInfo(func);
+    e.setK(Expdesc.VNONRELOC);
 };
 
 FuncState.prototype.kSetlist = function(base, nelems, tostore) {
@@ -1143,8 +1145,8 @@ FuncState.prototype.codecomp = function(op, cond, e1, e2) {
         o2 = temp;  /* o1 <==> o2 */
         cond = true;
     }
-    e1.info = this.condjump(op, (cond ? 1 : 0), o1, o2);
-    e1.k = Expdesc.VJMP;
+    e1.setInfo(this.condjump(op, (cond ? 1 : 0), o1, o2));
+    e1.setK(Expdesc.VJMP);
 };
 
 FuncState.prototype.markupval = function(level) {
