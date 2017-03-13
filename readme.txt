@@ -89,12 +89,14 @@ getter, setter:
 ...
 (x) MatchState
 (x) Proto
-(-) Slot
+(x) Slot
 (x)     set r
-(-)     set d
+(x)     set d
 (x) UpVal
-
+(java search: function get )
+(-)
 -----------------------
 
 todo:
 e.getStackTrace()->e.stack
+as int->parseInt()

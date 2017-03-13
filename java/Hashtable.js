@@ -20,7 +20,7 @@ Hashtable.prototype.keys = function() {
     for (var key in this._dic) {
         arr.push(key);
     }
-    enum_.arr = arr;
+    enum_.setArr(arr);
     return enum_;
 };
 

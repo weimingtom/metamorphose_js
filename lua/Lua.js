@@ -971,7 +971,7 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
             this.fClose(restoreStack);   // close eventual pending closures
             this.dSeterrorobj(e.errorStatus, restoreStack);
             this._nCcalls = oldnCcalls;
-            this._civ.size = restoreCi;
+            this._civ.setSize(restoreCi);
             var ci = this.__ci();
             this._base = ci.base;
             this._savedpc = ci.savedpc;
@@ -982,7 +982,7 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
             this.fClose(restoreStack);     // close eventual pending closures
             this.dSeterrorobj(Lua.ERRMEM, restoreStack);
             this._nCcalls = oldnCcalls;
-            this._civ.size = restoreCi;
+            this._civ.setSize(restoreCi);
             var ci2 = this.__ci();
             this._base = ci2.base;
             this._savedpc = ci2.savedpc;
@@ -1176,7 +1176,7 @@ protect:
             console.log(e.getStackTrace());
             this.setStatus(e.errorStatus);   // mark thread as 'dead'
             this.dSeterrorobj(e.errorStatus, this._stackSize);
-            this.__ci().top = this._stackSize;
+            this.__ci().setTop(this._stackSize);
         }
     } while (false);
     return this.getStatus();
@@ -1952,9 +1952,9 @@ Lua.prototype.getInfo = function(what, ar) {
     var f = null;
     var callinfo = null;
     // :todo: complete me
-    if (ar.ici > 0) {  // no tail call?
-        callinfo = this._civ.elementAt(ar.ici);
-        f = (this._stack[callinfo.func]).r;
+    if (ar.getIci() > 0) {  // no tail call?
+        callinfo = this._civ.elementAt(ar.getIci());
+        f = (this._stack[callinfo.func]).getR();
         //# assert isFunction(f)
     }
     var status = this.auxgetinfo(what, ar, f, callinfo);
@@ -2024,7 +2024,7 @@ Lua.prototype.auxgetinfo = function(what, ar, f, ci) {
             break;
 
         case 'l':
-            ar.currentline = (ci != null) ? this.currentline(ci) : -1;
+            ar.setCurrentline((ci != null) ? this.currentline(ci) : -1);
             break;
 
         case 'f':       // handled by getInfo
@@ -2054,23 +2054,23 @@ Lua.prototype.currentpc = function(ci) {
         return -1;
     }
     if (ci == this.__ci()) {
-        ci.savedpc = this._savedpc;
+        ci.setSavedpc(this._savedpc);
     }
-    return Lua.pcRel(ci.savedpc);
+    return Lua.pcRel(ci.getSavedpc());
 };
 
 Lua.prototype.funcinfo = function(ar, cl) {
     if (cl instanceof LuaJavaCallback) {
-        ar.source = "=[Java]";
-        ar.linedefined = -1;
-        ar.lastlinedefined = -1;
-        ar.what = "Java";
+        ar.setSource("=[Java]");
+        ar.setLinedefined(-1);
+        ar.setLastlinedefined(-1);
+        ar.setWhat("Java");
     } else {
         var p = (cl).proto;
-        ar.source = p.source;
-        ar.linedefined = p.linedefined;
-        ar.lastlinedefined = p.lastlinedefined;
-        ar.what = ar.linedefined == 0 ? "main" : "Lua";
+        ar.setSource(p.getSource());
+        ar.setLinedefined(p.getLinedefined());
+        ar.setLastlinedefined(p.getLastlinedefined());
+        ar.setWhat(ar.linedefined == 0 ? "main" : "Lua");
     }
 };
 
@@ -2103,14 +2103,14 @@ Lua.prototype.dCallhook = function(event, line) {
             ici = 0;
         }
         var ar = new Debug(ici);
-        ar.event = event;
-        ar.currentline = line;
-        this.__ci().top = this._stackSize;
+        ar.setEvent(event);
+        ar.setCurrentline(line);
+        this.__ci().setTop(this._stackSize);
         this._allowhook = false;        // cannot call hooks inside a hook
         hook.luaHook(this, ar);
         //# assert !allowhook
         this._allowhook = true;
-        this.__ci().top = ci_top;
+        this.__ci().setTop(ci_top);
         this.stacksetsize(top);
     }
 };
@@ -3450,7 +3450,7 @@ Lua.prototype.vmPrecall = function(func, r) {
     if (!Lua.isFunction(faso)) {
         faso = this.tryfuncTM(func);
     }
-    this.__ci().savedpc = this._savedpc;
+    this.__ci().setSavedpc(this._savedpc);
     if (faso instanceof LuaFunction) {
         var f = faso;
         var p = f.proto;

@@ -376,7 +376,7 @@ LuaTable.prototype.getlua = function(key) {
 LuaTable.prototype.__getlua = function(key, value) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (key.getR() == Lua.NUMBER) {
-        var d = key.d;
+        var d = key.getD();
         if (d <= this._sizeArray && d >= 1) {
             var i = d;
             if (i == d) {
@@ -461,15 +461,15 @@ LuaTable.prototype.putluaSlot = function(L, key, value) {
     var i = Number.MAX_SAFE_INTEGER; //TODO:
 
     if (key.getR() == Lua.NUMBER) {
-        var j = key.d;
-        if (j == key.d && j >= 1) {
+        var j = key.getD();
+        if (j == key.getD() && j >= 1) {
             i = j;
             if (i <= this._sizeArray) {
                 this._array[i-1] = value;
                 return;
             }
         }
-        if (isNaN(key.d)) {
+        if (isNaN(key.getD())) {
             L.gRunerror("table index is NaN");
         }
     }
