@@ -396,8 +396,8 @@ StringLib.format = function(L) {
         } else {     // format item
             ++arg;
             var item = new FormatItem(L, strfrmt.substring(i));
-            i += item.length;
-            switch (String.fromCharCode(item.type)) {
+            i += item.getLength();
+            switch (String.fromCharCode(item.getType())) {
             case 'c':
                 item.formatChar(b, L.checkNumber(arg));
                 break;

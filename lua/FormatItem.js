@@ -306,7 +306,7 @@ FormatItem.prototype.formatFloatRawE = function(d) {
         e = 0;
     } else {
         var ei = s.indexOf('E');
-        e = parseInt(s.substring(ei+1));
+        e = parseInt(s.substring(ei + 1));
         t._delete(ei, Number.MAX_SAFE_INTEGER); //TODO:
     }
 

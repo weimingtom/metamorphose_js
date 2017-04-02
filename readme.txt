@@ -95,6 +95,7 @@ getter, setter:
 (x) UpVal
 (java search: function get )
 (x) Expdesc function get t()
+(x) FuncState function get actvar()
 (-)
 -----------------------
 
