@@ -209,17 +209,17 @@ FuncState.prototype.kDischargevars = function(e) {
 /** Equivalent to luaK_exp2anyreg. */
 FuncState.prototype.kExp2anyreg = function(e) {
     this.kDischargevars(e);
-    if (e.k == Expdesc.VNONRELOC) {
+    if (e.getK() == Expdesc.VNONRELOC) {
         if (!e.hasjumps()) {
-            return e.info;
+            return e.getInfo();
         }
-        if (e.info >= this._nactvar) {         // reg is not a local?
-            this.exp2reg(e, e.info);   // put value on it
-            return e.info;
+        if (e.getInfo() >= this._nactvar) {         // reg is not a local?
+            this.exp2reg(e, e.getInfo());   // put value on it
+            return e.getInfo();
         }
     }
     this.kExp2nextreg(e);    // default
-    return e.info;
+    return e.getInfo();
 };
 
 /** Equivalent to luaK_exp2nextreg. */
@@ -258,9 +258,9 @@ FuncState.prototype.kInfix = function(op, v) {
 };
 
 FuncState.prototype.isnumeral = function(e) {
-    return e.k == Expdesc.VKNUM &&
-        e.t == FuncState.NO_JUMP &&
-        e.f == FuncState.NO_JUMP;
+    return e.getK() == Expdesc.VKNUM &&
+        e.getT() == FuncState.NO_JUMP &&
+        e.getF() == FuncState.NO_JUMP;
 };
 
 /** Equivalent to luaK_nil. */
@@ -385,7 +385,7 @@ FuncState.prototype.kPrefix = function(op, e) {
     e2.init(Expdesc.VKNUM, 0);
     switch (op) {
     case Syntax.OPR_MINUS:
-        if (e.kind == Expdesc.VK) {
+        if (e.getKind() == Expdesc.VK) {
             this.kExp2anyreg(e);
         }
         this.codearith(Lua.OP_UNM, e, e2);
@@ -436,10 +436,10 @@ FuncState.prototype.kSetoneret = function(e) {
 
 /** Equivalent to luaK_setreturns. */
 FuncState.prototype.kSetreturns = function(e, nresults) {
-    if (e.kind == Expdesc.VCALL) {     // expression is an open function call?
-        this.setargc(e, nresults+1);
-    } else if (e.kind == Expdesc.VVARARG) {
-        this.setargb(e, nresults+1);
+    if (e.getKind() == Expdesc.VCALL) {     // expression is an open function call?
+        this.setargc(e, nresults + 1);
+    } else if (e.getKind() == Expdesc.VVARARG) {
+        this.setargb(e, nresults + 1);
         this.setarga(e, this._freereg);
         this.kReserveregs(1);
     }
@@ -483,8 +483,8 @@ FuncState.prototype.constfolding = function(op, e1, e2) {
     if (!this.isnumeral(e1) || !this.isnumeral(e2))
         return false;
 
-    var v1 = e1.nval;
-    var v2 = e2.nval;
+    var v1 = e1.getNval();
+    var v2 = e2.getNval();
     switch (op) {
     case Lua.OP_ADD: 
         r = v1 + v2; 
@@ -588,22 +588,22 @@ FuncState.prototype.dischargejpc = function() {
 FuncState.prototype.discharge2reg = function(e, reg) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     this.kDischargevars(e);
-    switch (e.k) {
+    switch (e.getK()) {
     case Expdesc.VNIL:
         this.kNil(reg, 1);
         break;
 
     case Expdesc.VFALSE:
     case Expdesc.VTRUE:
-        this.kCodeABC(Lua.OP_LOADBOOL, reg, (e.k == Expdesc.VTRUE ? 1 : 0), 0);
+        this.kCodeABC(Lua.OP_LOADBOOL, reg, (e.getK() == Expdesc.VTRUE ? 1 : 0), 0);
         break;
 
     case Expdesc.VK:
-        this.kCodeABx(Lua.OP_LOADK, reg, e.info);
+        this.kCodeABx(Lua.OP_LOADK, reg, e.getInfo());
         break;
 
     case Expdesc.VKNUM:
-        this.kCodeABx(Lua.OP_LOADK, reg, this.kNumberK(e.nval));
+        this.kCodeABx(Lua.OP_LOADK, reg, this.kNumberK(e.getNval()));
         break;
 
     case Expdesc.VRELOCABLE:
@@ -611,15 +611,14 @@ FuncState.prototype.discharge2reg = function(e, reg) {
         break;
 
     case Expdesc.VNONRELOC:
-        if (reg != e.getInfo())
-        {
-          this.kCodeABC(Lua.OP_MOVE, reg, e.getInfo(), 0);
+        if (reg != e.getInfo()) {
+            this.kCodeABC(Lua.OP_MOVE, reg, e.getInfo(), 0);
         }
         break;
 
     case Expdesc.VVOID:
     case Expdesc.VJMP:
-        return ;
+        return;
 
     default:
         //# assert false
@@ -670,8 +669,8 @@ FuncState.prototype.need_value = function(list) {
 };
 
 FuncState.prototype.freeexp = function(e) {
-    if (e.kind == Expdesc.VNONRELOC) {
-        this.__freereg(e.info);
+    if (e.getKind() == Expdesc.VNONRELOC) {
+        this.__freereg(e.getInfo());
     }
 };
 
@@ -692,11 +691,11 @@ FuncState.prototype.__freereg = function(reg) {
 };
 
 FuncState.prototype.getcode = function(e) {
-    return this._f.code[e.info];
+    return this._f.code[e.getInfo()];
 };
 
 FuncState.prototype.setcode = function(e, code) {
-    this._f.code[e.info] = code ;
+    this._f.code[e.getInfo()] = code;
 };
 
 /** Equivalent to searchvar from lparser.c */
@@ -711,21 +710,21 @@ FuncState.prototype.searchvar = function(n) {
 
 FuncState.prototype.setarga = function(e, a) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var at = e.info;
+    var at = e.getInfo();
     var code = this._f.code; //int[] 
     code[at] = Lua.SETARG_A(code[at], a);
 };
 
 FuncState.prototype.setargb = function(e, b) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var at = e.info;
+    var at = e.getInfo();
     var code = this._f.code; //int[] 
     code[at] = Lua.SETARG_B(code[at], b);
 };
 
 FuncState.prototype.setargc = function(e, c) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var at = e.info;
+    var at = e.getInfo();
     var code = this._f.code; //int[]
     code[at] = Lua.SETARG_C(code[at], c);
 };
@@ -918,32 +917,32 @@ FuncState.prototype.kJump = function() {
 /** Equivalent to <code>luaK_storevar</code>. */
 FuncState.prototype.kStorevar = function(_var, ex) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    switch (_var.k) {
+    switch (_var.getK()) {
     case Expdesc.VLOCAL:
         {
             this.freeexp(ex);
-            this.exp2reg(ex, _var.info);
+            this.exp2reg(ex, _var.getInfo());
             return;
         }
 
     case Expdesc.VUPVAL:
         {
             var e = this.kExp2anyreg(ex);
-            this.kCodeABC(Lua.OP_SETUPVAL, e, _var.info, 0);
+            this.kCodeABC(Lua.OP_SETUPVAL, e, _var.getInfo(), 0);
             break;
         }
 
     case Expdesc.VGLOBAL:
         {
             var e2 = this.kExp2anyreg(ex);
-            this.kCodeABx(Lua.OP_SETGLOBAL, e2, _var.info);
+            this.kCodeABx(Lua.OP_SETGLOBAL, e2, _var.getInfo());
             break;
         }
 
     case Expdesc.VINDEXED:
         {
             var e3 = this.kExp2RK(ex);
-            this.kCodeABC(Lua.OP_SETTABLE, _var.info, _var.aux, e3);
+            this.kCodeABC(Lua.OP_SETTABLE, _var.getInfo(), _var.getAux(), e3);
             break;
         }
 
@@ -973,7 +972,7 @@ FuncState.prototype.kExp2RK = function(e) {
     case Expdesc.VFALSE:
     case Expdesc.VNIL:
         if (this._nk <= Lua.MAXINDEXRK) {   /* constant fit in RK operand? */
-            e.setInfo((e.getK() == Expdesc.VNIL)  ? this.nilK() :
+            e.setInfo((e.getK() == Expdesc.VNIL) ? this.nilK() :
                 (e.getK() == Expdesc.VKNUM) ? this.kNumberK(e.getNval()) :
                 this.boolK(e.getK() == Expdesc.VTRUE));
             e.setK(Expdesc.VK);
@@ -1072,16 +1071,16 @@ FuncState.prototype.kGoiftrue = function(e) {
 
 FuncState.prototype.invertjump = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var at = this.getjumpcontrol(e.info);
+    var at = this.getjumpcontrol(e.getInfo());
     var code = this._f.code; //int []
-    var instr = code[at] ;
+    var instr = code[at];
     //# assert testTMode(Lua.OPCODE(instr)) && Lua.OPCODE(instr) != Lua.OP_TESTSET && Lua.OPCODE(instr) != Lua.OP_TEST
     code[at] = Lua.SETARG_A(instr, (Lua.ARGA(instr) == 0 ? 1 : 0));
 };
 
 FuncState.prototype.jumponcond = function(e, cond) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (e.k == Expdesc.VRELOCABLE) {
+    if (e.getK() == Expdesc.VRELOCABLE) {
         var ie = this.getcode(e);
         if (Lua.OPCODE(ie) == Lua.OP_NOT) {
             this._pc--;  /* remove previous OP_NOT */
@@ -1091,7 +1090,7 @@ FuncState.prototype.jumponcond = function(e, cond) {
     }
     this.discharge2anyreg(e);
     this.freeexp(e);
-    return this.condjump(Lua.OP_TESTSET, Lua.NO_REG, e.info, cond ? 1 : 0);
+    return this.condjump(Lua.OP_TESTSET, Lua.NO_REG, e.getInfo(), cond ? 1 : 0);
 };
 
 FuncState.prototype.condjump = function(op, a, b, c) {
@@ -1100,7 +1099,7 @@ FuncState.prototype.condjump = function(op, a, b, c) {
 };
 
 FuncState.prototype.discharge2anyreg = function(e) {
-    if (e.k != Expdesc.VNONRELOC) {
+    if (e.getK() != Expdesc.VNONRELOC) {
         this.kReserveregs(1);
         this.discharge2reg(e, this._freereg - 1);
     }

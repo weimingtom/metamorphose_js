@@ -94,6 +94,7 @@ getter, setter:
 (x)     set d
 (x) UpVal
 (java search: function get )
+(x) Expdesc function get t()
 (-)
 -----------------------
 

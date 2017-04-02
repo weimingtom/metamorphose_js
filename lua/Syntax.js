@@ -1016,7 +1016,7 @@ Syntax.prototype.recfield = function(cc) {  //throws IOException
     this.checknext('='.charCodeAt());
     this._fs.kExp2RK(key);
     this.expr(val);
-    this._fs.kCodeABC(Lua.OP_SETTABLE, cc.t.info, this._fs.kExp2RK(key), this._fs.kExp2RK(val));
+    this._fs.kCodeABC(Lua.OP_SETTABLE, cc.t.getInfo(), this._fs.kExp2RK(key), this._fs.kExp2RK(val));
     this._fs.setFreereg(reg);  /* free registers */
 };
 
@@ -1024,14 +1024,14 @@ Syntax.prototype.lastlistfield = function(cc) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (cc.tostore == 0)
         return;
-    if (Syntax.hasmultret(cc.v.k)) {
+    if (Syntax.hasmultret(cc.v.getK())) {
         this._fs.kSetmultret(cc.v);
-        this._fs.kSetlist(cc.t.info, cc.na, Lua.MULTRET);
+        this._fs.kSetlist(cc.t.getInfo(), cc.na, Lua.MULTRET);
         cc.na--;  /* do not count last expression (unknown number of elements) */
     } else {
-        if (cc.v.k != Expdesc.VVOID)
+        if (cc.v.getK() != Expdesc.VVOID)
             this._fs.kExp2nextreg(cc.v);
-        this._fs.kSetlist(cc.t.info, cc.na, cc.tostore);
+        this._fs.kSetlist(cc.t.getInfo(), cc.na, cc.tostore);
     }
 };
 
@@ -1068,7 +1068,7 @@ Syntax.prototype.exprstat = function() { // throws IOException
     // stat -> func | assignment
     var v = new LHSAssign();
     this.primaryexp(v.v);
-    if (v.v.k == Expdesc.VCALL) {     // stat -> func
+    if (v.v.getK() == Expdesc.VCALL) {     // stat -> func
         this._fs.setargc(v.v, 1); // call statement uses no results
     } else {     // stat -> assignment
         v.setPrev(null);
@@ -1087,7 +1087,7 @@ Syntax.prototype.check_conflict = function(lh, v) {
     var extra = this._fs.getFreereg();  /* eventual position to save local variable */
     var conflict = false ;
     for (; lh != null; lh = lh.prev) {
-        if (lh.v.k == Expdesc.VINDEXED) {
+        if (lh.v.getK() == Expdesc.VINDEXED) {
             if (lh.v.getInfo() == v.getInfo()) {   /* conflict? */
               conflict = true;
               lh.v.setInfo(extra);  /* previous assignment will use safe copy */
@@ -1099,21 +1099,21 @@ Syntax.prototype.check_conflict = function(lh, v) {
         }
     }
     if (conflict) {
-        this._fs.kCodeABC(Lua.OP_MOVE, this._fs.getFreereg(), v.info, 0);  /* make copy */
+        this._fs.kCodeABC(Lua.OP_MOVE, this._fs.getFreereg(), v.getInfo(), 0);  /* make copy */
         this._fs.kReserveregs(1);
     }
 };
 
 Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
     var e = new Expdesc();
-    var kind = lh.v.k;
+    var kind = lh.v.getK();
     if (!(Expdesc.VLOCAL <= kind && kind <= Expdesc.VINDEXED))
         this.xSyntaxerror("syntax error");
     if (this.testnext(','.charCodeAt())) {   /* assignment -> `,' primaryexp assignment */
         var nv = new LHSAssign();
         nv.init(lh); //TODO:
         this.primaryexp(nv.v);
-        if (nv.v.k == Expdesc.VLOCAL)
+        if (nv.v.getK() == Expdesc.VLOCAL)
             this.check_conflict(lh, nv.v);
         this.assignment(nv, nvars + 1);
     } else {   /* assignment -> `=' explist1 */
@@ -1168,11 +1168,11 @@ Syntax.prototype.funcargs = function(f) { // throws IOException
     }
     // assert (f.kind() == VNONRELOC);
     var nparams;
-    var base = f.info;        // base register for call
+    var base = f.getInfo();        // base register for call
     if (args.hasmultret()) {
         nparams = Lua.MULTRET;     // open call
     } else {
-        if (args.kind != Expdesc.VVOID) {
+        if (args.getKind() != Expdesc.VVOID) {
             this._fs.kExp2nextreg(args);  // close last argument
         }
         nparams = this._fs.getFreereg() - (base + 1);
@@ -1262,9 +1262,9 @@ Syntax.prototype.retstat = function() { // throws IOException
     } else {
         var e = new Expdesc();
         nret = this.explist1(e);
-        if (Syntax.hasmultret(e.k)) {
+        if (Syntax.hasmultret(e.getK())) {
             this._fs.kSetmultret(e);
-            if (e.k == Expdesc.VCALL && nret == 1) {   /* tail call? */
+            if (e.getK() == Expdesc.VCALL && nret == 1) {   /* tail call? */
                 this._fs.setcode(e, Lua.SET_OPCODE(this._fs.getcode(e), Lua.OP_TAILCALL));
                 //# assert Lua.ARGA(fs.getcode(e)) == fs.nactvar
             }
@@ -1847,7 +1847,7 @@ Syntax.prototype.fornum = function(varname, line) { // throws IOException
 Syntax.prototype.exp1 = function() { // throws IOException
     var e = new Expdesc();
     this.expr(e);
-    var k = e.k;
+    var k = e.getK();
     this._fs.kExp2nextreg(e);
     return k;
 };
@@ -1945,7 +1945,7 @@ Syntax.hasmultret = function(k) {
 
 Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
     var extra = nvars - nexps;
-    if (Syntax.hasmultret(e.k)) {
+    if (Syntax.hasmultret(e.getK())) {
         extra++;  /* includes call itself */
         if (extra < 0)
             extra = 0;
@@ -1953,7 +1953,7 @@ Syntax.prototype.adjust_assign = function(nvars, nexps, e) {
         if (extra > 1)
             this._fs.kReserveregs(extra - 1);
     } else {
-        if (e.k != Expdesc.VVOID)
+        if (e.getK() != Expdesc.VVOID)
             this._fs.kExp2nextreg(e);  /* close last expression */
         if (extra > 0) {
             var reg = this._fs.getFreereg();
@@ -2005,7 +2005,7 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     var oldsize = f.sizeupvalues;
     for (var i = 0; i < f.nups; i++) {
         var entry = funcstate.upvalues[i];
-        if (this.UPVAL_K(entry) == v.k && this.UPVAL_INFO(entry) == v.info) {
+        if (this.UPVAL_K(entry) == v.getK() && this.UPVAL_INFO(entry) == v.getInfo()) {
             //# assert name.equals(f.upvalues[i])
             return i;
         }
@@ -2015,7 +2015,7 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     f.ensureUpvals(this._L, f.nups);
     f.upvalues[f.nups] = name;
     //# assert v.k == Expdesc.VLOCAL || v.k == Expdesc.VUPVAL
-    funcstate.upvalues[f.nups] = this.UPVAL_ENCODE(v.k, v.info) ;
+    funcstate.upvalues[f.nups] = this.UPVAL_ENCODE(v.getK(), v.getInfo()) ;
     return f.nups++;
 };
 

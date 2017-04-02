@@ -957,7 +957,7 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
     this.apiChecknelems(nargs + 1);
     var restoreStack = this._stackSize - (nargs + 1);
     // Most of this code comes from luaD_pcall
-    var restoreCi = this._civ.size;
+    var restoreCi = this._civ.getSize();
     var oldnCcalls = this._nCcalls;
     var old_errfunc = this._errfunc;
     this._errfunc = ef;
@@ -973,8 +973,8 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
             this._nCcalls = oldnCcalls;
             this._civ.setSize(restoreCi);
             var ci = this.__ci();
-            this._base = ci.base;
-            this._savedpc = ci.savedpc;
+            this._base = ci.getBase();
+            this._savedpc = ci.getSavedpc();
             this._allowhook = old_allowhook;
             errorStatus = e.errorStatus;
         } else if (e instanceof OutOfMemoryError) {
@@ -984,8 +984,8 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
             this._nCcalls = oldnCcalls;
             this._civ.setSize(restoreCi);
             var ci2 = this.__ci();
-            this._base = ci2.base;
-            this._savedpc = ci2.savedpc;
+            this._base = ci2.getBase();
+            this._savedpc = ci2.getSavedpc();
             this._allowhook = old_allowhook;
             errorStatus = Lua.ERRMEM;
         } else {
@@ -1146,7 +1146,7 @@ Lua.prototype.resume = function(narg) {
     if (this.getStatus() != Lua.YIELD) {
         if (this.getStatus() != 0)
             return this.resume_error("cannot resume dead coroutine");
-        else if (this._civ.size != 1)
+        else if (this._civ.getSize() != 1)
             return this.resume_error("cannot resume non-suspended coroutine");
     }
     // assert errfunc == 0 && nCcalls == 0;
@@ -1167,11 +1167,11 @@ protect:
                     // finish interrupted execution of 'OP_CALL'
                     // assert ...
                     if (this.vmPoscall(firstArg))      // complete it...
-                        this.stacksetsize(this.__ci().top);  // and correct top
+                        this.stacksetsize(this.__ci().getTop());  // and correct top
                 } else    // yielded inside a hook: just continue its execution
-                    this._base = this.__ci().base;
+                    this._base = this.__ci().getBase();
             }
-            this.vmExecute(this._civ.size - 1);
+            this.vmExecute(this._civ.getSize() - 1);
         } catch (e) {
             console.log(e.getStackTrace());
             this.setStatus(e.errorStatus);   // mark thread as 'dead'
@@ -1921,8 +1921,8 @@ Lua.prototype.where = function(level) {
     var ar = this.getStack(level);         // check function at level
     if (ar != null) {
         this.getInfo("Sl", ar);                // get info about it
-        if (ar.currentline > 0) {        // is there info?
-            return ar.shortsrc + ":" + ar.currentline + ": ";
+        if (ar.getCurrentline() > 0) {        // is there info?
+            return ar.getShortsrc() + ":" + ar.getCurrentline() + ": ";
         }
     }
     return "";  // else, no information available...
@@ -1954,7 +1954,7 @@ Lua.prototype.getInfo = function(what, ar) {
     // :todo: complete me
     if (ar.getIci() > 0) {  // no tail call?
         callinfo = this._civ.elementAt(ar.getIci());
-        f = (this._stack[callinfo.func]).getR();
+        f = (this._stack[callinfo.getFunc()]).getR();
         //# assert isFunction(f)
     }
     var status = this.auxgetinfo(what, ar, f, callinfo);
@@ -1979,11 +1979,11 @@ Lua.prototype.getInfo = function(what, ar) {
 Lua.prototype.getStack = function(level) {
     var ici;    // Index of CallInfo
 
-    for (ici = this._civ.size - 1; level > 0 && ici > 0; --ici) {
+    for (ici = this._civ.getSize() - 1; level > 0 && ici > 0; --ici) {
         var ci = this._civ.elementAt(ici);
         --level;
         if (this.isLua(ci)) {                   // Lua function?
-            level -= ci.tailcalls;        // skip lost tail calls
+            level -= ci.getTailcalls();        // skip lost tail calls
         }
     }
     if (level == 0 && ici > 0) {         // level found?
@@ -2043,7 +2043,7 @@ Lua.prototype.currentline = function(ci) {
     if (pc < 0) {
         return -1;        // only active Lua functions have current-line info
     } else {
-        var faso = (this._stack[ci.func]).getR();
+        var faso = (this._stack[ci.getFunc()]).getR();
         var f = faso;
         return f.proto.getline(pc);
     }
@@ -2070,13 +2070,13 @@ Lua.prototype.funcinfo = function(ar, cl) {
         ar.setSource(p.getSource());
         ar.setLinedefined(p.getLinedefined());
         ar.setLastlinedefined(p.getLastlinedefined());
-        ar.setWhat(ar.linedefined == 0 ? "main" : "Lua");
+        ar.setWhat(ar.getLinedefined() == 0 ? "main" : "Lua");
     }
 };
 
 /** Equivalent to macro isLua _and_ f_isLua from lstate.h. */
 Lua.prototype.isLua = function(callinfo) {
-    var f = (this._stack[callinfo.func]).getR();
+    var f = (this._stack[callinfo.getFunc()]).getR();
     return f instanceof LuaFunction;
 };
 
@@ -2097,8 +2097,8 @@ Lua.prototype.dCallhook = function(event, line) {
     var hook = this._hook;
     if (hook != null && this._allowhook) {
         var top = this._stackSize;
-        var ci_top = this.__ci().top;
-        var ici = this._civ.size - 1;
+        var ci_top = this.__ci().getTop();
+        var ici = this._civ.getSize() - 1;
         if (event == Lua.HOOKTAILRET) { // not supported yet
             ici = 0;
         }
@@ -2518,7 +2518,7 @@ Lua.prototype.RK = function(k/*Slot[] */, field) {
 * to avoid having a constant array passed around too much.
 */
 Lua.prototype.__RK = function(field) {
-    var _function = (this._stack[this.__ci().func]).getR();
+    var _function = (this._stack[this.__ci().getFunc()]).getR();
     var k = _function.proto.constant; //Slot[]
     return this.RK(k, field);
 };
@@ -2718,7 +2718,7 @@ Lua.prototype.vmExecute = function(nexeccalls) {
 reentry:
     while (true) {
         // assert stack[ci.function()].r instanceof LuaFunction;
-        var _function = (this._stack[this.__ci().func]).getR();
+        var _function = (this._stack[this.__ci().getFunc()]).getR();
         var proto = _function.proto;
         var code = proto.code; //int[]
         var k = proto.constant; //Slot[] 
@@ -3073,7 +3073,7 @@ reentry:
                     case Lua.PCRJ:
                         // Was Java function called by precall, adjust result
                         if (nresults >= 0) {
-                            this.stacksetsize(this.__ci().top);
+                            this.stacksetsize(this.__ci().getTop());
                         }
                         continue;
 
@@ -3094,12 +3094,12 @@ reentry:
                     case Lua.PCRLUA:
                         {
                             // tail call: put new frame in place of previous one.
-                            var ci = this._civ.elementAt(this._civ.size - 2);
-                            var func = ci.func;
+                            var ci = this._civ.elementAt(this._civ.getSize() - 2);
+                            var func = ci.getFunc();
                             var fci = this.__ci();    // Fresh CallInfo
-                            var pfunc = fci.func;
-                            this.fClose(ci.base);
-                            this._base = func + (fci.base - pfunc);
+                            var pfunc = fci.getFunc();
+                            this.fClose(ci.getBase());
+                            this._base = func + (fci.getBase() - pfunc);
                             var aux;        // loop index is used after loop ends
                             for (aux = 0; pfunc + aux < this._stackSize; ++aux) {
                                 // move frame down
@@ -3140,7 +3140,7 @@ reentry:
                         return;
                     }
                     if (adjust) {
-                        this.stacksetsize(this.__ci().top);
+                        this.stacksetsize(this.__ci().getTop());
                     }
                     continue reentry;
                 }
@@ -3197,7 +3197,7 @@ reentry:
                     this.stacksetsize(cb + 3);
                     this._savedpc = pc; // Protect
                     this.vmCall(cb, Lua.ARGC(i));
-                    this.stacksetsize(this.__ci().top);
+                    this.stacksetsize(this.__ci().getTop());
                     if (Lua.NIL != (this._stack[cb]).getR()) {    // continue loop
                         (this._stack[cb - 1]).setR((this._stack[cb]).getR());
                         (this._stack[cb - 1]).setD((this._stack[cb]).getD());
@@ -3228,7 +3228,7 @@ reentry:
                         t3.putnum(last--, val);
                     }
                     if (setstack) {
-                        this.stacksetsize(this.__ci().top);
+                        this.stacksetsize(this.__ci().getTop());
                     }
                     continue;
                 }
@@ -3260,7 +3260,7 @@ reentry:
             case Lua.OP_VARARG:
                 {
                     var b_VARARG = Lua.ARGB(i) - 1;
-                    var n_VARARG = (this._base - this.__ci().func) -
+                    var n_VARARG = (this._base - this.__ci().getFunc()) -
                         _function.proto.numparams - 1;
                     if (b_VARARG == Lua.MULTRET) {
                         // :todo: Protect
@@ -3410,10 +3410,10 @@ Lua.prototype.vmPoscall = function(firstResult) {
     // instruction), and this.ci is the CallInfo record for the function
     // we are returning to.
     var res = lci.res();
-    var wanted = lci.nresults;        // Caution: wanted could be == MULTRET
+    var wanted = lci.getNresults();        // Caution: wanted could be == MULTRET
     var cci = this.__ci();        // Continuation CallInfo
-    this._base = cci.base;
-    this._savedpc = cci.savedpc;
+    this._base = cci.getBase();
+    this._savedpc = cci.getSavedpc();
     // Move results (and pad with nils to required number if necessary)
     var i = wanted;
     var top = this._stackSize;
@@ -3931,7 +3931,7 @@ Lua.prototype.dec_ci = function() {
 
 /** Equivalent to resume_error from ldo.c */
 Lua.prototype.resume_error = function(msg) {
-    this.stacksetsize(this.__ci().base);
+    this.stacksetsize(this.__ci().getBase());
     this.stackAdd(msg);
     return Lua.ERRRUN;
 };
@@ -3974,7 +3974,7 @@ Lua.uDump = function(f, writer, strip) { //throws IOException
     var d = new DumpState(new DataOutputStream(writer), strip) ;
     d.DumpHeader();
     d.DumpFunction(f, null);
-    d.writer.flush();
+    d.getWriter().flush();
     return 0;   // Any errors result in thrown exceptions.
 };
 
