@@ -987,7 +987,7 @@ Syntax.prototype.constructor = function(t) { // throws IOException
     } while (this.testnext(','.charCodeAt()) || this.testnext(';'.charCodeAt()));
     this.check_match('}'.charCodeAt(), '{'.charCodeAt(), line);
     this.lastlistfield(cc);
-    var code = this._fs.getF().code; //int [] 
+    var code = this._fs.getF().getCode(); //int [] 
     code[pc] = Lua.SETARG_B(code[pc], Syntax.oInt2fb(cc.na)); /* set initial array size */
     code[pc] = Lua.SETARG_C(code[pc], Syntax.oInt2fb(cc.nh)); /* set initial table size */
 };
@@ -1068,9 +1068,9 @@ Syntax.prototype.explist1 = function(v) { // throws IOException
 Syntax.prototype.exprstat = function() { // throws IOException
     // stat -> func | assignment
     var v = new LHSAssign();
-    this.primaryexp(v.v);
-    if (v.v.getK() == Expdesc.VCALL) {     // stat -> func
-        this._fs.setargc(v.v, 1); // call statement uses no results
+    this.primaryexp(v.getV());
+    if (v.getV().getK() == Expdesc.VCALL) {     // stat -> func
+        this._fs.setargc(v.getV(), 1); // call statement uses no results
     } else {     // stat -> assignment
         v.setPrev(null);
         this.assignment(v, 1);
@@ -1086,16 +1086,16 @@ Syntax.prototype.exprstat = function() { // throws IOException
 Syntax.prototype.check_conflict = function(lh, v) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var extra = this._fs.getFreereg();  /* eventual position to save local variable */
-    var conflict = false ;
-    for (; lh != null; lh = lh.prev) {
-        if (lh.v.getK() == Expdesc.VINDEXED) {
-            if (lh.v.getInfo() == v.getInfo()) {   /* conflict? */
-              conflict = true;
-              lh.v.setInfo(extra);  /* previous assignment will use safe copy */
+    var conflict = false;
+    for (; lh != null; lh = lh.getPrev()) {
+        if (lh.getV().getK() == Expdesc.VINDEXED) {
+            if (lh.getV().getInfo() == v.getInfo()) {   /* conflict? */
+                conflict = true;
+                lh.getV().setInfo(extra);  /* previous assignment will use safe copy */
             }
-            if (lh.v.getAux() == v.getInfo()) {   /* conflict? */
-              conflict = true;
-              lh.v.setAux(extra);  /* previous assignment will use safe copy */
+            if (lh.getV().getAux() == v.getInfo()) {   /* conflict? */
+                conflict = true;
+                lh.getV().setAux(extra);  /* previous assignment will use safe copy */
             }
         }
     }
@@ -1107,15 +1107,15 @@ Syntax.prototype.check_conflict = function(lh, v) {
 
 Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
     var e = new Expdesc();
-    var kind = lh.v.getK();
+    var kind = lh.getV().getK();
     if (!(Expdesc.VLOCAL <= kind && kind <= Expdesc.VINDEXED))
         this.xSyntaxerror("syntax error");
     if (this.testnext(','.charCodeAt())) {   /* assignment -> `,' primaryexp assignment */
         var nv = new LHSAssign();
         nv.init(lh); //TODO:
-        this.primaryexp(nv.v);
-        if (nv.v.getK() == Expdesc.VLOCAL)
-            this.check_conflict(lh, nv.v);
+        this.primaryexp(nv.getV());
+        if (nv.getV().getK() == Expdesc.VLOCAL)
+            this.check_conflict(lh, nv.getV());
         this.assignment(nv, nvars + 1);
     } else {   /* assignment -> `=' explist1 */
         var nexps;
@@ -1127,12 +1127,12 @@ Syntax.prototype.assignment = function(lh, nvars) { // throws IOException
                 this._fs.setFreereg(this._fs.getFreereg() - (nexps - nvars));  /* remove extra values */
         } else {
             this._fs.kSetoneret(e);  /* close last expression */
-            this._fs.kStorevar(lh.v, e);
+            this._fs.kStorevar(lh.getV(), e);
             return;  /* avoid default */
         }
     }
     e.init(Expdesc.VNONRELOC, this._fs.getFreereg() - 1);    /* default assignment */
-    this._fs.kStorevar(lh.v, e);
+    this._fs.kStorevar(lh.getV(), e);
 };
 
 Syntax.prototype.funcargs = function(f) { // throws IOException
@@ -1311,7 +1311,7 @@ Syntax.prototype.simpleexp = function(v) { // throws IOException
         break;
 
     case Syntax.TK_DOTS:  /* vararg */
-        if (!this._fs.getF().isVararg)
+        if (!this._fs.getF().getIsVararg())
             this.xSyntaxerror("cannot use \"...\" outside a vararg function");
         v.init(Expdesc.VVARARG, this._fs.kCodeABC(Lua.OP_VARARG, 0, 1, 0));
         break;
@@ -1630,7 +1630,7 @@ Syntax.prototype.parlist = function() { // throws IOException
 
 Syntax.prototype.getlocvar = function(i) {
     var fstate = this._fs;
-    return fstate.getF().locvars[fstate.getActvar()[i]] ;
+    return fstate.getF().getLocvars()[fstate.getActvar()[i]] ;
 };
 
 Syntax.prototype.adjustlocalvars = function(nvars) {
@@ -1645,9 +1645,9 @@ Syntax.prototype.new_localvarliteral = function(v, n) {
 };
 
 Syntax.prototype.errorlimit = function(limit, what) {
-    var msg = this._fs.getF().linedefined == 0 ?
+    var msg = this._fs.getF().getLinedefined() == 0 ?
         "main function has more than " + limit + " " + what :
-        "function at line " + this._fs.getF().linedefined + " has more than " + limit + " " + what;
+        "function at line " + this._fs.getF().getLinedefined() + " has more than " + limit + " " + what;
     this.xLexerror(msg, 0);
 };
 
@@ -1665,7 +1665,7 @@ Syntax.prototype.new_localvar = function(name, n) {
 Syntax.prototype.registerlocalvar = function(varname) {
     var f = this._fs.getF();
     f.ensureLocvars(this._L, this._fs.getNlocvars(), /*Short*/Number.MAX_SAFE_INTEGER) ; //TODO:
-    f.locvars[this._fs.getNlocvars()].varname = varname;
+    (f.getLocvars()[this._fs.getNlocvars()]).setVarname(varname); //FIXME:.varname
     //return this._fs.nlocvars++;
     var result = this._fs.getNlocvars();
     this._fs.setNlocvars(this._fs.getNlocvars() + 1);
@@ -1710,10 +1710,10 @@ Syntax.prototype.pushclosure = function(func, v) {
     var f = this._fs.getF();
     f.ensureProtos(this._L, this._fs.getNp()) ;
     var ff = func.getF();
-    f.p[this._fs.getNp()] = ff;
+    f.getP()[this._fs.getNp()] = ff;
     this._fs.setNp(this._fs.getNp() + 1);
     v.init(Expdesc.VRELOCABLE, this._fs.kCodeABx(Lua.OP_CLOSURE, 0, this._fs.getNp() - 1));
-    for (var i = 0; i < ff.nups; i++) {
+    for (var i = 0; i < ff.getNups(); i++) {
         var upvalue = func.getUpvalues()[i] ;
         var o = (this.UPVAL_K(upvalue) == Expdesc.VLOCAL) ? Lua.OP_MOVE :
                                                      Lua.OP_GETUPVAL;
@@ -2007,8 +2007,8 @@ Syntax.prototype.listfield = function(cc) { // throws IOException
 Syntax.prototype.indexupvalue = function(funcstate, name, v) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var f = funcstate.getF();
-    var oldsize = f.sizeupvalues;
-    for (var i = 0; i < f.nups; i++) {
+    var oldsize = f.getSizeupvalues();
+    for (var i = 0; i < f.getNups(); i++) {
         var entry = funcstate.getUpvalues()[i];
         if (this.UPVAL_K(entry) == v.getK() && this.UPVAL_INFO(entry) == v.getInfo()) {
             //# assert name.equals(f.upvalues[i])
@@ -2016,12 +2016,15 @@ Syntax.prototype.indexupvalue = function(funcstate, name, v) {
         }
     }
     /* new one */
-    this.yChecklimit(f.nups + 1, Lua.MAXUPVALUES, "upvalues");
-    f.ensureUpvals(this._L, f.nups);
-    f.upvalues[f.nups] = name;
+    this.yChecklimit(f.getNups() + 1, Lua.MAXUPVALUES, "upvalues");
+    f.ensureUpvals(this._L, f.getNups());
+    f.getUpvalues()[f.getNups()] = name;
     //# assert v.k == Expdesc.VLOCAL || v.k == Expdesc.VUPVAL
-    funcstate.getUpvalues()[f.nups] = this.UPVAL_ENCODE(v.getK(), v.getInfo()) ;
-    return f.nups++;
+    funcstate.getUpvalues()[f.getNups()] = this.UPVAL_ENCODE(v.getK(), v.getInfo()) ;
+    //f.nups++
+    var result = f.getNups();
+    f.setNups(f.getNups() + 1);
+    return result;
 };
 
 //新增

@@ -100,8 +100,8 @@ var FuncState = function(ls) {
     this._actvar = new Array(Lua.MAXVARS); //short[] 
 
     this._f = new Proto();
-    this._f.init2(ls.source, 2); // default value for maxstacksize=2
-    this._L = ls.L ;
+    this._f.init2(ls.getSource(), 2); // default value for maxstacksize=2
+    this._L = ls.getL();
     this._ls = ls;
     //    prev = ls.linkfs(this);
 };
@@ -126,7 +126,7 @@ FuncState.prototype.close = function() {
 * Accesses <code>LocVar</code>s of the {@link Proto}.
 */
 FuncState.prototype.getlocvar = function(idx) {
-    return this._f.locvars[this._actvar[idx]];
+    return this._f.getLocvars()[this._actvar[idx]];
 };
 
 // Functions from lcode.c
@@ -157,7 +157,7 @@ FuncState.prototype.kCodeABC = function(o, a, b, c) {
     // assert getOpMode(o) == iABC;
     // assert getBMode(o) != OP_ARG_N || b == 0;
     // assert getCMode(o) != OP_ARG_N || c == 0;
-    return this.kCode(Lua.CREATE_ABC(o, a, b, c), this._ls.lastline);
+    return this.kCode(Lua.CREATE_ABC(o, a, b, c), this._ls.getLastline());
 };
 
 /** Equivalent to luaK_codeABx. */
@@ -165,7 +165,7 @@ FuncState.prototype.kCodeABx = function(o, a, bc) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     // assert getOpMode(o) == iABx || getOpMode(o) == iAsBx);
     // assert getCMode(o) == OP_ARG_N);
-    return this.kCode(Lua.CREATE_ABx(o, a, bc), this._ls.lastline);
+    return this.kCode(Lua.CREATE_ABx(o, a, bc), this._ls.getLastline());
 };
 
 /** Equivalent to luaK_codeAsBx. */
@@ -271,13 +271,13 @@ FuncState.prototype.kNil = function(from, n) {
         if (this._pc == 0)  /* function start? */
             return;  /* positions are already clean */
         previous = this._pc - 1;
-        var instr = this._f.code[previous] ;
+        var instr = this._f.getCode()[previous] ;
         if (Lua.OPCODE(instr) == Lua.OP_LOADNIL) {
             var pfrom = Lua.ARGA(instr);
             var pto = Lua.ARGB(instr);
             if (pfrom <= from && from <= pto+1) { /* can connect both? */ 
                 if (from + n - 1 > pto)
-                    this._f.code[previous] = Lua.SETARG_B(instr, from+n-1);
+                    this._f.getCode()[previous] = Lua.SETARG_B(instr, from+n-1);
                 return;
             }
         }
@@ -661,7 +661,7 @@ FuncState.prototype.need_value = function(list) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     for (; list != FuncState.NO_JUMP; list = this.getjump(list)) {
         var i = this.getjumpcontrol(list);
-        var instr = this._f.code[i] ;
+        var instr = this._f.getCode()[i] ;
         if (Lua.OPCODE(instr) != Lua.OP_TESTSET)
             return true;
     }
@@ -691,18 +691,18 @@ FuncState.prototype.__freereg = function(reg) {
 };
 
 FuncState.prototype.getcode = function(e) {
-    return this._f.code[e.getInfo()];
+    return this._f.getCode()[e.getInfo()];
 };
 
 FuncState.prototype.setcode = function(e, code) {
-    this._f.code[e.getInfo()] = code;
+    this._f.getCode()[e.getInfo()] = code;
 };
 
 /** Equivalent to searchvar from lparser.c */
 FuncState.prototype.searchvar = function(n) {
     // caution: descending loop (in emulation of PUC-Rio).
     for (var i = this._nactvar - 1; i >= 0; i--) {
-        if (n == this.getlocvar(i).varname)
+        if (n == this.getlocvar(i).getVarname())
             return i;
     }
     return -1;  // not found
@@ -711,21 +711,21 @@ FuncState.prototype.searchvar = function(n) {
 FuncState.prototype.setarga = function(e, a) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.getInfo();
-    var code = this._f.code; //int[] 
+    var code = this._f.getCode(); //int[] 
     code[at] = Lua.SETARG_A(code[at], a);
 };
 
 FuncState.prototype.setargb = function(e, b) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.getInfo();
-    var code = this._f.code; //int[] 
+    var code = this._f.getCode(); //int[] 
     code[at] = Lua.SETARG_B(code[at], b);
 };
 
 FuncState.prototype.setargc = function(e, c) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = e.getInfo();
-    var code = this._f.code; //int[]
+    var code = this._f.getCode(); //int[]
     code[at] = Lua.SETARG_C(code[at], c);
 };
 
@@ -780,7 +780,7 @@ FuncState.prototype.patchlistaux = function(list, vtarget, reg,
 FuncState.prototype.patchtestreg = function(node, reg) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var i = this.getjumpcontrol(node);
-    var code = this._f.code; //int [] 
+    var code = this._f.getCode(); //int [] 
     var instr = code[i] ;
     if (Lua.OPCODE(instr) != Lua.OP_TESTSET)
         return false;  /* cannot patch other instructions */
@@ -794,7 +794,7 @@ FuncState.prototype.patchtestreg = function(node, reg) {
 
 FuncState.prototype.getjumpcontrol = function(at) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var code = this._f.code; //int []
+    var code = this._f.getCode(); //int []
     if (at >= 1 && this.testTMode(Lua.OPCODE(code[at-1])))
         return at - 1;
     else
@@ -887,17 +887,17 @@ FuncState.prototype.kPatchtohere = function(list) {
 
 FuncState.prototype.fixjump = function(at, dest) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var jmp = this._f.code[at];
+    var jmp = this._f.getCode()[at];
     var offset = dest - (at + 1);
     //# assert dest != FuncState.NO_JUMP
     if (Math.abs(offset) > Lua.MAXARG_sBx)
         this._ls.xSyntaxerror("control structure too long");
-    this._f.code[at] = Lua.SETARG_sBx(jmp, offset);
+    this._f.getCode()[at] = Lua.SETARG_sBx(jmp, offset);
 };
 
 FuncState.prototype.getjump = function(at) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var offset = Lua.ARGsBx(this._f.code[at]);
+    var offset = Lua.ARGsBx(this._f.getCode()[at]);
     if (offset == FuncState.NO_JUMP)  /* point to itself represents end of list */
         return FuncState.NO_JUMP;  /* end of list */
     else
@@ -1072,7 +1072,7 @@ FuncState.prototype.kGoiftrue = function(e) {
 FuncState.prototype.invertjump = function(e) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var at = this.getjumpcontrol(e.getInfo());
-    var code = this._f.code; //int []
+    var code = this._f.getCode(); //int []
     var instr = code[at];
     //# assert testTMode(Lua.OPCODE(instr)) && Lua.OPCODE(instr) != Lua.OP_TESTSET && Lua.OPCODE(instr) != Lua.OP_TEST
     code[at] = Lua.SETARG_A(instr, (Lua.ARGA(instr) == 0 ? 1 : 0));
@@ -1126,7 +1126,7 @@ FuncState.prototype.kSetlist = function(base, nelems, tostore) {
         this.kCodeABC(Lua.OP_SETLIST, base, b, c);
     else {
         this.kCodeABC(Lua.OP_SETLIST, base, b, 0);
-        this.kCode(c, this._ls.lastline);
+        this.kCode(c, this._ls.getLastline());
     }
     this._freereg = base + 1;  /* free registers with list values */
 };

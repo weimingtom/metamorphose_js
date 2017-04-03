@@ -96,9 +96,19 @@ getter, setter:
 (java search: function get )
 (x) Expdesc function get t()
 (x) FuncState function get actvar()
-(-)
+(x) LuaFunction function get env()
+(-) Proto
+    (x) source
+    (x) linedefined
+    (x) nups
+    (x) code
+    (x) locvars
+    (x) sizeupvalues
+(x) ...
 -----------------------
 
 todo:
 e.getStackTrace()->e.stack
 as int->parseInt()
+r = Number(this._i); //FIXME:new Number
+xx].xxx -> xx] as xxx).getXXX

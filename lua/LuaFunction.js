@@ -62,7 +62,7 @@ var LuaFunction = function(proto, upval, env) {
     if (null == proto || null == upval || null == env) {
         throw new NullPointerException();
     }
-    if (upval.length != proto.nups) {
+    if (upval.length != proto.getNups()) {
         throw new IllegalArgumentException();
     }
     this._p = proto;

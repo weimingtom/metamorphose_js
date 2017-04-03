@@ -266,7 +266,7 @@ StringLib.findAux = function(L, isFind) {
                 }     // else
                 return ms.push_captures(si, res);
             }
-        } while (si++ < ms.end && !anchor);
+        } while (si++ < ms.getEnd() && !anchor);
     }
     L.pushNil();        // not found
     return 1;
@@ -302,7 +302,7 @@ StringLib.gmatchaux = function(L) {
     var p = state[1];
     var i = state[2];
     var ms = new MatchState(L, s, s.length);
-    for ( ; i <= ms.end ; ++i) {
+    for ( ; i <= ms.getEnd() ; ++i) {
         ms.setLevel(0);
         var e = ms.match(i, p, 0);
         if (e >= 0) {
@@ -342,7 +342,7 @@ StringLib.gsub = function(L) {
         }
         if (e >= 0 && e > si)     // non empty match?
             si = e; // skip it
-        else if (si < ms.end)
+        else if (si < ms.getEnd())
             b.append(s.charCodeAt(si++));
         else
             break;

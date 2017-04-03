@@ -391,7 +391,7 @@ BaseLib.getfenv = function(L) {
         L.pushObject(L.getGlobals());
     } else {
         var f = o;
-        L.pushObject(f.env);
+        L.pushObject(f.getEnv());
     }
     return 1;
 };
@@ -772,7 +772,7 @@ BaseLib.status = function(L) {
     if (L == co) {
         L.pushLiteral("running");
     } else {
-        switch (co.status) {
+        switch (co.getStatus()) {
         case Lua.YIELD:
             L.pushLiteral("suspended");
             break;
@@ -831,7 +831,7 @@ BaseLib.prototype.wrapaux = function(L) {
 
 BaseLib.auxresume = function(L, co, narg) {
     // if (!co.checkStack...
-    if (co.status == 0 && co.getTop() == 0) {
+    if (co.getStatus() == 0 && co.getTop() == 0) {
         L.pushLiteral("cannot resume dead coroutine");
         return -1;        // error flag;
     }

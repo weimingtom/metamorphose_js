@@ -39,13 +39,13 @@ var Enum = function(t, e) {
 
 Enum.prototype.inci = function() {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    while (this._i < this._t.sizeArray && this._t.array[this._i] == Lua.NIL) {
+    while (this._i < this._t.getSizeArray() && this._t.getArray()[this._i] == Lua.NIL) {
         ++this._i;
     }
 };
 
 Enum.prototype.hasMoreElements = function() {
-    if (this._i < this._t.sizeArray) {
+    if (this._i < this._t.getSizeArray()) {
         return true;
     }
     return this._e.hasMoreElements();
@@ -53,7 +53,7 @@ Enum.prototype.hasMoreElements = function() {
 
 Enum.prototype.nextElement = function() {
     var r;
-    if (this._i < this._t.sizeArray) {
+    if (this._i < this._t.getSizeArray()) {
         ++this._i;      // array index i corresponds to key i+1
         r = Number(this._i); //FIXME:new Number
         this.inci();

@@ -67,13 +67,13 @@ DumpState.prototype.DumpNumber = function(d) {
 
 // throws IOException
 DumpState.prototype.DumpFunction = function(f, p) {
-    this.DumpString((f.source == p || this._strip) ? null : f.source);
-    this.DumpInt(f.linedefined);
-    this.DumpInt(f.lastlinedefined);
-    this._writer.writeByte(f.nups);
-    this._writer.writeByte(f.numparams);
-    this._writer.writeBoolean(f.isVararg);
-    this._writer.writeByte(f.maxstacksize);
+    this.DumpString((f.getSource() == p || this._strip) ? null : f.getSource());
+    this.DumpInt(f.getLinedefined());
+    this.DumpInt(f.getLastlinedefined());
+    this._writer.writeByte(f.getNups());
+    this._writer.writeByte(f.getNumparams());
+    this._writer.writeBoolean(f.getIsVararg());
+    this._writer.writeByte(f.getMaxstacksize());
     this.DumpCode(f);
     this.DumpConstants(f);
     this.DumpDebug(f);
@@ -81,8 +81,8 @@ DumpState.prototype.DumpFunction = function(f, p) {
 
 // throws IOException
 DumpState.prototype.DumpCode = function(f) {
-    var n = f.sizecode;
-    var code = f.code; //int [] 
+    var n = f.getSizecode();
+    var code = f.getCode(); //int [] 
     this.DumpInt(n);
     for (var i = 0; i < n; i++) {
         this.DumpInt(code[i]);
@@ -92,11 +92,11 @@ DumpState.prototype.DumpCode = function(f) {
 // throws IOException
 DumpState.prototype.DumpConstants = function(f) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var n = f.sizek;
-    var k = f.k; //Slot[]
+    var n = f.getSizek();
+    var k = f.getK(); //Slot[]
     this.DumpInt(n);
     for (var i = 0 ; i < n ; i++) {
-        var o = k[i].r;
+        var o = (k[i]).getR();
         if (o == Lua.NIL) {
             this._writer.writeByte(Lua.TNIL);
         } else if (o instanceof Boolean) {
@@ -104,7 +104,7 @@ DumpState.prototype.DumpConstants = function(f) {
             this._writer.writeBoolean(o);
         } else if (o == Lua.NUMBER) {
             this._writer.writeByte(Lua.TNUMBER);
-            this.DumpNumber(k[i].d);
+            this.DumpNumber((k[i]).getD());
         } else if (o instanceof String) {
             this._writer.writeByte(Lua.TSTRING);
             this.DumpString(o);
@@ -112,11 +112,11 @@ DumpState.prototype.DumpConstants = function(f) {
             //# assert false
         }
     }
-    n = f.sizep;
+    n = f.getSizep();
     this.DumpInt(n);
     for (i = 0 ; i < n ; i++) {
-        var subfunc = f.p[i];
-        this.DumpFunction(subfunc, f.source);
+        var subfunc = f.getP()[i];
+        this.DumpFunction(subfunc, f.getSource());
     }
 };
 
@@ -150,23 +150,23 @@ DumpState.prototype.DumpDebug = function(f) {
         this.DumpInt(0);
         return;
     }
-    var n = f.sizelineinfo;
+    var n = f.getSizelineinfo();
     this.DumpInt(n);
     for (var i = 0; i < n; i++) {
-        this.DumpInt(f.lineinfo[i]);
+        this.DumpInt(f.getLineinfo()[i]);
     }
-    n = f.sizelocvars;
+    n = f.getSizelocvars();
     this.DumpInt(n);
     for (i = 0; i < n; i++) {
-        var locvar = f.locvars[i];
-        this.DumpString(locvar.varname);
-        this.DumpInt(locvar.startpc);
-        this.DumpInt(locvar.endpc);
+        var locvar = f.getLocvars()[i];
+        this.DumpString(locvar.getVarname());
+        this.DumpInt(locvar.getStartpc());
+        this.DumpInt(locvar.getEndpc());
     }
-    n = f.sizeupvalues;
+    n = f.getSizeupvalues();
     this.DumpInt(n);
     for (i = 0; i < n; i++) {
-        this.DumpString(f.upvalues[i]);
+        this.DumpString(f.getUpvalues()[i]);
     }
 };
 

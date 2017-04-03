@@ -466,7 +466,7 @@ Lua.dump = function(_function, writer) {  //throws IOException
         throw new IOException("Cannot dump " + Lua.typeName(Lua.____type(_function)));
     }
     var f = _function;
-    Lua.uDump(f.proto, writer, false);
+    Lua.uDump(f.getProto(), writer, false);
 };
 
 /**
@@ -535,7 +535,7 @@ Lua.prototype.gc = function(what, data) {
 Lua.prototype.getFenv = function(o) {
     if (o instanceof LuaFunction) {
         var f1 = o;
-        return f1.env;
+        return f1.getEnv();
     }
     if (o instanceof LuaJavaCallback) {
         var f2 = o;
@@ -545,7 +545,7 @@ Lua.prototype.getFenv = function(o) {
     
     if (o instanceof LuaUserdata) {
         var u = o;
-        return u.env;
+        return u.getEnv();
     }
     if (o instanceof Lua) {
         var l = o;
@@ -593,10 +593,10 @@ Lua.prototype.getMetatable = function(o) {
 
     if (o instanceof LuaTable) {
         var t = o;
-        mt = t.metatable;
+        mt = t.getMetatable();
     } else if (o instanceof LuaUserdata) {
         var u = o;
-        mt = u.metatable;
+        mt = u.getMetatable();
     } else {
         mt = this._metatable[Lua.____type(o)];
     }
@@ -969,14 +969,14 @@ Lua.prototype.pcall = function(nargs, nresults, ef) {
         if (e instanceof LuaError) {
             console.log(e.getStackTrace());
             this.fClose(restoreStack);   // close eventual pending closures
-            this.dSeterrorobj(e.errorStatus, restoreStack);
+            this.dSeterrorobj(e.getErrorStatus(), restoreStack);
             this._nCcalls = oldnCcalls;
             this._civ.setSize(restoreCi);
             var ci = this.__ci();
             this._base = ci.getBase();
             this._savedpc = ci.getSavedpc();
             this._allowhook = old_allowhook;
-            errorStatus = e.errorStatus;
+            errorStatus = e.getErrorStatus();
         } else if (e instanceof OutOfMemoryError) {
             console.log(e.getStackTrace());
             this.fClose(restoreStack);     // close eventual pending closures
@@ -1174,8 +1174,8 @@ protect:
             this.vmExecute(this._civ.getSize() - 1);
         } catch (e) {
             console.log(e.getStackTrace());
-            this.setStatus(e.errorStatus);   // mark thread as 'dead'
-            this.dSeterrorobj(e.errorStatus, this._stackSize);
+            this.setStatus(e.getErrorStatus());   // mark thread as 'dead'
+            this.dSeterrorobj(e.getErrorStatus(), this._stackSize);
             this.__ci().setTop(this._stackSize);
         }
     } while (false);
@@ -2045,7 +2045,7 @@ Lua.prototype.currentline = function(ci) {
     } else {
         var faso = (this._stack[ci.getFunc()]).getR();
         var f = faso;
-        return f.proto.getline(pc);
+        return f.getProto().getline(pc);
     }
 };
 
@@ -2066,7 +2066,7 @@ Lua.prototype.funcinfo = function(ar, cl) {
         ar.setLastlinedefined(-1);
         ar.setWhat("Java");
     } else {
-        var p = (cl).proto;
+        var p = (cl).getProto();
         ar.setSource(p.getSource());
         ar.setLinedefined(p.getLinedefined());
         ar.setLastlinedefined(p.getLastlinedefined());
@@ -2519,7 +2519,7 @@ Lua.prototype.RK = function(k/*Slot[] */, field) {
 */
 Lua.prototype.__RK = function(field) {
     var _function = (this._stack[this.__ci().getFunc()]).getR();
-    var k = _function.proto.constant; //Slot[]
+    var k = _function.getProto().getConstant(); //Slot[]
     return this.RK(k, field);
 };
 
@@ -2719,9 +2719,9 @@ reentry:
     while (true) {
         // assert stack[ci.function()].r instanceof LuaFunction;
         var _function = (this._stack[this.__ci().getFunc()]).getR();
-        var proto = _function.proto;
-        var code = proto.code; //int[]
-        var k = proto.constant; //Slot[] 
+        var proto = _function.getProto();
+        var code = proto.getCode(); //int[]
+        var k = proto.getConstant(); //Slot[] 
         var pc = this._savedpc;
 
         while (true) {       // main loop of interpreter
@@ -2757,8 +2757,8 @@ reentry:
                 (this._stack[this._base + a]).setR((k[Lua.ARGBx(i)]).getR());
                 (this._stack[this._base + a]).setD((k[Lua.ARGBx(i)]).getD());
                 if (Lua.D) {
-                    console.log("OP_LOADK:stack[" + (this._base+a) + 
-                        "]=k[" + Lua.ARGBx(i) + "]=" + k[Lua.ARGBx(i)].getD());
+                    console.log("OP_LOADK:stack[" + (this._base + a) + 
+                        "]=k[" + Lua.ARGBx(i) + "]=" + (k[Lua.ARGBx(i)]).getD());
                 }
                 continue;
 
@@ -2790,7 +2790,7 @@ reentry:
                 rb = k[Lua.ARGBx(i)];
                 // assert rb instance of String;
                 this._savedpc = pc; // Protect
-                this.vmGettable(_function.env, rb, this._stack[this._base + a]);
+                this.vmGettable(_function.getEnv(), rb, this._stack[this._base + a]);
                 continue;
 
             case Lua.OP_GETTABLE:
@@ -2816,7 +2816,7 @@ reentry:
             case Lua.OP_SETGLOBAL:
                 this._savedpc = pc; // Protect
                 // :todo: consider inlining objectAt
-                this.vmSettable(_function.env, k[Lua.ARGBx(i)],
+                this.vmSettable(_function.getEnv(), k[Lua.ARGBx(i)],
                     this.objectAt(this._base + a));
                 continue;
 
@@ -3239,8 +3239,8 @@ reentry:
 
             case Lua.OP_CLOSURE:
                 {
-                    var p = _function.proto.proto[Lua.ARGBx(i)];
-                    var nup = p.nups;
+                    var p = _function.getProto().getProto()[Lua.ARGBx(i)];
+                    var nup = p.getNups();
                     var up = new Array(nup); //UpVal[] 
                     for (var j = 0; j < nup; j++, pc++) {
                         var _in = code[pc];
@@ -3251,7 +3251,7 @@ reentry:
                             up[j] = this.fFindupval(this._base + Lua.ARGB(_in));
                         }	
                     }
-                    var nf = new LuaFunction(p, up, _function.env);
+                    var nf = new LuaFunction(p, up, _function.getEnv());
                     //up = null;
                     (this._stack[this._base + a]).setR(nf);
                     continue;
@@ -3261,7 +3261,7 @@ reentry:
                 {
                     var b_VARARG = Lua.ARGB(i) - 1;
                     var n_VARARG = (this._base - this.__ci().getFunc()) -
-                        _function.proto.numparams - 1;
+                        _function.getProto().getNumparams() - 1;
                     if (b_VARARG == Lua.MULTRET) {
                         // :todo: Protect
                         // :todo: check stack
@@ -3446,28 +3446,28 @@ Lua.prototype.vmPoscall = function(firstResult) {
 */
 Lua.prototype.vmPrecall = function(func, r) {
     var faso;        // Function AS Object
-    faso = (this._stack[func]).r;
+    faso = (this._stack[func]).getR();
     if (!Lua.isFunction(faso)) {
         faso = this.tryfuncTM(func);
     }
     this.__ci().setSavedpc(this._savedpc);
     if (faso instanceof LuaFunction) {
         var f = faso;
-        var p = f.proto;
+        var p = f.getProto();
         // :todo: ensure enough stack
 
-        if (!p.isVararg) {
+        if (!p.getIsVararg()) {
             this._base = func + 1;
-            if (this._stackSize > this._base + p.numparams) {
+            if (this._stackSize > this._base + p.getNumparams()) {
                 // trim stack to the argument list
-                this.stacksetsize(this._base + p.numparams);
+                this.stacksetsize(this._base + p.getNumparams());
             }
         } else {
             var nargs = (this._stackSize - func) - 1;
             this._base = this.adjust_varargs(p, nargs);
         }
 
-        var top = this._base + p.maxstacksize;
+        var top = this._base + p.getMaxstacksize();
         this.inc_ci(func, this._base, top, r);
 
         this._savedpc = 0;
@@ -3575,7 +3575,7 @@ Lua.vmTostring = function(o) {
 
 /** Equivalent of adjust_varargs in "ldo.c". */
 Lua.prototype.adjust_varargs = function(p, actual) {
-    var nfixargs = p.numparams;
+    var nfixargs = p.getNumparams();
     for (; actual < nfixargs; ++actual) {
         this.stackAdd(Lua.NIL);
     }
