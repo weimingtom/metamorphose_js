@@ -1,0 +1,1 @@
+1. (TODO) typeof metamorphose !== 'undefined' -> typeof metamorphose === 'object'
