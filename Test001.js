@@ -23,7 +23,7 @@ var test002 = "return _VERSION";
 var test003 = "return nil";
 
 var isLoadLib = true;
-//try {
+try {
     trace("Start test...");
     var L = new Lua();
     if (isLoadLib) {
@@ -34,7 +34,7 @@ var isLoadLib = true;
         StringLib.open(L);
         TableLib.open(L);
     }
-    var status = L.doString(test001);
+    var status = L.doString(test003); //FIXME:modify here : test001/test002/test003
     if (status != 0) {
         var errObj = L.value(1);
         var tostring = L.getGlobal("tostring");
@@ -52,9 +52,9 @@ var isLoadLib = true;
         var resultStr = L.toString(L.value(-1));
         trace("Result >>> " + resultStr);
     }
-//} catch (e) {
-//    //trace(e.getStackTrace()); //FIXME:
-//    trace(e.stack);
-//}
+} catch (e) {
+    //trace(e.getStackTrace()); //FIXME:
+    trace(e.stack);
+}
 
 })(typeof window !== 'undefined' && window.metamorphose);

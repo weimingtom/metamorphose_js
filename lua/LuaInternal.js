@@ -5,6 +5,7 @@ var Loader = metamorphose ? metamorphose.Loader : require('./Loader.js');
 var Syntax = metamorphose ? metamorphose.Syntax : require('./Syntax.js');
 var FromReader = metamorphose ? metamorphose.FromReader : require('./FromReader.js');
 var LuaFunction = metamorphose ? metamorphose.LuaFunction : require('./LuaFunction.js');
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 //var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/LuaInternal.java#1 $
@@ -46,6 +47,8 @@ var LuaInternal = function() {
     this._reader = null;
     this._chunkname = null;
 };
+
+LuaInternal.prototype = new LuaJavaCallback();
 
 LuaInternal.prototype.init1 = function(_in, chunkname) {
     this._stream = _in;

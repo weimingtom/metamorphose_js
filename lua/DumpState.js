@@ -99,13 +99,13 @@ DumpState.prototype.DumpConstants = function(f) {
         var o = (k[i]).getR();
         if (o == Lua.NIL) {
             this._writer.writeByte(Lua.TNIL);
-        } else if (o instanceof Boolean) {
+        } else if (o instanceof Boolean || typeof(o) === 'boolean') { //FIXME:javascript specific
             this._writer.writeByte(Lua.TBOOLEAN);
             this._writer.writeBoolean(o);
         } else if (o == Lua.NUMBER) {
             this._writer.writeByte(Lua.TNUMBER);
             this.DumpNumber((k[i]).getD());
-        } else if (o instanceof String) {
+        } else if (o instanceof String || typeof(o) === 'string') { //FIXME:javascript specific
             this._writer.writeByte(Lua.TSTRING);
             this.DumpString(o);
         } else {

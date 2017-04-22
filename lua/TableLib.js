@@ -2,6 +2,7 @@
 
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
 
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/TableLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -44,6 +45,8 @@ var TableLib = function(which) {
      */
     this._which = which;
 };
+
+TableLib.prototype = new LuaJavaCallback();
 
 // Each function in the table library corresponds to an instance of
 // this class which is associated (the 'which' member) with an integer

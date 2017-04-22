@@ -477,7 +477,7 @@ Lua.dump = function(_function, writer) {  //throws IOException
  * @return true when equal.
  */
 Lua.prototype.equal = function(o1, o2) {
-    if (o1 instanceof Number) {
+    if (o1 instanceof Number || typeof(o1) === 'number') { //FIXME:javascript specific
         return o1.equals(o2);
     }
     return this.vmEqualRef(o1, o2);
@@ -709,7 +709,9 @@ Lua.isNumber = function(o) {
  * @return true if and only if object is a string or number.
  */
 Lua.isString = function(o) {
-    return o instanceof String || o instanceof Number;
+    //FIXME:javascript specific
+    return o instanceof String || typeof(o) === 'string' || 
+        o instanceof Number || typeof(o) === 'number';
 };
 
 /**
@@ -759,10 +761,11 @@ Lua.isUserdata = function(o) {
  * @return true if and if it represents a Lua value.
  */
 Lua.isValue = function(o) {
+    //FIXME:javascript specific
     return o == Lua.NIL ||
-        o instanceof Boolean ||
-        o instanceof String ||
-        o instanceof Number ||
+        o instanceof Boolean || typeof(o) === 'boolean' ||
+        o instanceof String || typeof(o) === 'string' ||
+        o instanceof Number || typeof(o) === 'number' ||
         o instanceof LuaFunction ||
         o instanceof LuaJavaCallback ||
         o instanceof LuaTable ||
@@ -917,7 +920,7 @@ Lua.prototype.newUserdata = function(ref) {
  * @return its length.
  */
 Lua.objLen = function(o) {
-    if (o instanceof String) {
+    if (o instanceof String || typeof(o) === 'string') { //FIXME:javascript specific
         var s = o;
         return s.length;
     }
@@ -925,7 +928,7 @@ Lua.objLen = function(o) {
         var t = o;
         return t.getn();
     }
-    if (o instanceof Number) {
+    if (o instanceof Number || typeof(o) === 'number') { //FIXME:javascript specific
         return Lua.vmTostring(o).length;
     }
     return 0;
@@ -1415,13 +1418,14 @@ Lua.prototype.___type = function(s) {
  * @return  the Lua type from an enumeration.
  */
 Lua.____type = function(o) {
+    //FIXME:javascript specific : typeof / number / boolean / string
     if (o == Lua.NIL) {
         return Lua.TNIL;
-    } else if (o instanceof Number) {
+    } else if (o instanceof Number || typeof(o) === 'number') {
         return Lua.TNUMBER;
-    } else if (o instanceof Boolean) {
+    } else if (o instanceof Boolean || typeof(o) === 'boolean') {
         return Lua.TBOOLEAN;
-    } else if (o instanceof String) {
+    } else if (o instanceof String || typeof(o) === 'string') {
         return Lua.TSTRING;
     } else if (o instanceof LuaTable) {
         return Lua.TTABLE;
@@ -2216,7 +2220,7 @@ Lua.prototype.gAritherror = function(p1, p2) {
 
 /** <var>p1</var> and <var>p2</var> are absolute stack indexes. */
 Lua.prototype.gConcaterror = function(p1, p2) {
-    if ((this._stack[p1]).getR() instanceof String) {
+    if ((this._stack[p1]).getR() instanceof String || typeof((this._stack[p1]).getR()) === 'string') { //FIXME: javascript specific
         p1 = p2;
     }
     // assert !(p1 instanceof String);
@@ -2246,7 +2250,7 @@ Lua.prototype.gOrdererror = function(p1, p2) {
     var t1 = Lua.typeName(this.___type(p1));
     var t2 = Lua.typeName(this.___type(p2));
     if (t1.charAt(2) == t2.charAt(2)) {
-        this.gRunerror("attempt to compare two " + t1 + "values");
+        this.gRunerror("attempt to compare two " + t1 + " values");
     } else {
         this.gRunerror("attempt to compare " + t1 + " with " + t2);
     }
@@ -2973,7 +2977,7 @@ reentry:
                     (this._stack[this._base + a]).setD(t2.getn());
                     (this._stack[this._base + a]).setR(Lua.NUMBER);
                     continue;
-                } else if (rb.getR() instanceof String) {
+                } else if (rb.getR() instanceof String || typeof(rb.getR()) === 'string') { //FIXME: javascript specific
                     var s = rb.getR();
                     (this._stack[this._base + a]).setD(s.length);
                     (this._stack[this._base + a]).setR(Lua.NUMBER);
@@ -3361,9 +3365,9 @@ Lua.prototype.vmLessthan = function(l, r) {
     //if (l.r.getClass() != r.r.getClass())
     if (Object.getPrototypeOf(l.getR()) != Object.getPrototypeOf(r.getR())) {
         this.gOrdererror(l, r);
-    } else if (l.r == Lua.NUMBER) {
+    } else if (l.getR() == Lua.NUMBER) {
         return l.getD() < r.getD();
-    } else if (l.getR() instanceof String) {
+    } else if (l.getR() instanceof String || typeof(l.getR()) === 'string') { //FIXME: javascript specific
         // :todo: PUC-Rio use strcoll, maybe we should use something
         // equivalent.
         return (l.getR()) < (r.getR()); //TODO:compareTo
@@ -3383,7 +3387,7 @@ Lua.prototype.vmLessequal = function(l, r) {
         this.gOrdererror(l, r);
     } else if (l.getR() == Lua.NUMBER) {
         return l.getD() <= r.getD();
-    } else if (l.getR() instanceof String) {
+    } else if (l.getR() instanceof String || typeof(l.getR()) === 'string') { //FIXME: javascript specific
         return (l.getR()) <= (r.getR()); //TODO: CompareTo
     }
     var res = this.call_orderTM(l, r, "__le");       // first try 'le'
@@ -3547,10 +3551,10 @@ Lua.prototype.vmSettable = function(t, key, val) {
 Lua.NUMBER_FMT = ".14g";
 
 Lua.vmTostring = function(o) {
-    if (o instanceof String) {
+    if (o instanceof String || typeof(o) === 'string') { //FIXME:javascript specific
         return o;
     }
-    if (!(o instanceof Number)) {
+    if (!(o instanceof Number || typeof(o) === 'number')) { //FIXME:javascript specific)) {
         return null;
     }
     // Convert number to string.  PUC-Rio abstracts this operation into
@@ -3730,7 +3734,9 @@ Lua.prototype.stacksetsize = function(n) {
         // Currently the stack only ever grows, so the number of items to
         // copy is the length of the old stack.
         var toCopy = this._stack.length;
+//        console.log("arraycopyxxx 001"); //FIXME:
         SystemUtil.arraycopy(this._stack, 0, newStack, 0, toCopy);
+//        console.log("arraycopyxxx 002"); //FIXME:
         //trace(newStack[0]);
         this._stack = newStack;
     }
@@ -3832,7 +3838,7 @@ Lua.tonumber = function(o, out /*double[] */) {
         out[0] = o.getD();
         return true;
     }
-    if (!(o.getR() instanceof String)) {
+    if (!(o.getR() instanceof String || typeof(o.getR()) === 'string')) { //FIXME: javascript specific
         return false;
     }
     if (Lua.oStr2d(o.getR(), out)) {
@@ -3955,7 +3961,7 @@ Lua.prototype.objectAt = function(idx) {
  * @param idx  absolute index into stack (0 <= idx < stackSize).
  */
 Lua.prototype.setObjectAt = function(o, idx) {
-    if (o instanceof Number) {
+    if (o instanceof Number || typeof(o) === 'number') { //FIXME: javascript specific
         (this._stack[idx]).setR(Lua.NUMBER);
         (this._stack[idx]).setD(o);
         return;

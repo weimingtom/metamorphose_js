@@ -127,7 +127,7 @@ LuaTable.prototype.hashCode = function() {
 };
 
 LuaTable.arrayindex = function(key) {
-    if (key instanceof Number) {
+    if (key instanceof Number || typeof(key) === 'number') { //FIXME: javascript specific
         var d = key;
         var k = d;
         if (k == d) {
@@ -248,7 +248,7 @@ LuaTable.prototype.resize = function(nasize) {
         for (i = nasize; i < this._sizeArray; ++i) {
             if (this._array[i] != Lua.NIL) {
                 key = Number(i + 1); //new Number
-                Hashtable.prototype.put(this, key, this._array[i]);//super.put(key, this._array[i]); //TODO:
+                Hashtable.prototype.put.call(this, key, this._array[i]);//super.put(key, this._array[i]); //TODO:
             }
         }
         SystemUtil.arraycopy(this._array, 0, newarray, 0, newarray.length);
@@ -353,7 +353,7 @@ LuaTable.prototype.getn = function() {
  */
 LuaTable.prototype.getlua = function(key) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    if (key instanceof Number) {
+    if (key instanceof Number || typeof(key) === 'number') { //FIXME: javascript specific
         var d = key;
         if (d <= this._sizeArray && d >=1) {
             var i = d;
@@ -380,7 +380,7 @@ LuaTable.prototype.__getlua = function(key, value) {
         if (d <= this._sizeArray && d >= 1) {
             var i = d;
             if (i == d) {
-                value.setObject(this._array[i-1]);
+                value.setObject(this._array[i - 1]);
                 return;
             }
         }
@@ -396,9 +396,9 @@ LuaTable.prototype.__getlua = function(key, value) {
 LuaTable.prototype.getnum = function(k) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (k <= this._sizeArray && k >= 1) {
-        return this._array[k-1];
+        return this._array[k - 1];
     }
-    var r = Hashtable.prototype._get(this, Number(k));//super._get(Number(k)); //TODO:get //new Number
+    var r = Hashtable.prototype._get.call(this, Number(k));//super._get(Number(k)); //TODO:get //new Number
     if (r == null) {
         return Lua.NIL;
     }
@@ -424,7 +424,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
     if (key == Lua.NIL) {
         L.gRunerror("table index is nil");
     }
-    if (key instanceof Number) {
+    if (key instanceof Number || typeof(key) === 'number') { //FIXME: javascript specific
         d = key;
         var j = d;
 
@@ -446,7 +446,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
         this.remove(key);
         return;
     }
-    Hashtable.prototype.put(this, key, value);//super.put(key, value); //TODO:
+    Hashtable.prototype.put.call(this, key, value);//super.put(key, value); //TODO:
     // This check is necessary because sometimes the call to super.put
     // can rehash and the new (k,v) pair should be in the array part
     // after the rehash, but is still in the hash part.

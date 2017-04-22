@@ -3,7 +3,8 @@ var Random = metamorphose ? metamorphose.Random : require('../java/Random.js');
 var MathUtil = metamorphose ? metamorphose.MathUtil : require('../java/MathUtil.js');
 
 var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
+
 // Each function in the library corresponds to an instance of
 // this class which is associated (the 'which' member) with an integer
 // which is unique within this class.  They are taken from the following
@@ -17,6 +18,8 @@ var MathLib = function(which) {
     */
     this._which = which;
 };
+
+MathLib.prototype = new LuaJavaCallback();
 
 MathLib.ABS = 1;
 //private static const acos:int = 2;

@@ -112,3 +112,44 @@ e.getStackTrace()->e.stack
 as int->parseInt()
 r = Number(this._i); //FIXME:new Number
 xx].xxx -> xx] as xxx).getXXX
+
+
+-----------------------
+
+javascript specific : 
+
+if (o instanceof Number) {
+if (o instanceof Boolean) {
+if (o instanceof String) {
+->
+if (o instanceof Number || typeof(o) === 'number') {
+if (o instanceof Boolean || typeof(o) === 'boolean') {
+if (o instanceof String || typeof(o) === 'string') {
+    
+search instanceof Number/Boolean/String
+
+------------------------
+??????(no need?)
+== Lua.NUMBER
+->
+=== Lua.NUMBER
+
+== Lua.NIL
+->
+=== Lua.NIL
+
+-------------------------
+[TypeError: SystemUtil.arraycopy is not a function]
+???(running nodejs error, couldn't search all)
+require('./LuaJavaCallback.js');
+->
+require('xxxx');
+
+required file not equal to var name
+
+
+//console.log("arraycopyxxx 001"); //FIXME:
+//console.log("arraycopyxxx 002"); //FIXME:
+//console.log("arraycopyxxx 003"); //FIXME:
+//console.log("arraycopyxxx 004"); //FIXME:
+------------------------

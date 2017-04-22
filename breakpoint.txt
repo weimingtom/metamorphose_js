@@ -1,0 +1,21 @@
+Lua.prototype.gErrormsg = function(message) {
+    this.pushObject(message);
+    if (this._errfunc != null) {       // is there an error handling function
+        if (!Lua.isFunction(this._errfunc)) {
+            this.dThrow(Lua.ERRERR);
+        }
+        this.insert(this._errfunc, this.getTop());        // push function (under error arg)
+        this.vmCall(this._stackSize - 2, 1);        // call it
+    }
+--->    this.dThrow(Lua.ERRRUN);
+    // NOTREACHED
+    return 0;
+};
+
+-------------------------------
+
+/** Implements tostring. */
+BaseLib.tostring = function(L) {
+---->    L.checkAny(1);
+    var o = L.value(1);
+

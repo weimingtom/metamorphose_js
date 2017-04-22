@@ -1,5 +1,5 @@
 ;(function(metamorphose) {
-var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('./LuaJavaCallback.js');
+var SystemUtil = metamorphose ? metamorphose.SystemUtil : require('../java/SystemUtil.js');
 var NullPointerException = metamorphose ? metamorphose.NullPointerException : require('../java/NullPointerException.js');
 var IllegalArgumentException = metamorphose ? metamorphose.IllegalArgumentException : require('../java/IllegalArgumentException.js');
 //var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
@@ -342,7 +342,9 @@ Proto.prototype.getConstant = function() { //Slot[]
 Proto.prototype.constantAppend = function(idx, o) {
     if (idx >= this._k.length) {
         var newK = new Array(this._k.length * 2 + 1); //Slot[]
+//        console.log("arraycopyxxx 003"); //FIXME:
         SystemUtil.arraycopy(this._k, 0, newK, 0, this._k.length);
+//        console.log("arraycopyxxx 004"); //FIXME:
         this._k = newK;
     }
     this._k[idx] = new Slot();

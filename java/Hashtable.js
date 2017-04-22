@@ -25,10 +25,16 @@ Hashtable.prototype.keys = function() {
 };
 
 Hashtable.prototype._get = function(key) {
+//    if (typeof this._dic === 'undefined') {
+//        console.log('here');
+//    }
     return this._dic[key];
 };
 
 Hashtable.prototype.put = function(key, value) {
+//    if (typeof this._dic === 'undefined') {
+//        console.log('here');
+//    }
     var pre = this._dic[key];
     this._dic[key] = value;
     return pre;

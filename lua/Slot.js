@@ -45,7 +45,7 @@ Slot.prototype.init2 = function(o) {
 };
 		
 Slot.prototype.asObject = function() {
-    var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     if (this._r == Lua.NUMBER) {
         return Number(this._d); //new Number
     }
@@ -53,7 +53,7 @@ Slot.prototype.asObject = function() {
 };
 
 Slot.prototype.setObject = function(o) {
-    var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+    var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     //trace("setObject:", o.toString());
     this._r = o;
     if (typeof(o) === "number") {

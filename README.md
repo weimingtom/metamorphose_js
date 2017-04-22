@@ -4,6 +4,9 @@ Metamorphose (original name jill, jillcode) Javascript port
 ## Status  
 WIP  
 
+## History  
+* 04:29 2017-04-23 : First running 'return _VERSION' success, on Chrome and Nodejs.  
+
 ## Develop tools  
 * Brackets  
 * JSHint  

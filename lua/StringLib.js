@@ -3,9 +3,10 @@ var ByteArrayOutputStream = metamorphose ? metamorphose.ByteArrayOutputStream : 
 var StringBuffer = metamorphose ? metamorphose.StringBuffer : require('../java/StringBuffer.js');
 
 var FormatItem = metamorphose ? metamorphose.FormatItem : require('./FormatItem.js');
-var Lua = metamorphose ? metamorphose.Lua : require('./LuaJavaCallback.js');
+var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
 var LuaTable = metamorphose ? metamorphose.LuaTable : require('./LuaTable.js');
 var MatchState = metamorphose ? metamorphose.MatchState : require('./MatchState.js');
+var LuaJavaCallback = metamorphose ? metamorphose.LuaJavaCallback : require('./LuaJavaCallback.js');
     
 /*  $Header: //info.ravenbrook.com/project/jili/version/1.1/code/mnj/lua/StringLib.java#1 $
  * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
@@ -47,6 +48,9 @@ var StringLib = function(which) {
     */
     this._which = which;
 };
+
+StringLib.prototype = new LuaJavaCallback();
+
 // Each function in the string library corresponds to an instance of
 // this class which is associated (the 'which' member) with an integer
 // which is unique within this class.  They are taken from the following
