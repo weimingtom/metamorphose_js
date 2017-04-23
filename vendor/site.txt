@@ -1,2 +1,0 @@
-https://github.com/yi/node-bytearray
-https://code.google.com/archive/p/jsdoc-toolkit/downloads  

@@ -1,10 +1,123 @@
-<html>
+﻿<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>metamorphose_js</title>
+<meta charset="UTF-8">
+<title>metarmorphose console demo</title>
+<style>
+.consoleBox{
+	position: relative;
+	width:800px;
+	height:600px;
+	left:0px;
+	top:0px;
+	z-index:999999;
+	background: #fff;
+}
+.consoleBox .titleBar{
+	width:100%;
+	height:10%;
+	position: relative;
+	text-align: center;
+	line-height: 30px;
+	border: 1px solid #D1D6DB;
+	background: #fff;
+	border-bottom: none;
+}
+.consoleBox .messageBox{
+	width: 100%;
+	height: 80%;
+	overflow-y:scroll;
+	/*color:rgb(92,167,186);*/
+	color:#00FF00;
+	/*background: #fff;*/
+	background: #000;
+	border: 1px solid #D1D6DB;
+}
+.consoleBox .commandBox{
+	width: 100%;
+	height: 10%;
+	border: 1px solid #D1D6DB;
+}
+.consoleBox .commandInput{
+	width: 600px;
+	height: 20px;
+	line-height: 20px;
+	vertical-align: top;
+}
+/*
+.consoleBox .messageBox .error{
+	color:rgb(255,66,93);
+}
+*/
+.consoleBox .btn{
+	display:inline-block; 
+	*_zoom:1;
+	*display:inline;
+	padding: 1px 5px;
+	font-size: 14px;
+	line-height: 1.5;
+	border-radius: 3px;
+	color: #fff;
+	background-color: #428bca;
+	border-color: #357ebd;
+	margin-bottom: 0;
+	font-weight: 400;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	border: 1px solid transparent;
+}
+.consoleBox .btn:hover{
+	background-color: #3071a9;
+	border-color: #285e8e;
+}
+.obj{
+	font-style:italic;
+	/*color:#999999;*/
+	color:#00FF00;
+	font-size:12px;
+}
+.key{
+	color:#A650AD;
+}
+.value{
+
+}
+.error{
+	/*color: rgb(255,66,93);*/
+}
+.string{
+	/*color:#d55e58;*/
+}
+.num, 
+.boolean{
+	/*color:#1c00cf;*/
+}
+.function{
+	/*color:#333;*/
+}
+.undefined{
+	/*color:#c41a16;*/
+}
+.expression{
+	/*color:#52a9ff;*/
+}
+</style>
 </head>
 <body>
-<div>Hello, world</div>
+<h1>metarmorphose_js</h1>
+<div>Project homepage : <a href="https://github.com/weimingtom/metamorphose_js">https://github.com/weimingtom/metamorphose_js</a></div>
+<br />
+<div class="consoleBox">
+	<div class="messageBox"></div>
+	<div>
+		<span style="color:#00FF00;background-color:#000000;">&nbsp;&gt;&nbsp;</span>
+		<input type="text" class="commandInput" value="return 1 + 1" style="color:#00FF00;background-color:#000000;">
+		<input type="button" value="Run" class="runButton">
+		<input type="button" value="Clear" class="clearButton">
+	</div>
+</div>
+
 <script type="text/javascript" src="common/global.js" charset="utf-8"></script>
     
 <script type="text/javascript" src="java/ByteArray.js" charset="utf-8"></script>
@@ -68,8 +181,218 @@
 <script type="text/javascript" src="lua/TableLib.js" charset="utf-8"></script>
 <script type="text/javascript" src="lua/StringLib.js" charset="utf-8"></script>
 
-
-<script type="text/javascript" src="index.js" charset="utf-8"></script>
-<!--<script type="text/javascript" src="Test001.js" charset="utf-8"></script>-->
+<script type="text/javascript">
+//
+// Lua
+//
+var ENABLE_JS_EVAL = false;
+var Lua = metamorphose.Lua;
+var PackageLib = metamorphose.PackageLib;
+var MathLib = metamorphose.MathLib;
+var BaseLib = metamorphose.BaseLib;
+var OSLib = metamorphose.OSLib;
+var TableLib = metamorphose.TableLib;
+var StringLib = metamorphose.StringLib;
+var L = new Lua();
+var isLoadLib = true;
+function evalLua(command) {
+	if (isLoadLib) {
+        BaseLib.open(L);
+        PackageLib.open(L);
+        MathLib.open(L);
+        OSLib.open(L);
+        StringLib.open(L);
+        TableLib.open(L);
+        isLoadLib = false;
+    }
+    L.setTop(0);
+    var status = L.doString(command);
+    if (status != 0) {
+        var errObj = L.value(1);
+        var tostring = L.getGlobal("tostring");
+        L.pushObject(tostring);
+        L.pushObject(errObj);
+        L.call(1, 1);
+        var errObjStr = L.toString(L.value(-1));
+        throw new Error("Error compiling : " + L.value(1));
+    } else {
+        var result = L.value(1);
+        var tostring_ = L.getGlobal("tostring");
+        L.pushObject(tostring_);
+        L.pushObject(result);
+        L.call(1, 1);
+        var resultStr = L.toString(L.value(-1));
+        return resultStr;
+    }
+}
+//
+// Console UI
+// see https://github.com/adamchuan/console.js
+//
+var commandInput = document.getElementsByClassName("commandInput")[0];
+var messageBox = document.getElementsByClassName("messageBox")[0];
+var runButton = document.getElementsByClassName("runButton")[0];
+var clearButton = document.getElementsByClassName("clearButton")[0];
+var commandRecord = {
+	commands : [], //command record
+	index : 0
+};
+function log(msg) {
+	msg = msg || "";
+	messageBox.innerHTML += msg; 
+	messageBox.scrollTop = messageBox.scrollHeight;
+}
+function bind(elm, action, listener) {
+	if (window.attachEvent) {
+        elm.attachEvent("on" + action, listener);
+    } else {
+        elm.addEventListener(action, listener, false); 
+    }
+}
+function pushToHistory(command) {
+	if (commandRecord.commands[0] === command){
+		return;
+	}
+	commandRecord.commands.unshift(command);
+}
+function getResult(command, callback) {
+	var result;
+	try {
+		if (ENABLE_JS_EVAL) {
+			result = window.eval(command);
+		} else {
+			result = evalLua(command);
+		}	
+	} catch (e) {
+		if (e.getStackTrace) {
+			console.log(e.getStackTrace())
+		} else {
+			console.log(e);
+		}
+		return "<label class = 'error' >" 
+			//+ e.toString() 
+			+ (e.getStackTrace ? e.getStackTrace().replace(/\n/g, '<br>') : e.toString().replace(/\n/g, '<br>'))
+			+ "</label>";
+	}
+	return typeHandler(result);
+}
+function typeHandler(obj, type){
+	var handler = {
+		'object':function(obj) {
+			//Aarry Date 这些都属于object
+			var objstring = "<span class = 'obj'>Object "
+			 + showInnerObject(obj) 
+			 + " }</span>";
+			 return objstring;
+		},
+		'function':function(obj) {
+			return obj = "<span class = 'function' >" 
+					   + obj.toString()
+					   + "</span>";
+		},
+		'string':function(obj) {
+			var str = '<span class = "string">';
+			//str +=  '"' + obj + '"'; //FIXME:remove quote
+			str +=  '' + obj + '';
+			str += "</span>";
+			return str;
+		},
+		'number':function(obj) {
+			var num = '<span class = "num">';
+			num +=  obj;
+			num += "</span>";
+			return num;
+		},
+		'boolean':function(obj) {
+			var boolean = '<span class = "boolean">';
+			boolean +=  obj;
+			boolean += "</span>";
+			return boolean;
+		},
+		'undefined':function(obj) {
+			var undefined = '<span class = "undefined">undefined</span>';
+			return undefined;
+		}
+	};
+	var type = typeof obj;
+	return handler[type](obj);
+}
+function runCommand(e){
+	e = e || window.event;
+	var command = commandInput.value;
+	pushToHistory(command);
+	commandRecord.index = 0 ; 
+	commandInput.value = ""; //clear input
+	var result = "<div class = 'objBlock'>" 
+		+ getResult(command);
+		+ "</div>";
+	log("<div>" + "&gt;&nbsp;" + command + "</div>" + result);
+}
+function historyCommand(index) {
+	return commandRecord.commands[index];
+}
+function getHistoryCommand_up() {
+	if (commandRecord.commands.length == 0){
+		return;
+	}	
+	if (commandRecord.index >= commandRecord.commands.length) {
+		commandInput.value = "";
+		return;
+	} else {
+		if (commandRecord.index < 0) {
+			commandRecord.index = 0;
+		}
+		commandInput.value = historyCommand(commandRecord.index);
+		commandRecord.index++;	
+	}
+}
+function getHistoryCommand_down(){
+	if (commandRecord.commands.length == 0) {
+		return;
+	}
+	if (commandRecord.index < 0) {
+		commandInput.value = "";
+	} else {
+		if (commandRecord.index >= commandRecord.commands.length) {
+			commandRecord.index = commandRecord.commands.length - 1;
+		}
+		commandInput.value = historyCommand(commandRecord.index);
+		commandRecord.index--;
+	}
+}
+bind(commandInput, "keydown", function(e) {
+	e = e || window.event;	
+	var key = e.keyCode || e.which;
+	var handle = {
+		38 : function(){	//up
+			getHistoryCommand_up();
+		},
+		40 : function(){	//down	
+			getHistoryCommand_down();
+		},
+		13 : function(){
+			runCommand(e);
+		}
+	}
+	if (typeof handle[key] === 'function') {
+		handle[key]();
+		e.preventDefault();
+	}
+});
+bind(runButton, "click", runCommand);
+bind(window, "keydown", function(e) {
+	commandInput.focus();
+});
+bind(messageBox, "click", function(e) {
+	commandInput.focus();
+});
+bind(clearButton, "click", function(e) {
+	messageBox.innerHTML = "";
+});
+window.onload = function() {
+	log("Lua 5.1.4 (Jill 1.0.1)  Copyright (C) 1994-2008 Lua.org, PUC-Rio (Copyright (C) 2006 Nokia Corporation and/or its subsidiary(-ies))");
+	commandInput.focus();
+}; 
+</script>
 </body>
 </html>

@@ -1,1 +1,0 @@
-1. (TODO) typeof window !== 'undefined' && window.metamorphose -> typeof metamorphose === 'object' && metamorphose
