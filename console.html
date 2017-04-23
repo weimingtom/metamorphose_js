@@ -109,12 +109,12 @@
 <div>Project homepage : <a href="https://github.com/weimingtom/metamorphose_js">https://github.com/weimingtom/metamorphose_js</a></div>
 <br />
 <div class="consoleBox">
-	<div class="messageBox"></div>
+	<div id="messageBox" class="messageBox"></div>
 	<div>
 		<span style="color:#00FF00;background-color:#000000;">&nbsp;&gt;&nbsp;</span>
-		<input type="text" class="commandInput" value="return 1 + 1" style="color:#00FF00;background-color:#000000;">
-		<input type="button" value="Run" class="runButton">
-		<input type="button" value="Clear" class="clearButton">
+		<input type="text" id="commandInput" class="commandInput" value="return 1 + 1" style="color:#00FF00;background-color:#000000;">
+		<input type="button" id="runButton" value="Run" class="runButton">
+		<input type="button" id="clearButton" value="Clear" class="clearButton">
 	</div>
 </div>
 
@@ -229,10 +229,10 @@ function evalLua(command) {
 // Console UI
 // see https://github.com/adamchuan/console.js
 //
-var commandInput = document.getElementsByClassName("commandInput")[0];
-var messageBox = document.getElementsByClassName("messageBox")[0];
-var runButton = document.getElementsByClassName("runButton")[0];
-var clearButton = document.getElementsByClassName("clearButton")[0];
+var commandInput = document.getElementById("commandInput");
+var messageBox = document.getElementById("messageBox");
+var runButton = document.getElementById("runButton");
+var clearButton = document.getElementById("clearButton");
 var commandRecord = {
 	commands : [], //command record
 	index : 0
