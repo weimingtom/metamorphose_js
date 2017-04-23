@@ -33,7 +33,9 @@ try {
         OSLib.open(L);
         StringLib.open(L);
         TableLib.open(L);
-    }
+		isLoadLib = false;
+	}
+	L.setTop(0);
     var status = L.doString(test003); //FIXME:modify here : test001/test002/test003
     if (status != 0) {
         var errObj = L.value(1);

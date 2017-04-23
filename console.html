@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
 <meta charset="UTF-8">
 <title>metarmorphose console demo</title>
@@ -105,11 +105,14 @@
 </style>
 </head>
 <body>
-<h3>metarmorphose_js console demo</h3>
+<h1>metarmorphose_js</h1>
+<div>Project homepage : <a href="https://github.com/weimingtom/metamorphose_js">https://github.com/weimingtom/metamorphose_js</a></div>
+<br />
 <div class="consoleBox">
 	<div class="messageBox"></div>
 	<div>
-		<input type="text" class="commandInput">
+		<span style="color:#00FF00;background-color:#000000;">&nbsp;&gt;&nbsp;</span>
+		<input type="text" class="commandInput" value="return 1 + 1" style="color:#00FF00;background-color:#000000;">
 		<input type="button" value="Run" class="runButton">
 		<input type="button" value="Clear" class="clearButton">
 	</div>
@@ -202,6 +205,7 @@ function evalLua(command) {
         TableLib.open(L);
         isLoadLib = false;
     }
+    L.setTop(0);
     var status = L.doString(command);
     if (status != 0) {
         var errObj = L.value(1);
@@ -288,7 +292,8 @@ function typeHandler(obj, type){
 		},
 		'string':function(obj) {
 			var str = '<span class = "string">';
-			str +=  '"' + obj + '"';
+			//str +=  '"' + obj + '"'; //FIXME:remove quote
+			str +=  '' + obj + '';
 			str += "</span>";
 			return str;
 		},

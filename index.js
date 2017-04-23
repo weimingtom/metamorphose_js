@@ -33,7 +33,9 @@ var isLoadLib = true;
         OSLib.open(L);
         StringLib.open(L);
         TableLib.open(L);
+		isLoadLib = false;
     }
+	L.setTop(0);
     var status = L.doString(test001);
     if (status != 0) {
         var errObj = L.value(1);

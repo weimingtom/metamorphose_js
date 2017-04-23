@@ -1,11 +1,15 @@
 # metamorphose_js
 Metamorphose (original name jill, jillcode) Javascript port  
 
-## Status  
-WIP  
+## Demo
+* https://weimingtom.github.io/metamorphose_js/  
 
 ## History  
 * 04:29 2017-04-23 : First running 'return _VERSION' success, on Chrome and Nodejs.  
+
+## Screenshots  
+* Running on Chrome     
+![Screenshot](/snapshot/launcher_001.png)  
 
 ## Develop tools  
 * Brackets  
