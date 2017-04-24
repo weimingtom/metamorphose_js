@@ -307,7 +307,7 @@ FormatItem.prototype.formatFloatRawE = function(d) {
     } else {
         var ei = s.indexOf('E');
         e = parseInt(s.substring(ei + 1));
-        t._delete(ei, Number.MAX_SAFE_INTEGER); //TODO:
+        t._delete(ei, Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991); //TODO:
     }
 
     this.precisionTrim(t);
@@ -347,7 +347,7 @@ FormatItem.prototype.formatFloatRawF = function(d) {
     var di = s.indexOf('.');
     var ei = s.indexOf('E');
     if (ei >= 0) {
-        t._delete(ei, Number.MAX_SAFE_INTEGER); //TODO:
+        t._delete(ei, Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991); //TODO:
         var e = parseInt(s.substring(ei+1));
 
         var z = new StringBuffer();
@@ -438,7 +438,7 @@ FormatItem.prototype.formatFloatG = function(b, d) {
         // (this will remove the decimal point when m >=
         // (10**(precision-1)).
         var a2 = new StringBuffer(s);
-        a2._delete(fsd+required, Number.MAX_SAFE_INTEGER); //TODO:
+        a2._delete(fsd+required, Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991); //TODO:
         if (s.indexOf('.') < a2.length()) {
             // Trim trailing zeroes
             var i2 = a2.length() - 1;
@@ -473,9 +473,9 @@ FormatItem.prototype.precisionTrim = function(t) {
     var di = s.indexOf('.');
     var l = t.length();
     if (0 == this._precision) {
-        t._delete(di, Number.MAX_SAFE_INTEGER); //TODO:
+        t._delete(di, Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991); //TODO:
     } else if (l > di + this._precision) {
-        t._delete(di + this._precision + 1, Number.MAX_SAFE_INTEGER); //TODO:
+        t._delete(di + this._precision + 1, Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991); //TODO:
     } else {
         for(; l <= di + this._precision; ++l)
         {

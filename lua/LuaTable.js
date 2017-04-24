@@ -419,7 +419,7 @@ LuaTable.prototype.getnum = function(k) {
 LuaTable.prototype.putluaObj = function(L, key, value) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
     var d = 0.0;
-    var i = Number.MAX_SAFE_INTEGER; //TODO:
+    var i = Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991; //TODO:
 
     if (key == Lua.NIL) {
         L.gRunerror("table index is nil");
@@ -458,7 +458,7 @@ LuaTable.prototype.putluaObj = function(L, key, value) {
 
 LuaTable.prototype.putluaSlot = function(L, key, value) {
     var Lua = metamorphose ? metamorphose.Lua : require('./Lua.js');
-    var i = Number.MAX_SAFE_INTEGER; //TODO:
+    var i = Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991; //TODO:
 
     if (key.getR() == Lua.NUMBER) {
         var j = key.getD();

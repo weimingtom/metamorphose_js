@@ -1,7 +1,7 @@
 ﻿<html>
 <head>
 <meta charset="UTF-8">
-<title>metamorphose</title>
+<title>metamorphose_js</title>
 <style>
 .consoleBox{
 	position: relative;
@@ -105,7 +105,7 @@
 </style>
 </head>
 <body>
-<h1>metarmorphose_js</h1>
+<h1>metamorphose_js</h1>
 <div>Project homepage : <a href="https://github.com/weimingtom/metamorphose_js">https://github.com/weimingtom/metamorphose_js</a></div>
 <br />
 <div class="consoleBox">
@@ -376,7 +376,13 @@ bind(commandInput, "keydown", function(e) {
 	}
 	if (typeof handle[key] === 'function') {
 		handle[key]();
-		e.preventDefault();
+		//http://stackoverflow.com/questions/1000597/event-preventdefault-function-not-working-in-ie
+		if (e.preventDefault) {
+			e.preventDefault();
+		} else {
+			e.returnValue = false;
+			return false;
+		}
 	}
 });
 bind(runButton, "click", runCommand);

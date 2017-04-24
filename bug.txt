@@ -1,2 +1,3 @@
 1. (TODO) typeof window !== 'undefined' && window.metamorphose -> typeof metamorphose === 'object' && metamorphose
 2. (TODO) IE support (console.html)  
+3. (done) Number.MAX_SAFE_INTEGER -> Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991
