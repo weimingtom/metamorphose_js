@@ -1664,7 +1664,7 @@ Syntax.prototype.new_localvar = function(name, n) {
 
 Syntax.prototype.registerlocalvar = function(varname) {
     var f = this._fs.getF();
-    f.ensureLocvars(this._L, this._fs.getNlocvars(), /*Short*/Number.MAX_SAFE_INTEGER) ; //TODO:
+    f.ensureLocvars(this._L, this._fs.getNlocvars(), /*Short*/Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991) ; //TODO:
     (f.getLocvars()[this._fs.getNlocvars()]).setVarname(varname); //FIXME:.varname
     //return this._fs.nlocvars++;
     var result = this._fs.getNlocvars();
