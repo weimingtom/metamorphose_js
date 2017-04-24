@@ -1,2 +1,12 @@
-https://github.com/yi/node-bytearray
-https://code.google.com/archive/p/jsdoc-toolkit/downloads  
+- metamorphose_js:
+(yes) https://github.com/adamchuan/console.js
+(no) https://github.com/yi/node-bytearray
+
+- jscheck:
+(no) https://code.google.com/archive/p/jsdoc-toolkit/downloads  
+(yes) https://github.com/yui/yuidoc
+(yes) https://github.com/zhh77/smartDoc
+(?) https://github.com/jsdoc3/jsdoc
+(?) http://code.google.com/p/jsdoc-toolkit
+(?) https://code.google.com/archive/p/jsdoc-toolkit/
+(yes) https://github.com/flashlizi/casualjs/blob/master/doc.bat  
