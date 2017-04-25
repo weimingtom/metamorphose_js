@@ -1,5 +1,6 @@
 # metamorphose_js
 Metamorphose (original name jill, jillcode) Javascript port  
+https://github.com/Ravenbrook/jill  
 
 ## Demo
 * https://weimingtom.github.io/metamorphose_js/  
@@ -26,6 +27,7 @@ Metamorphose (original name jill, jillcode) Javascript port
 
 ## Ref  
 * http://code.google.com/p/jillcode/  
+* https://github.com/Ravenbrook/jill  
 * https://github.com/weimingtom/metamorphose  
 * http://www.cnblogs.com/doublenet/p/4932672.html    
 * https://github.com/CreateJS/EaselJS  
