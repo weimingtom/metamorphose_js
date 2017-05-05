@@ -3,7 +3,10 @@ Metamorphose (original name jill, jillcode) Javascript port
 https://github.com/Ravenbrook/jill  
 
 ## Demo
-* https://weimingtom.github.io/metamorphose_js/  
+* For PC (from console.js) :   
+https://weimingtom.github.io/metamorphose_js/  
+* For mobile phone (from jxcore-repl) :   
+https://weimingtom.github.io/metamorphose_js/repl.html
 
 ## History  
 * 04:29 2017-04-23 : First running 'return _VERSION' success, on Chrome and Nodejs.  
@@ -12,11 +15,14 @@ https://github.com/Ravenbrook/jill
 * Running on Chrome     
 ![Screenshot](/snapshot/launcher_001.png)  
 
+* Running on Android     
+![Screenshot](/snapshot/repl_001.jpg)  
+
 ## Develop tools  
 * Brackets  
 * JSHint  
 * Nodejs  
-* Chrome / FireFox / IE / Opera  
+* Chrome / Firefox / IE / Opera  
 
 ## JSHint Config   
 * "-W009": true, // [], new Array()  
