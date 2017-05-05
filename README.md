@@ -63,3 +63,4 @@ https://github.com/Ravenbrook/jill
 * https://github.com/decfd15/TerminalSimulator  
 * https://github.com/macton/hterm  
 * https://www.python.org/shell/  
+* https://github.com/karaxuna/jxcore-repl  
