@@ -14,7 +14,7 @@
     font-size: 17px;
     padding: 5px;
     box-sizing: border-box;
-    color: #BFBFBF;
+    color: #00FF00; /*#BFBFBF;*/
     word-wrap: break-word;
 }
 
@@ -33,7 +33,7 @@
     border: none;
     outline: 0;
     background-color: transparent;
-    color: #BFBFBF;
+    color: #00FF00;/*#BFBFBF;*/
     font-size: inherit;
     font-family: inherit;
     box-sizing: border-box;
@@ -65,9 +65,123 @@ html, body {
     padding: 0;
 }
 		</style>
+		
+		
+		
+
+<script type="text/javascript" src="common/global.js" charset="utf-8"></script>
+    
+<script type="text/javascript" src="java/ByteArray.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/DataOutputStream.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Enumeration.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/HashtableEnum.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Hashtable.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/PrintStream.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/SystemUtil.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/NullPointerException.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/IllegalArgumentException.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/StringBuffer.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Character.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Reader.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/InputStreamReader.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/OutOfMemoryError.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/RuntimeException.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Runtime.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/IOException.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Stack.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/OutputStream.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Random.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/MathUtil.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/TimeZone.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/Calendar.js" charset="utf-8"></script>
+<script type="text/javascript" src="java/ByteArrayOutputStream.js" charset="utf-8"></script>
+
+
+<script type="text/javascript" src="lua/Enum.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaTable.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Slot.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LocVar.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Proto.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Loader.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/DumpState.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Expdesc.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/BlockCnt.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaJavaCallback.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/ConsControl.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LHSAssign.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Syntax.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaFunction.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/FromReader.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaInternal.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/UpVal.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/FormatItem.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaUserdata.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/LuaError.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/StringReader.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Debug.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/CallInfo.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/Lua.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/PackageLib.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/MathLib.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/BaseLibReader.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/DumpedInput.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/BaseLib.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/FuncState.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/OSLib.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/MatchState.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/TableLib.js" charset="utf-8"></script>
+<script type="text/javascript" src="lua/StringLib.js" charset="utf-8"></script>
+
+		
     </head>
     <body>
         <div id="bash"></div>
+        <script>
+//
+// Lua
+//
+var ENABLE_JS_EVAL = false;
+var Lua = metamorphose.Lua;
+var PackageLib = metamorphose.PackageLib;
+var MathLib = metamorphose.MathLib;
+var BaseLib = metamorphose.BaseLib;
+var OSLib = metamorphose.OSLib;
+var TableLib = metamorphose.TableLib;
+var StringLib = metamorphose.StringLib;
+var L = new Lua();
+var isLoadLib = true;
+function evalLua(command) {
+	if (isLoadLib) {
+        BaseLib.open(L);
+        PackageLib.open(L);
+        MathLib.open(L);
+        OSLib.open(L);
+        StringLib.open(L);
+        TableLib.open(L);
+        isLoadLib = false;
+    }
+    L.setTop(0);
+    var status = L.doString(command);
+    if (status != 0) {
+        var errObj = L.value(1);
+        var tostring = L.getGlobal("tostring");
+        L.pushObject(tostring);
+        L.pushObject(errObj);
+        L.call(1, 1);
+        var errObjStr = L.toString(L.value(-1));
+        throw new Error("Error compiling : " + L.value(1));
+    } else {
+        var result = L.value(1);
+        var tostring_ = L.getGlobal("tostring");
+        L.pushObject(tostring_);
+        L.pushObject(result);
+        L.call(1, 1);
+        var resultStr = L.toString(L.value(-1));
+        return resultStr;
+    }
+}
+
+        </script>
         <script type="text/javascript">
 function EventTarget() {
     var self = this;
@@ -204,6 +318,8 @@ function start(host) {
     if (host) {
         //bash.write('Connected! host: ' + host + '\n');
 		bash.write('Ready! This demo is modified from https://github.com/karaxuna/jxcore-repl \n');
+		bash.write('\n');
+		bash.write('Lua 5.1.4 (Jill 1.0.1) Copyright (C) 1994-2008 Lua.org, PUC-Rio (Copyright (C) 2006 Nokia Corporation and/or its subsidiary(-ies))\n');
     } else {
         bash.write('Enable wifi or mobile internet to connect from browser\n');
     }
@@ -216,12 +332,23 @@ function start(host) {
 
     socket.on('stdin', function (command) {
 		var self = this;
-		if (true) {
+		if (false) {
 			//should be sync
 			bash.write(command + '\n');
 			self.emit('stdout', "result 1\n");
 			self.emit('stdout', "result 2\n");
 			self.emit('stdout', "> ");
+		} else {
+			//should be sync
+			bash.write(command + '\n');
+			var result = "\n";
+			try {
+				result = evalLua(command);
+			} catch (e) {
+				result = (e.getStackTrace ? e.getStackTrace() : e.toString());
+			}
+			self.emit('stdout', result + '\n');
+			self.emit('stdout', '> ');
 		}
     });
 
