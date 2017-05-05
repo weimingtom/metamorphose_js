@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>metamorphose_js repl</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+		<style>
+.bash {
+    background-color: #272822;
+    min-height: 100%;
+    width: 100%;
+    font-family: 'consolas';
+    font-size: 17px;
+    padding: 5px;
+    box-sizing: border-box;
+    color: #BFBFBF;
+    word-wrap: break-word;
+}
+
+.bash > *:nth-last-child(2) {
+    float: left;
+}
+
+.bash > .bash-input {
+    overflow: hidden;
+}
+
+.bash > .bash-input > input {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    outline: 0;
+    background-color: transparent;
+    color: #BFBFBF;
+    font-size: inherit;
+    font-family: inherit;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+::-webkit-input-placeholder {
+   font-style: italic;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+   font-style: italic;
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+   font-style: italic;
+}
+
+:-ms-input-placeholder {  
+   font-style: italic;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+		</style>
+    </head>
+    <body>
+        <div id="bash"></div>
+        <script type="text/javascript">
+function EventTarget() {
+    var self = this;
+    self._listeners = {};
+};
+
+EventTarget.prototype.on = function (type, listener) {
+    if (typeof this._listeners[type] == "undefined") {
+        this._listeners[type] = [];
+    }
+
+    this._listeners[type].push(listener);
+};
+
+EventTarget.prototype.trigger = function (type, data) {
+    if (this._listeners[type] instanceof Array) {
+        var listeners = this._listeners[type];
+        for (var i = 0, len = listeners.length; i < len; i++) {
+            if (data instanceof Array) {
+                listeners[i].apply(this, data);
+            } else {
+                listeners[i].call(this, data);
+            }
+        }
+    }
+};
+
+EventTarget.prototype.removeListener = function (type, listener) {
+    if (this._listeners[type] instanceof Array) {
+        var listeners = this._listeners[type];
+        for (var i = 0, len = listeners.length; i < len; i++) {
+            if (listeners[i] === listener) {
+                listeners.splice(i, 1);
+                break;
+            }
+        }
+    }
+};
+
+function Bash(container) {
+    var self = this;
+    self.container = container;
+    EventTarget.call(self);
+
+    // add class
+    container.className = 'bash';
+
+    // add command input
+    var cmdInputContainer = self.cmdInputContainer = document.createElement('div');
+    cmdInputContainer.className = 'bash-input';
+    container.appendChild(cmdInputContainer);
+    var cmdInput = self.cmdInput = document.createElement('input');
+    cmdInput.type = 'text';
+    cmdInput.placeholder = 'Type here...';
+    cmdInput.spellcheck = false;
+    cmdInputContainer.appendChild(cmdInput);
+
+    // listen for command
+    cmdInput.addEventListener('keypress', function (e) {
+        if (e.which === 13) {
+            self.trigger('stdin', this.value);
+            this.value = null;
+        }
+    });
+}
+
+// inherit from EventTarget
+Bash.prototype.__proto__ = EventTarget.prototype;
+
+// methods
+Bash.prototype.write = function (command) {
+    var self = this,
+        container = self.container,
+        cmdInputContainer = self.cmdInputContainer;
+
+    var cmdText = createSpan(command);
+    container.insertBefore(cmdText, cmdInputContainer);
+    window.scrollTo(0, document.body.scrollHeight);
+};
+
+function createSpan(text) {
+    var span = document.createElement('span');
+    text = escapeHtml(text);
+    text = replaceAll(text, ' ', '&nbsp;');
+    text = replaceAll(text, '\n', '<br/>');
+    span.innerHTML = text;
+    return span;
+}
+
+function escapeHtml(html) {
+    var text = document.createTextNode(html);
+    var div = document.createElement('div');
+    div.appendChild(text);
+    return div.innerHTML;
+}
+
+function replaceAll(text, a, b) {
+    while (text.indexOf(a) !== -1) {
+        text = text.replace(a, b);
+    }
+    return text;
+}
+        </script>
+        <script type="text/javascript">
+function FakeSocket() {
+    var self = this;
+    EventTarget.call(self);
+}
+FakeSocket.prototype.__proto__ = EventTarget.prototype;
+FakeSocket.prototype.emit = function (type, data) {
+	var self = this;
+	setTimeout(function() {
+		self.trigger(type, data);
+	}, 5);
+};
+
+var bash = new Bash(document.getElementById('bash'));
+var socket;
+
+bash.on('stdin', function (command) {
+    if (socket) {
+        socket.emit('stdin', command);
+    } else {
+        alert('Wait for socket initialization.');
+    }
+});
+
+function connect(host, callback) {
+	socket = new FakeSocket();
+    callback();
+}
+
+function start(host) {
+    if (host) {
+        //bash.write('Connected! host: ' + host + '\n');
+		bash.write('Ready! This demo is modified from https://github.com/karaxuna/jxcore-repl \n');
+    } else {
+        bash.write('Enable wifi or mobile internet to connect from browser\n');
+    }
+
+    bash.write('> ');
+
+    socket.on('stdout', function (text) {
+        bash.write(text);
+    });
+
+    socket.on('stdin', function (command) {
+		var self = this;
+		if (true) {
+			//should be sync
+			bash.write(command + '\n');
+			self.emit('stdout', "result 1\n");
+			self.emit('stdout', "result 2\n");
+			self.emit('stdout', "> ");
+		}
+    });
+
+    socket.on('disconnect', function () {
+        if (confirm('You have been disconnected. Try reconnecting?')) {
+            window.location.reload();
+        }
+    });
+}
+
+(function check() {
+	var host = location.protocol + '//' + location.host;
+	connect(host, function () {
+		start(host);
+	});
+})();
+        </script>
+    </body>
+</html>
