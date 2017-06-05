@@ -2,3 +2,10 @@
 2. (TODO) IE support (console.html)  
 3. (done) Number.MAX_SAFE_INTEGER -> Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 9007199254740991
 4. (TODO) jxcore
+
+
+see https://github.com/weimingtom/metamorphose/blob/master/bug.txt
+25. (TODO) return 100000000000000000000000000000
+26. (TODO) return 1.1.1
+27. (TODO) return 0.1 * 3; return .1 * 3
+
