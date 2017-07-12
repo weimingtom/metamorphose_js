@@ -70,3 +70,6 @@ https://weimingtom.github.io/metamorphose_js/repl.html
 * https://github.com/macton/hterm  
 * https://www.python.org/shell/  
 * https://github.com/karaxuna/jxcore-repl  
+* http://www.litedb.org
+(Try online shell - A subset version of desktop console LiteDB shell)  
+
