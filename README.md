@@ -73,3 +73,5 @@ https://weimingtom.github.io/metamorphose_js/repl.html
 * http://www.litedb.org
 (Try online shell - A subset version of desktop console LiteDB shell)  
 
+## Precision  
+* https://github.com/MikeMcl/decimal.js  
